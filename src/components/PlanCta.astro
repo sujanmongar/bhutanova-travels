@@ -1,0 +1,10 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../config';
+---
+<section class="widget widget--cta" aria-labelledby="w-plan">
+  <h2 class="widget__h" id="w-plan">Plan your Bhutan trip</h2>
+  <p>Tell us your dates and interests. A local expert replies within 24 hours.</p>
+  <a class="btn btn--primary btn--block" href="/contact/">Send an enquiry<Icon name="arrow-right" class="i-end" /></a>
+  <a class="btn btn--on-dark btn--block" href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
+</section>

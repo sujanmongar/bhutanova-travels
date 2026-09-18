@@ -1,28 +1,33 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import Icon from './Icon.astro';
 import { img, srcset } from '../config';
 interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string }
 const { post, base = '/blog/' } = Astro.props;
+const d = post.data;
 const href = `${base}${post.id}/`;
+const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ');
 ---
 <article class="bc">
-  <a href={href} class="bc__img" tabindex="-1" aria-hidden="true">
-    <img src={img(post.data.image, 800)} srcset={srcset(post.data.image, [400, 600, 800])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 86vw"
-      alt="" width="800" height="460" loading="lazy" decoding="async" />
-  </a>
-  <h3><a href={href}>{post.data.title}</a></h3>
-  <p>{post.data.excerpt}</p>
-  <a href={href} class="link-more" aria-label={`Read more: ${post.data.title}`}>Read More <Icon name="arrow-up-right" /></a>
+  <div class="bc__img">
+    <img src={img(d.image, 800)} srcset={srcset(d.image, [400, 600, 800])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 84vw"
+      alt="" width="800" height="533" loading="lazy" decoding="async" />
+  </div>
+  <p class="bc__meta">{meta}</p>
+  <h3><a href={href}>{d.title}</a></h3>
+  <p class="bc__ex">{d.excerpt}</p>
 </article>
 <style>
-  .bc { display: flex; flex-direction: column; gap: 12px; }
-  .bc__img { aspect-ratio: 16 / 9.2; border-radius: var(--radius); overflow: hidden; margin-bottom: 4px; }
-  .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
-  .bc:hover .bc__img img { transform: scale(1.04); }
-  .bc h3 { font-size: 1.125rem; line-height: 1.55; }
-  .bc h3 a:hover { color: var(--p-600); }
-  .bc p { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  .bc .link-more { margin-top: auto; }
-  @media (min-width: 1200px) { .bc h3 { line-height: 30px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
+  .bc { position: relative; display: flex; flex-direction: column; height: 100%; }
+  .bc__img { aspect-ratio: 3 / 2; margin-bottom: 16px; border-radius: var(--radius); background: var(--s-50); overflow: hidden; clip-path: inset(0 round var(--radius)); }
+  .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
+  .bc__meta { font-size: var(--fs-xs); color: var(--text-3); }
+  .bc h3 { margin: 6px 0 8px; font-size: 1.25rem; line-height: 1.3; letter-spacing: -.012em; }
+  .bc h3 a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
+  .bc h3 a:focus-visible { outline: none; }
+  .bc:has(h3 a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); }
+  .bc__ex { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  @media (hover: hover) {
+    .bc:hover .bc__img img { scale: 1.03; }
+    .bc:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; }
+  }
 </style>

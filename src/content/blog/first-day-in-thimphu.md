@@ -1,7 +1,7 @@
 ---
-title: The Perfect First Day in Thimphu
+title: "A first day in Thimphu"
 excerpt: How to spend your first day in the world's only capital without traffic lights.
-image: photo-1650747857310-c359fd3ee5c5
+image: photo-1597658333270-8c0d8f0eb845
 date: 2026-05-15
 tags: [Destinations]
 ---

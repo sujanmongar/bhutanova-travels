@@ -8,7 +8,7 @@ price: 970
 priceNotes:
   - USD 970 per person on a double-sharing basis
   - "Single room supplement: USD 40 per person per night"
-summary: The Glimpse of Bhutan cultural tour covers the most important sightseeing in western Bhutan. Short on time but want to see the best of the kingdom? This is the tour for you.
+summary: Six days through western Bhutan — Paro, Thimphu and Punakha — covering the dzongs, passes and the Tiger's Nest hike, at an easy pace.
 image: photo-1650747857310-c359fd3ee5c5
 gallery:
   - photo-1650747857310-c359fd3ee5c5

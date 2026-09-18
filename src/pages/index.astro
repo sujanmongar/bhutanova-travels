@@ -4,37 +4,38 @@ import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Arrows from '../components/Arrows.astro';
 import TourCard from '../components/TourCard.astro';
-import BlogCard from '../components/BlogCard.astro';
 import Faq from '../components/Faq.astro';
 import CtaBanner from '../components/CtaBanner.astro';
 import reviews from '../data/reviews.json';
-import { img, srcset } from '../config';
+import { SITE, img, srcset } from '../config';
 
 const tours = await getCollection('tours');
 const featured = tours.filter((t) => t.data.featured).concat(tours.filter((t) => !t.data.featured)).slice(0, 6);
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const count = (id: string) => tours.filter((t) => t.data.category.id === id).length;
-const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 6);
+const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+const [lead, ...rest] = posts;
+const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const slides = [
-  ['photo-1650747857310-c359fd3ee5c5', 'Buddha Dordenma overlooking the Thimphu valley'],
-  ['photo-1578556881786-851d4b79cb73', "Paro Taktsang, the Tiger's Nest monastery"],
-  ['photo-1608236475087-615bfbcdf772', 'Punakha Dzong at the meeting of two rivers'],
-  ['photo-1532918235359-7671f525386d', 'Prayer flags on a Himalayan pass'],
-  ['photo-1772702812424-208b331c58a0', 'Druk Wangyal chortens at Dochula Pass'],
+  ['photo-1772702812424-208b331c58a0', 'Druk Wangyal chortens, Dochula Pass'],
+  ['photo-1578556881786-851d4b79cb73', "Paro Taktsang (Tiger's Nest), Paro"],
+  ['photo-1608236475087-615bfbcdf772', 'Punakha Dzong, Punakha'],
+  ['photo-1532918235359-7671f525386d', 'Prayer flags above the Paro valley'],
+  ['photo-1650747857310-c359fd3ee5c5', 'Buddha Dordenma, Thimphu'],
 ];
 const pillars = [
-  ['arrows-to-circle', 'Community Focus', 'We prioritise community impact. Through responsible tourism and local engagement, we foster sustainable development and empower communities.'],
-  ['people', 'People - Centric', 'At Bhutanova Travels, people come first. We create authentic experiences that enrich the lives of travelers, employees and partners alike.'],
-  ['image-user', 'Self - Reflection', 'Bhutanova Travels encourages self-discovery. Our immersive journeys offer opportunities for introspection and personal transformation.'],
+  ['arrows-to-circle', 'Community', 'Part of every booking goes back into the villages you visit, and we hire local guides, drivers and cooks.'],
+  ['people', 'People', 'Small groups and private trips, paced around you. Our team answers every message personally.'],
+  ['image-user', 'Self', 'Quiet mornings at monasteries, long walks and time to reflect — travel the way Bhutan intends.'],
 ];
 const services = [
-  ['sliders', 'Personalized Matching', 'Our matching process helps you find the tour you want for your next holiday.'],
-  ['gauge', 'Wide Variety of Tours', 'We offer a wide variety of personally picked tours to destinations all over Bhutan.'],
-  ['star', 'Highly Qualified Service', 'Our tour managers are qualified, skilled and friendly to bring you the best service.'],
-  ['headphones', '24/7 Support', 'You can always get professional support from our staff 24/7 and ask any questions.'],
-  ['hotel', 'Handpicked Hotels', 'Our team offers only the best selection of affordable and luxury hotels to our clients.'],
-  ['tag', 'Best Price Guarantee', 'If you find tours cheaper than ours, we will compensate the difference.'],
+  ['sliders', 'Trips shaped around you', 'Tell us what you enjoy and how you like to travel. We build the itinerary from there.'],
+  ['gauge', 'Every region of Bhutan', 'From Paro and Thimphu to Bumthang and the far east, with routes we know first-hand.'],
+  ['star', 'Licensed local guides', 'Our guides are Bhutanese, certified by the Tourism Council and trained in first aid.'],
+  ['headphones', 'Support while you travel', 'A planner is on call throughout your stay, day or night.'],
+  ['hotel', 'Hotels we have stayed in', 'Certified three-star guesthouses to Aman and COMO lodges, chosen by our team.'],
+  ['tag', 'Clear, all-in pricing', 'Visa, daily SDF, guide, driver, meals and hotels in one price. No surprises.'],
 ];
 const partners = [
   ['bhutan-believe', 'Department of Tourism'],
@@ -43,7 +44,11 @@ const partners = [
   ['drukair', 'Drukair – Royal Bhutan Airlines'],
   ['bhutan-airlines', 'Bhutan Airlines'],
 ];
-const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 2);
+const brand: Record<string, { icon: string; fg: string }> = {
+  Google: { icon: 'brand_google', fg: '#4285f4' },
+  Tripadvisor: { icon: 'brand_tripadvisor', fg: '#00aa6c' },
+};
+const [quote, ...quotes] = reviews.items;
 ---
 <Base title="Home">
   <!-- Hero -->
@@ -54,112 +59,163 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
           loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
       ))}
     </div>
-    <div class="hero__txt">
-      <p class="eyebrow">Enjoy the best destinations with us</p>
-      <h1 class="hero-title">Explore Bhutan</h1>
-    </div>
-    <button class="hero__nav hero__nav--prev" type="button" aria-label="Previous photo" data-hero="-1"><Icon name="chevron-left" /></button>
-    <button class="hero__nav hero__nav--next" type="button" aria-label="Next photo" data-hero="1"><Icon name="chevron-right" /></button>
-    <div class="hero__dots" role="tablist" aria-label="Choose photo">
-      {slides.map((_, i) => <button type="button" role="tab" aria-label={`Photo ${i + 1}`} aria-selected={i === 0 ? 'true' : 'false'} data-dot={i} />)}
+    <div class="container hero__in">
+      <div class="hero__txt">
+        <p class="eyebrow">Private tours, festivals and treks</p>
+        <h1 class="hero-title">Bhutan, planned by people who live here</h1>
+        <div class="hero__cta">
+          <a class="btn btn--primary btn--lg" href="/tours/">View tour packages<Icon name="arrow-right" class="i-end" /></a>
+          <a class="hero__link" href="/contact/">Plan a custom trip</a>
+        </div>
+      </div>
+      <div class="hero__ctrl">
+        <p class="hero__cap" aria-live="polite"><span class="num" data-count>01 / {String(slides.length).padStart(2, '0')}</span><span data-cap>{slides[0][1]}</span></p>
+        <div class="hero__btns">
+          <button type="button" aria-label="Previous photo" data-hero="-1"><Icon name="arrow-left" /></button>
+          <button type="button" aria-label="Next photo" data-hero="1"><Icon name="arrow-right" /></button>
+        </div>
+      </div>
     </div>
   </section>
 
   <!-- About -->
   <section class="section">
     <div class="container">
-      <div class="sh sh--center">
-        <h2>Seek Fresh Perspective with <span class="accent">BHUTANOVA TRAVELS</span></h2>
-        <p>Bhutanova Travels, based in Bhutan, embraces the kingdom's cultural richness and GNH principles. Our foundation is built on benefiting the <b>COMMUNITY</b>, <b>PEOPLE</b>, and <b>SELF</b>, reflecting the essence of Bhutan.</p>
+      <div class="sh sh--split" data-reveal>
+        <h2>A fresh perspective on Bhutan</h2>
+        <p>We are a small, Bhutanese-owned team based in Babesa, Thimphu. Our trips follow the values the kingdom is known for — Gross National Happiness — and are built around three simple ideas.</p>
       </div>
-      <div class="grid-3">
-        {pillars.map(([icon, t, d]) => (
-          <div class="card-soft pillar"><Icon name={icon} /><h3>{t}</h3><p>{d}</p></div>
-        ))}
-      </div>
-      <div class="card-soft mission">
-        <Icon name="bullseye-arrow" />
-        <div>
-          <h3>Our Mission</h3>
-          <p>Bhutanova Travels goes beyond typical travel, pioneering a sustainable tourism landscape that uplifts local communities. With expert guidance and personalised service, we envision every journey creating positive, lasting impacts on destinations and lives.</p>
-        </div>
+      <ul class="items items--3" data-reveal="stagger">
+        {pillars.map(([, t, d]) => <li class="item"><h3>{t}</h3><p>{d}</p></li>)}
+      </ul>
+      <div class="mission" data-reveal>
+        <img src={img('photo-1762179861385-793eba9c7623', 900)} srcset={srcset('photo-1762179861385-793eba9c7623', [480, 800, 1200])} sizes="(min-width:1024px) 45vw, 100vw"
+          alt="Two young monks in red robes sitting in the sun" width="900" height="700" loading="lazy" decoding="async" />
+        <figure>
+          <blockquote>“We want every journey to leave something good behind — for the families who host you, and for you.”</blockquote>
+        </figure>
       </div>
     </div>
   </section>
 
   <!-- Services -->
-  <section class="section section--flush">
-    <div class="container">
-      <div class="sh sh--center">
-        <h2>Our Services</h2>
-        <p>Discover Bhutan with Bhutanova Travels, experts in curating your ideal trip. Enjoy a seamless journey with personalised experiences and safety prioritised.</p>
+  <section class="section section--grey">
+    <div class="container why">
+      <div class="why__head" data-reveal>
+        <h2>Why travel with us</h2>
+        <p>Everything that makes a Bhutan trip easy, handled by people who live here.</p>
+        <a class="link-more" href="/about/">About Bhutanova<Icon name="arrow-right" /></a>
       </div>
-      <div class="grid-3">
-        {services.map(([icon, t, d]) => <div class="card-line"><Icon name={icon} /><h3>{t}</h3><p>{d}</p></div>)}
-      </div>
+      <ul class="items items--2" data-reveal="stagger">
+        {services.map(([, t, d]) => <li class="item"><h3>{t}</h3><p>{d}</p></li>)}
+      </ul>
     </div>
   </section>
 
   <!-- Packages -->
   <section class="section">
     <div class="container">
-      <div class="sh sh--row">
-        <h2>Affordable Tour Packages</h2>
-        <p>Explore Bhutan's rich culture, spirituality and natural wonders with our curated packages. From spiritual odysseys to Himalayan treks, choose yours and embark on an unforgettable journey.</p>
-        <Arrows target="rail-tours" label="packages" />
+      <div class="sh sh--row" data-reveal>
+        <h2>Tour packages</h2>
+        <p>Handpicked journeys across the kingdom. Every one can be tailored to your dates and pace.</p>
+        <div class="sh__act"><a class="link-more" href="/tours/">All {tours.length} packages<Icon name="arrow-right" /></a><Arrows target="rail-tours" label="packages" /></div>
       </div>
-      <div class="rail" id="rail-tours">{featured.map((t) => <TourCard tour={t} />)}</div>
+      <div class="rail" id="rail-tours" data-reveal="stagger">{featured.map((t) => <TourCard tour={t} />)}</div>
+      <a class="link-more m-only" href="/tours/">All {tours.length} packages<Icon name="arrow-right" /></a>
     </div>
   </section>
 
   <!-- Themes -->
-  <section class="section section--flush">
+  <section class="section">
     <div class="container">
-      <div class="sh sh--center">
-        <h2>Featured Bhutan Tour Themes</h2>
-        <p>Pick the kind of journey that suits you — culture, festivals, mountains or pure comfort.</p>
+      <div class="sh sh--split" data-reveal>
+        <h2>Travel your way</h2>
+        <p>Start with what interests you most — culture, festivals, mountains or simply slowing down.</p>
       </div>
-      <ul class="themes" id="rail-themes">
+      <ul class="themes" data-reveal="stagger">
         {cats.map((c) => (
           <li>
             <a href={`/tours/category/${c.id}/`} class="theme">
-              <img src={img(c.data.image, 360)} alt="" width="180" height="180" loading="lazy" decoding="async" />
-              <h3>{c.data.menuTitle}</h3>
-              <p>{count(c.id)} {count(c.id) === 1 ? 'Tour' : 'Tours'}</p>
+              <img src={img(c.data.image, 700)} srcset={srcset(c.data.image, [400, 700])} sizes="(min-width:1024px) 360px, (min-width:768px) 45vw, 70vw" alt="" width="700" height="525" loading="lazy" decoding="async" />
+              <span class="theme__txt"><b>{c.data.menuTitle}</b><Icon name="arrow-right" /></span>
             </a>
           </li>
         ))}
       </ul>
-      <div class="themes__arrows"><Arrows target="rail-themes" label="themes" /></div>
     </div>
   </section>
 
   <!-- Blog -->
-  <section class="section">
+  <section class="section section--grey">
     <div class="container">
-      <div class="sh sh--row">
-        <h2>Read Our Blog</h2>
-        <p>Our blog is your gateway to endless explorations in Bhutan. Begin your journey with us today.</p>
-        <Arrows target="rail-blog" label="posts" />
+      <div class="sh sh--row" data-reveal>
+        <h2>From the blog</h2>
+        <p>Stories, festival notes and practical advice from our team.</p>
+        <div class="sh__act"><a class="link-more" href="/blog/">All articles<Icon name="arrow-right" /></a></div>
       </div>
-      <div class="rail" id="rail-blog">{posts.map((p) => <BlogCard post={p} />)}</div>
-      <div class="center"><a href="/blog/" class="btn btn--outline btn--sm">More Blogs</a></div>
+      <div class="journal" data-reveal="stagger">
+        <article class="journal__lead">
+          <div class="journal__img"><img src={img(lead.data.image, 1000)} srcset={srcset(lead.data.image, [480, 800, 1200])} sizes="(min-width:1024px) 55vw, 100vw" alt="" width="1000" height="667" loading="lazy" decoding="async" /></div>
+          <p class="journal__meta">{lead.data.tags[0]} · {short(lead.data.date)}</p>
+          <h3><a href={`/blog/${lead.id}/`}>{lead.data.title}</a></h3>
+          <p class="journal__ex">{lead.data.excerpt}</p>
+        </article>
+        <ul class="journal__list">
+          {rest.slice(0, 3).map((p) => (
+            <li>
+              <article>
+                <img src={img(p.data.image, 300)} alt="" width="120" height="90" loading="lazy" decoding="async" />
+                <div>
+                  <p class="journal__meta">{p.data.tags[0]} · {short(p.data.date)}</p>
+                  <h3><a href={`/blog/${p.id}/`}>{p.data.title}</a></h3>
+                </div>
+              </article>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <a class="link-more m-only" href="/blog/">All articles<Icon name="arrow-right" /></a>
     </div>
   </section>
 
   <!-- Reviews -->
-  <section class="section section--flush">
+  <section class="section">
     <div class="container">
-      <div class="sh">
-        <h2>Reviews</h2>
-        <p>Hear from travelers about their journeys through Bhutan with us.</p>
+      <div class="sh" data-reveal><h2>What travelers say</h2></div>
+      <div class="rv" data-reveal>
+        <figure class="rv__main">
+          <blockquote>“{quote.text}”</blockquote>
+          <figcaption><b>{quote.name}</b><span>{quote.place}</span><span>{quote.trip}</span></figcaption>
+        </figure>
+        <div class="rv__side">
+          <ul class="rv__scores">
+            {reviews.platforms.map((p) => (
+              <li>
+                <a href={p.url} target="_blank" rel="noopener">
+                  <span class="rv__logo" style={`color:${brand[p.name]?.fg}`} aria-hidden="true"><Icon name={brand[p.name]?.icon ?? 'star'} /></span>
+                  {reviews.sample ? (
+                    <b class="rv__name">Read our reviews on {p.name}</b>
+                  ) : (
+                    <>
+                      <b class="num">{p.rating.toFixed(1)}</b>
+                      <span class:list={['rate', { 'rate--bubbles': p.name === 'Tripadvisor' }]} style={`--fill:${p.rating * 20}%`} aria-hidden="true"></span>
+                      <span class="rv__src">{p.name} · <span class="num">{p.count}</span> reviews</span>
+                    </>
+                  )}
+                  <Icon name="arrow-up-right" class="rv__ext" /><span class="sr-only"> (opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
-      <ul class="grid-3 reviews">
-        {reviews.items.map((r) => (
-          <li class="card-soft review">
-            <p class="stars" aria-label={`${r.rating} out of 5 stars`}>{Array.from({ length: r.rating }, () => <Icon name="star" />)}</p>
-            <blockquote>“{r.text}”</blockquote>
-            <footer><span class="avatar" aria-hidden="true">{initials(r.name)}</span><span><b>{r.name}</b><small>{r.place}</small></span></footer>
+      <ul class="rv__more rail" id="rail-quotes">
+        {quotes.map((r) => (
+          <li>
+            <figure>
+              <blockquote>“{r.text}”</blockquote>
+              <figcaption><b>{r.name}</b><span>{r.place}</span></figcaption>
+            </figure>
           </li>
         ))}
       </ul>
@@ -167,22 +223,23 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
   </section>
 
   <!-- FAQ -->
-  <section class="section">
+  <section class="section section--grey">
     <div class="container">
-      <div class="sh sh--center">
-        <h2>FAQs</h2>
-        <p>Find answers to common questions about our services, bookings and travelling in Bhutan. Still curious? <a href="/contact/" class="accent">Ask us.</a></p>
-      </div>
-      <Faq />
+      <Faq>
+        <div class="sh" data-reveal>
+          <h2>Questions, answered</h2>
+          <p>The things travelers ask us most before booking. Can't find yours? Call <a class="inline" href={`tel:${SITE.phone.replace(/\s/g, '')}`}>{SITE.phone}</a> or <a class="inline" href="/contact/">send us a message</a>.</p>
+        </div>
+      </Faq>
     </div>
   </section>
 
   <CtaBanner />
 
   <!-- Partners -->
-  <section class="section partners">
-    <div class="container">
-      <h2 class="partners__h">Our official partners:</h2>
+  <section class="partners">
+    <div class="container partners__in">
+      <p class="partners__h">Registered with and flying in partnership with</p>
       <ul>
         {partners.map(([f, n]) => <li><img src={`/images/partners/${f}.png`} alt={n} title={n} width="201" height="140" loading="lazy" /></li>)}
       </ul>
@@ -192,83 +249,195 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
 
 <script>
   const track = document.getElementById('hero-track')!;
-  const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-dot]')];
-  const go = (i: number) => track.scrollTo({ left: ((i + dots.length) % dots.length) * track.clientWidth, behavior: 'smooth' });
+  const hero = track.parentElement!;
+  const imgs = [...track.querySelectorAll('img')];
+  const count = hero.querySelector('[data-count]')!;
+  const cap = hero.querySelector('[data-cap]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const n = imgs.length;
   const cur = () => Math.round(track.scrollLeft / track.clientWidth);
-  document.querySelectorAll<HTMLButtonElement>('[data-hero]').forEach((b) => (b.onclick = () => go(cur() + Number(b.dataset.hero))));
-  dots.forEach((d, i) => (d.onclick = () => go(i)));
-  track.addEventListener('scroll', () => dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === cur()))), { passive: true });
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const go = (i: number) => {
+    const to = (i + n) % n, left = to * track.clientWidth;
+    if (Math.abs(to - cur()) > 1 && !reduce) {
+      // wrap-around: dip to navy instead of rewinding through every slide
+      track.animate([{ opacity: 1 }, { opacity: 0, offset: .5 }, { opacity: 1 }], { duration: 600, easing: 'ease-in-out' });
+      setTimeout(() => track.scrollTo({ left, behavior: 'instant' }), 300);
+    } else track.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+  };
+  hero.querySelectorAll<HTMLButtonElement>('[data-hero]').forEach((b) => (b.onclick = () => go(cur() + Number(b.dataset.hero))));
+  track.addEventListener('scroll', () => {
+    const i = cur();
+    count.textContent = `${String(i + 1).padStart(2, '0')} / ${String(n).padStart(2, '0')}`;
+    cap.textContent = imgs[i].alt;
+  }, { passive: true });
+  if (!reduce) {
     let paused = false;
-    const hero = track.parentElement!;
-    hero.addEventListener('pointerenter', () => (paused = true));
-    hero.addEventListener('pointerleave', () => (paused = false));
-    setInterval(() => !paused && !document.hidden && go(cur() + 1), 6000);
+    for (const [ev, v] of [['pointerenter', true], ['pointerleave', false], ['focusin', true], ['focusout', false]] as const) hero.addEventListener(ev, () => (paused = v));
+    setInterval(() => !paused && !document.hidden && go(cur() + 1), 7000);
   }
 </script>
 
 <style>
-  /* Hero */
-  .hero { position: relative; height: min(78svh, 560px); min-height: 420px; color: #fff; overflow: hidden; }
-  .hero__track { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .m-only { margin-top: 18px; }
+  @media (min-width: 768px) { .m-only { display: none; } }
+  .inline { white-space: nowrap; color: var(--ink); font-weight: 600; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+  .inline:hover { color: var(--p-800); }
+
+  /* Hero — text sits bottom-left like a magazine cover; caption + counter bottom-right */
+  .hero { position: relative; height: min(88svh, 760px); min-height: 540px; color: #fff; overflow: hidden; background: var(--s-800); }
+  .hero__track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .hero__track::-webkit-scrollbar { display: none; }
   .hero__track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
-  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(22 46 68 / .15), rgb(22 46 68 / .5)); pointer-events: none; }
-  .hero__txt { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; text-align: center; padding: 0 72px; pointer-events: none; }
-  .hero__nav {
-    position: absolute; top: 50%; z-index: 2; translate: 0 -50%; display: grid; place-items: center;
-    width: 44px; height: 44px; border-radius: 50%; border: 1px solid #fff; background: rgb(0 0 0 / .1); color: #fff; font-size: 14px; cursor: pointer;
+  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(12 25 37 / .2), transparent 30%, rgb(12 25 37 / .25) 55%, rgb(12 25 37 / .78)); pointer-events: none; }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 28px; padding-bottom: 32px; pointer-events: none; }
+  .hero__in a, .hero__in button { pointer-events: auto; }
+  .hero__cta { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; margin-top: 28px; }
+  .hero__link { display: inline-block; padding-block: 9px; font-weight: 600; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .5); text-underline-offset: 6px; transition: text-decoration-color var(--dur-2); }
+  .hero__link:hover { text-decoration-color: #fff; }
+  .hero__ctrl { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .25); font-size: var(--fs-xs); color: rgb(255 255 255 / .85); }
+  .hero__cap { display: flex; gap: 14px; min-width: 0; }
+  .hero__cap [data-cap] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .hero__cap .num { flex: none; white-space: nowrap; font-weight: 600; color: #fff; }
+  .hero__btns { display: flex; gap: 8px; }
+  .hero__btns button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / .4); border-radius: 50%; background: transparent; color: #fff; font-size: 13px; cursor: pointer; transition: background var(--dur-1), border-color var(--dur-1), scale var(--dur-1); }
+  .hero__btns button:hover { background: rgb(255 255 255 / .12); border-color: #fff; }
+  .hero__btns button:active { scale: .92; }
+  @media (max-width: 767px) {
+    .hero::after { background: linear-gradient(rgb(12 25 37 / .2), transparent 22%, rgb(12 25 37 / .5) 48%, rgb(12 25 37 / .88)); }
+    .hero .eyebrow { color: #fff; }
+    .hero__cap { flex-direction: column; gap: 2px; }
+    .hero__cap [data-cap] { white-space: normal; text-wrap: balance; }
   }
-  .hero__nav:hover { background: rgb(255 255 255 / .2); }
-  .hero__nav--prev { left: 12px; } .hero__nav--next { right: 12px; }
-  .hero__dots { position: absolute; bottom: 20px; left: 50%; translate: -50% 0; z-index: 2; display: flex; gap: 6px; align-items: center; }
-  .hero__dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: rgb(255 255 255 / .7); cursor: pointer; }
-  .hero__dots button[aria-selected='true'] { width: 14px; height: 14px; background: #fff; }
-  @media (min-width: 768px) {
-    .hero { height: 620px; }
-    .hero__nav { width: 48px; height: 48px; font-size: 16px; } .hero__nav--prev { left: 32px; } .hero__nav--next { right: 32px; }
+  @media (min-width: 768px) { .hero__in { padding-bottom: 40px; gap: 48px; } }
+  .hero-title { max-width: 15ch; }
+  @media (min-width: 1200px) { .hero { height: min(90svh, 820px); } }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__track > img:first-child { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
+    .hero__txt > * { --rise: 18px; animation: rise 900ms var(--ease-out) backwards; }
+    .hero__txt > :nth-child(1) { animation-delay: 150ms; }
+    .hero__txt > :nth-child(2) { animation-delay: 260ms; }
+    .hero__txt > :nth-child(3) { animation-delay: 400ms; }
+    .hero__ctrl { animation: fade var(--dur-4) var(--ease-out) 650ms backwards; }
   }
-  @media (min-width: 1200px) { .hero { height: 700px; } }
 
   /* About */
-  .mission { display: grid; gap: 16px; margin-top: 16px; padding: 32px 24px; }
-  .mission > :global(.icon) { font-size: 88px; }
-  .mission h3 { font-size: var(--fs-h2); line-height: var(--lh-h2); font-weight: 700; margin: 0 0 12px; }
-  .mission p { font-size: var(--fs-body); line-height: var(--lh-body); }
-  @media (min-width: 768px) { .mission { grid-template-columns: auto 1fr; gap: 32px; align-items: center; padding: 32px; margin-top: 24px; } .mission > :global(.icon) { font-size: 100px; } }
-
-  /* Themes */
-  .themes { display: grid; grid-auto-flow: column; grid-auto-columns: 148px; gap: 20px; list-style: none; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-  .themes::-webkit-scrollbar { display: none; }
-  .themes li { scroll-snap-align: start; }
-  .theme { display: grid; justify-items: center; text-align: center; gap: 4px; }
-  .theme img { width: 148px; aspect-ratio: 1; border-radius: 50%; object-fit: cover; margin-bottom: 12px; transition: transform .3s; }
-  .theme:hover img { transform: scale(1.04); }
-  .theme h3 { font-size: 1rem; line-height: 1.5; }
-  .theme p { font-size: var(--fs-xs); color: var(--text-2); }
-  .themes__arrows { display: flex; justify-content: center; margin-top: 24px; }
-  @media (min-width: 1200px) {
-    .themes { grid-auto-flow: row; grid-template-columns: repeat(6, 1fr); overflow: visible; margin: 0; padding: 0; }
-    .theme img { width: 150px; } .themes__arrows { display: none; }
+  .items--3 { margin-bottom: 64px; }
+  .mission { display: grid; gap: 28px; align-items: center; }
+  .mission img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
+  .mission blockquote { margin: 0; font-size: var(--fs-sub); line-height: 1.35; font-weight: 500; letter-spacing: -.015em; color: var(--ink); text-wrap: balance; }
+  .mission figure { margin: 0; }
+  @media (min-width: 1024px) {
+    .mission { grid-template-columns: 5fr 6fr; gap: 80px; }
+    .mission blockquote { font-size: 2rem; line-height: 1.3; }
   }
 
-  /* Reviews — 3 on mobile to keep the section short */
-  .reviews { list-style: none; margin: 0; padding: 0; }
-  .reviews li:nth-child(n + 4) { display: none; }
-  @media (min-width: 768px) { .reviews li:nth-child(n + 4) { display: flex; } .reviews li:nth-child(n + 5) { display: none; } }
-  @media (min-width: 1024px) { .reviews li:nth-child(n + 5) { display: flex; } }
-  .review { display: flex; flex-direction: column; gap: 16px; }
-  .stars { display: flex; gap: 4px; color: var(--warning); font-size: 16px; }
-  .review blockquote { margin: 0; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); flex: 1; }
-  .review footer { display: flex; align-items: center; gap: 12px; }
-  .review footer span:last-child { display: grid; font-size: 1rem; }
-  .review small { font-size: var(--fs-xs); color: var(--text-2); }
-  .avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--s-500); color: #fff; font-weight: 600; font-size: .875rem; }
+  /* Why */
+  .why { display: grid; gap: 40px; }
+  .why__head p { margin: 14px 0 22px; max-width: 36ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
+  @media (min-width: 1024px) {
+    .why { grid-template-columns: 4fr 7fr; gap: 80px; align-items: start; }
+    .why__head { position: sticky; top: calc(var(--header-h) + 32px); }
+  }
+
+  /* Themes — photo tiles, captions set into the image */
+  .themes { display: grid; grid-auto-flow: column; grid-auto-columns: min(70%, 280px); gap: 12px; list-style: none; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none; }
+  .themes::-webkit-scrollbar { display: none; }
+  .themes li { scroll-snap-align: start; }
+  .theme { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; isolation: isolate; background: var(--s-50); }
+  .theme img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: scale var(--dur-4) var(--ease-out); }
+  .theme::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 45%, rgb(12 25 37 / .75)); }
+  .theme__txt { position: absolute; inset: auto 0 0; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; padding: 18px; color: #fff; -webkit-font-smoothing: antialiased; }
+  .theme__txt b { font-size: 1.125rem; line-height: 1.25; font-weight: 650; }
+  .theme__txt :global(.icon) { flex: none; font-size: 14px; margin-bottom: 4px; transition: translate var(--dur-2) var(--ease-out); }
+  @media (hover: hover) { .theme:hover .theme__txt :global(.icon) { translate: 3px 0; } }
+  @media (hover: hover) { .theme:hover img { scale: 1.04; } }
+  .theme:focus-visible { outline-offset: 3px; }
+  @media (min-width: 768px) { .themes { grid-auto-columns: calc((100% - 24px) / 3); } }
+  @media (min-width: 1024px) {
+    .themes { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding: 0; overflow: visible; }
+    .theme { aspect-ratio: 4 / 3; }
+  }
+
+  /* Journal — one lead story + a short list */
+  .journal { display: grid; gap: 32px; }
+  .journal__lead { position: relative; }
+  .journal__img { aspect-ratio: 3 / 2; margin-bottom: 18px; border-radius: var(--radius); overflow: hidden; background: var(--s-50); clip-path: inset(0 round var(--radius)); }
+  .journal__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
+  .journal__meta { font-size: var(--fs-xs); color: var(--text-3); }
+  .journal h3 a::after { content: ''; position: absolute; inset: 0; }
+  .journal__lead h3 { margin: 8px 0 10px; font-size: var(--fs-sub); line-height: var(--lh-sub); letter-spacing: var(--ls-sub); }
+  .journal__ex { max-width: 56ch; color: var(--text-2); }
+  .journal__list { list-style: none; margin: 0; padding: 0; }
+  .journal__list li { border-top: 1px solid var(--border-dark); }
+  .journal__list li:last-child { border-bottom: 1px solid var(--border-dark); }
+  .journal__list article { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; padding-block: 18px; }
+  .journal__list img { width: 96px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); }
+  .journal__list h3 { margin-top: 4px; font-size: 1.0625rem; line-height: 1.35; }
+  @media (hover: hover) {
+    .journal__lead:hover img { scale: 1.03; }
+    .journal article:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; }
+  }
+  @media (min-width: 1024px) {
+    .journal { grid-template-columns: 7fr 5fr; gap: 56px; align-items: start; }
+    .journal__list article { grid-template-columns: 128px 1fr; gap: 20px; padding-block: 22px; }
+    .journal__list img { width: 128px; }
+  }
+
+  /* Reviews — one strong quote, platform scores, then a quiet row of more quotes */
+  .rv { display: grid; gap: 36px; padding-bottom: 48px; border-bottom: 1px solid var(--border-dark); }
+  .rv__main { margin: 0; }
+  .rv__main blockquote { margin: 0; font-size: var(--fs-sub); line-height: 1.4; font-weight: 500; letter-spacing: -.012em; color: var(--ink); text-wrap: pretty; }
+  .rv__main figcaption { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 20px; font-size: var(--fs-sm); color: var(--text-2); }
+  .rv__main figcaption b { color: var(--ink); }
+  .rv__main figcaption span { color: var(--text-3); }
+  .rv__scores { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .rv__scores { gap: 0; }
+  .rv__scores li { border-top: 1px solid var(--border-dark); }
+  .rv__scores li:last-child { border-bottom: 1px solid var(--border-dark); }
+  .rv__scores a { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; min-height: 64px; padding-block: 16px; transition: color var(--dur-1); }
+  .rv__scores a:has(.rv__name) { flex-wrap: nowrap; }
+  .rv__logo { font-size: 22px; }
+  .rv__scores .rv__name { font-size: 1rem; line-height: 1.35; font-weight: 600; letter-spacing: 0; color: var(--ink); }
+  .rv__scores a:hover .rv__name { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; }
+  .rv__scores :global(.rv__ext) { margin-left: auto; font-size: 12px; color: var(--text-3); }
+  .rv__scores b { font-size: 1.5rem; line-height: 1; font-weight: 700; letter-spacing: -.02em; color: var(--ink); }
+  .rv__src { flex-basis: 100%; padding-left: 34px; font-size: var(--fs-xs); color: var(--text-3); }
+  .rate {
+    --size: 14px; --on: #e8a300; --off: rgb(12 25 37 / .14);
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+    display: inline-block; inline-size: calc(var(--size) * 5); block-size: var(--size);
+    background: linear-gradient(90deg, var(--on) var(--fill, 100%), var(--off) 0);
+    -webkit-mask: var(--shape) 0 0 / var(--size) var(--size) repeat-x; mask: var(--shape) 0 0 / var(--size) var(--size) repeat-x;
+    forced-color-adjust: none;
+  }
+  .rate--bubbles { --on: #00aa6c; --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3C/svg%3E"); }
+  .rv__more { margin-top: 40px !important; }
+  .rv__more figure { margin: 0; height: 100%; display: flex; flex-direction: column; gap: 16px; }
+  .rv__more blockquote { margin: 0; flex: 1; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text); }
+  .rv__more figcaption { display: grid; font-size: var(--fs-xs); color: var(--text-3); }
+  .rv__more figcaption b { font-size: var(--fs-sm); color: var(--ink); }
+  @media (max-width: 767px) {
+    .rv__more { grid-auto-flow: row; overflow: visible; margin-inline: 0 !important; padding: 0 !important; gap: 0 !important; }
+    .rv__more li:nth-child(n + 3) { display: none; }
+    .rv__more li { padding-block: 24px; border-top: 1px solid var(--border-dark); }
+    .rv__more li:first-child { border-top: 0; padding-top: 0; }
+  }
+  @media (min-width: 1024px) {
+    .rv { grid-template-columns: 7fr 4fr; gap: 80px; align-items: center; }
+    .rv__main blockquote { font-size: 1.875rem; line-height: 1.3; }
+    .rv__more { grid-auto-columns: calc((100% - 96px) / 5) !important; gap: 24px !important; }
+  }
 
   /* Partners */
-  .partners__h { text-align: center; margin-bottom: 24px; }
-  .partners ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; list-style: none; margin: 0; padding: 0; }
-  .partners li { width: calc(33% - 16px); }
-  .partners img { width: 100%; max-width: 170px; margin-inline: auto; }
-  @media (min-width: 768px) { .partners ul { flex-wrap: nowrap; justify-content: space-between; } .partners li { width: auto; } }
+  .partners { padding-block: 48px 64px; border-top: 1px solid var(--border); }
+  .partners__in { display: grid; gap: 20px; }
+  .partners__h { font-size: var(--fs-xs); color: var(--text-3); }
+  .partners ul { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; gap: 16px; list-style: none; margin: 0; padding: 0; }
+  .partners img { width: auto; height: 36px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
+  @media (hover: hover) { .partners li:hover img { filter: none; opacity: 1; } }
+  @media (min-width: 1024px) {
+    .partners__in { grid-template-columns: 220px 1fr; gap: 48px; align-items: center; }
+    .partners ul { display: flex; justify-content: space-between; }
+    .partners img { height: 44px; }
+  }
 </style>

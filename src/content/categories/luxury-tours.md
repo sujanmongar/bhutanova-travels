@@ -1,6 +1,6 @@
 ---
-title: Bhutan Luxury Tours
-menuTitle: Luxury Tours
+title: Luxury tours in Bhutan
+menuTitle: Luxury tours
 image: photo-1729176989417-10cab5aa9076
 excerpt: Five-star lodges, private guides and slow, beautiful days.
 order: 4

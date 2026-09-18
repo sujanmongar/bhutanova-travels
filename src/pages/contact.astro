@@ -22,17 +22,17 @@ const info = [
   <section class="section">
     <div class="container contact">
       <div>
-        <div class="sh"><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. A local trip expert will reply with ideas and a clear quote.</p></div>
-        <ul class="info">
+        <div class="sh" data-reveal><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. A local trip expert will reply with ideas and a clear quote.</p></div>
+        <ul class="info" data-reveal="stagger">
           {info.map(([i, t, v, href]) => (
-            <li class="card-soft">
+            <li>
               <Icon name={i} />
               <div><h3>{t}</h3>{href ? <a href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener">{v}</a> : <p>{v}</p>}</div>
             </li>
           ))}
         </ul>
       </div>
-      <Form subject="Website enquiry" class="card-line form">
+      <Form subject="Website enquiry" class="form">
         <h2>Send us a message</h2>
         <div class="field"><label for="c-name">Full name *</label><input class="input" id="c-name" name="name" autocomplete="name" required /></div>
         <div class="row">
@@ -58,25 +58,25 @@ const info = [
   </section>
 
   <section class="section">
-    <div class="container"><div class="sh sh--center"><h2>FAQs</h2></div><Faq /></div>
+    <div class="container"><Faq><div class="sh" data-reveal><h2>Questions, answered</h2><p>Quick answers before you write to us.</p></div></Faq></div>
   </section>
 </Base>
 <style>
   .contact { display: grid; gap: 40px; }
   @media (min-width: 1200px) { .contact { grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; } }
-  .info { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-  @media (min-width: 768px) { .info { grid-template-columns: 1fr 1fr; gap: 16px; } }
-  .info li { display: flex; gap: 16px; padding: 20px; }
-  .info li :global(.icon) { font-size: 20px; margin-top: 2px; }
-  .info h3 { margin: 0 0 4px; }
-  .info a { font-size: var(--fs-sm); color: var(--text-2); word-break: break-word; }
-  .info a:hover { color: var(--p-600); }
-  .contact :global(.form) { display: grid; gap: 16px; padding: 24px 20px; }
+  .info { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 32px; }
+  @media (min-width: 768px) { .info { grid-template-columns: 1fr 1fr; } }
+  .info li { display: flex; gap: 14px; padding: 20px 0; border-top: 1px solid var(--border-dark); }
+  .info li > :global(.icon) { font-size: 16px; margin-top: 4px; color: var(--p-600); }
+  .info h3 { margin: 0 0 4px; font-size: 1rem; }
+  .info a, .info p { font-size: var(--fs-sm); color: var(--text-2); word-break: break-word; }
+  .info a:hover { color: var(--p-700); }
+  .contact :global(.form) { display: grid; gap: 16px; padding: 24px 20px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: #fff; }
   .contact :global(.form) h2 { font-size: 1.25rem; }
   .row { display: grid; gap: 16px; }
   @media (min-width: 768px) { .contact :global(.form) { padding: 32px; } .row { grid-template-columns: 1fr 1fr; } }
   .note { font-size: var(--fs-xs); color: var(--text-2); }
   .note a { text-decoration: underline; }
-  .map { width: 100%; height: 320px; border: 0; border-radius: var(--radius); }
+  .map { width: 100%; height: 320px; border: 0; border-radius: var(--r-xl); background: var(--s-50); }
   @media (min-width: 768px) { .map { height: 420px; } }
 </style>

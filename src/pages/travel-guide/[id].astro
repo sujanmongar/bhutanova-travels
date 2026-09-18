@@ -1,26 +1,62 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
+import Icon from '../../components/Icon.astro';
+import PlanCta from '../../components/PlanCta.astro';
 export async function getStaticPaths() {
   const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
   return guides.map((guide) => ({ params: { id: guide.id }, props: { guide, guides } }));
 }
 const { guide, guides } = Astro.props;
-const { Content } = await render(guide);
+const { Content, headings } = await render(guide);
+const toc = headings.filter((h) => h.depth === 2);
 ---
 <Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed">
   <Content />
+  <Fragment slot="aside">
+    <div class="widget-sticky">
+      {toc.length > 1 && (
+        <nav class="widget toc" aria-labelledby="toc-h">
+          <h2 class="widget__h" id="toc-h">On this page</h2>
+          <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+        </nav>
+      )}
+      <PlanCta />
+    </div>
+  </Fragment>
   <section class="section section--grey" slot="after">
     <div class="container">
       <div class="sh"><h2>More travel guides</h2></div>
-      <ul class="more">{guides.filter((g) => g.id !== guide.id).map((g) => <li><a href={`/travel-guide/${g.id}/`}><b>{g.data.title}</b><span>{g.data.excerpt}</span></a></li>)}</ul>
+      <ul class="more" data-reveal="stagger">
+        {guides.filter((g) => g.id !== guide.id).map((g) => (
+          <li><a href={`/travel-guide/${g.id}/`}><span><b>{g.data.title}</b><span>{g.data.excerpt}</span></span><Icon name="chevron-right" class="go" /></a></li>
+        ))}
+      </ul>
     </div>
   </section>
 </Article>
+<script>
+  // Highlight the section being read in the TOC
+  const links = new Map([...document.querySelectorAll<HTMLAnchorElement>('.toc a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+  const spy = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    links.forEach((a) => a.removeAttribute('aria-current'));
+    links.get(e.target.id)?.setAttribute('aria-current', 'location');
+  }), { rootMargin: '-20% 0px -70% 0px' });
+  links.forEach((_, id) => { const h = document.getElementById(id); if (h) spy.observe(h); });
+</script>
 <style>
+  .toc ol { list-style: none; margin: 0; padding: 0; }
+  .toc a { display: block; padding: 8px 0 8px 14px; border-left: 2px solid var(--border); font-size: var(--fs-sm); line-height: 1.45; color: var(--text-2); transition: color var(--dur-2), border-color var(--dur-2); }
+  .toc a:hover, .toc a[aria-current] { color: var(--ink); border-left-color: var(--p-500); }
+  .toc a[aria-current] { font-weight: 650; }
+  @media (max-width: 1023px) { .toc { display: none; } }
   .more { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
   @media (min-width: 768px) { .more { grid-template-columns: 1fr 1fr; gap: 16px; } }
-  .more a { display: grid; gap: 4px; padding: 16px 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); transition: border-color .2s; }
-  .more a:hover { border-color: var(--p-500); }
-  .more span { font-size: var(--fs-sm); color: var(--text-2); }
+  .more a { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; height: 100%; padding: 18px 20px; background: #fff; border-radius: var(--radius); box-shadow: var(--sh-xs); transition: box-shadow var(--dur-3) var(--ease-out), translate var(--dur-3) var(--ease-out); }
+  .more a > span { display: grid; gap: 4px; }
+  .more b { color: var(--ink); }
+  .more a > span > span { font-size: var(--fs-sm); color: var(--text-2); }
+  .more :global(.go) { color: var(--s-300); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
+  @media (hover: hover) { .more a:hover { box-shadow: var(--sh-md); translate: 0 -2px; } .more a:hover :global(.go) { translate: 3px 0; color: var(--s-500); } }
 </style>

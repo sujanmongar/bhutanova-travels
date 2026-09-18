@@ -19,12 +19,12 @@ const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', it
 <Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} schema={crumbs}>
   <section class="banner banner--short">
     <img src={img(cat.data.image, 1600)} srcset={srcset(cat.data.image)} sizes="100vw" alt="" width="1600" height="560" fetchpriority="high" />
-    <div><p class="eyebrow">Tour Packages</p><h1>{cat.data.menuTitle}</h1></div>
+    <div><p class="eyebrow">Tours</p><h1>{cat.data.menuTitle}</h1></div>
   </section>
 
   <section class="section">
     <div class="container">
-      <div class="lead">
+      <div class="lead" data-reveal>
         <h2>{cat.data.title}</h2>
         <div class="prose"><Content /></div>
       </div>
@@ -33,17 +33,18 @@ const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', it
 
   <section class="section section--flush">
     <div class="container">
-      <div class="sh sh--center"><h2>Tour Packages</h2><p>Choose your desired package</p></div>
-      {tours.length ? <div class="grid-3">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
+      <div class="sh sh--split"><h2>{tours.length} {tours.length === 1 ? 'package' : 'packages'}</h2><p>Every one can be tailored to your dates, pace and budget.</p></div>
+      {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} showCategory={false} />)}</div>
         : <p class="center muted">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
     </div>
   </section>
-  <div class="section section--flush"><Callback /></div>
+  <Callback />
 </Base>
 <style>
   .banner--short { min-height: 280px; }
   @media (min-width: 1200px) { .banner--short { min-height: 420px; } }
-  .lead { display: grid; gap: 16px; }
-  .lead .prose { max-width: none; color: var(--text-2); }
-  .lead :global(strong) { color: var(--text); }
+  .lead { display: grid; justify-items: start; gap: 16px; max-width: 760px; }
+  .lead .prose { color: var(--text-2); font-size: var(--fs-lead); line-height: var(--lh-lead); }
+  .lead :global(strong) { color: var(--ink); }
+  .tours { row-gap: 48px; }
 </style>

@@ -1,5 +1,5 @@
 ---
-title: "Bhutanese Cuisine: A Gastronomic Adventure of Flavors and Traditions"
+title: "What to eat in Bhutan"
 excerpt: Delight your taste buds with the flavors of Bhutan, from spicy ema datshi to hearty momos.
 image: photo-1746716447103-e1618bbd0669
 date: 2026-06-30

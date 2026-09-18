@@ -1,6 +1,6 @@
 ---
 title: Trekking in Bhutan
-menuTitle: Trekking Tours
+menuTitle: Trekking tours
 image: photo-1761048163649-5774b163cb40
 excerpt: High passes, glacial lakes and views of 7,000 m peaks on Bhutan's classic trails.
 order: 3

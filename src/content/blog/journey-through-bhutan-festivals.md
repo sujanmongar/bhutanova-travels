@@ -1,5 +1,5 @@
 ---
-title: "A Journey Through Bhutan's Festivals: Colors, Traditions, and Celebrations"
+title: "A first-timer's guide to tshechu festivals"
 excerpt: From the lively Paro Tshechu to the sacred Punakha Drubchen — the history behind Bhutan's festival calendar.
 image: photo-1585903839731-39da51193913
 date: 2026-07-28

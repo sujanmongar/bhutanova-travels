@@ -1,22 +1,33 @@
 ---
-const { title = 'First-class Impressions are <em>WAITING</em> for <em>YOU!</em>', text = 'Bhutanova Travels offers travelers tours and excursions to every corner of Bhutan. Browse our packages to find your dream journey!', cta = 'Book Your Adventure Now!', href = '/contact/' } = Astro.props;
+import Icon from './Icon.astro';
+import { SITE, img, srcset } from '../config';
+const {
+  title = 'Your Bhutan journey starts with a conversation',
+  text = 'Tell us when you would like to travel and what draws you to Bhutan. A trip planner in Thimphu will reply within a day with ideas and a clear quote.',
+  cta = 'Start planning',
+  href = '/contact/',
+  image = 'photo-1662547150045-7a8d3a9ad0b2',
+} = Astro.props;
 ---
-<section class="cta section section--grey">
-  <div class="container cta__in">
-    <img src="/images/illustrations/contact.svg" alt="" width="524" height="354" loading="lazy" />
-    <div class="cta__txt">
-      <h2 set:html={title} />
-      <p>{text}</p>
-      <a class="btn btn--primary" href={href}>{cta}</a>
+<section class="cta">
+  <img src={img(image, 1600)} srcset={srcset(image)} sizes="100vw" alt="" width="1600" height="900" loading="lazy" decoding="async" />
+  <div class="container cta__in" data-reveal>
+    <h2>{title}</h2>
+    <p>{text}</p>
+    <div class="cta__act">
+      <a class="btn btn--primary btn--lg" href={href}>{cta}<Icon name="arrow-right" class="i-end" /></a>
+      <a class="cta__tel" href={`tel:${SITE.phone.replace(/\s/g, '')}`}><Icon name="phone" />{SITE.phone}</a>
     </div>
   </div>
 </section>
 <style>
-  .cta__in { display: grid; gap: 32px; align-items: center; }
-  .cta img { width: min(100%, 420px); margin-inline: auto; }
-  .cta__txt { display: grid; gap: 16px; justify-items: start; }
-  .cta h2 :global(em) { font-style: normal; color: var(--p-500); }
-  .cta p { color: var(--text-2); }
-  @media (min-width: 768px) { .cta__in { grid-template-columns: 1fr 1fr; gap: 48px; } .cta__txt { gap: 20px; } }
-  @media (min-width: 1200px) { .cta__in { padding-inline: 40px; } .cta img { width: 100%; max-width: 524px; } }
+  .cta { position: relative; isolation: isolate; overflow: hidden; background: var(--s-800); color: #fff; padding-block: 96px; -webkit-font-smoothing: antialiased; --focus: #fff; }
+  .cta > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+  .cta::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgb(12 25 37 / .88), rgb(12 25 37 / .55) 60%, rgb(12 25 37 / .25)); }
+  .cta h2 { max-width: 24ch; color: #fff; }
+  .cta p { margin: 18px 0 32px; max-width: 48ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .85); }
+  .cta__act { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+  .cta__tel { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 6px; }
+  .cta__tel:hover { text-decoration-color: #fff; }
+  @media (min-width: 1200px) { .cta { padding-block: 136px; } }
 </style>

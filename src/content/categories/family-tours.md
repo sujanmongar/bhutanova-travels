@@ -1,6 +1,6 @@
 ---
-title: Family Friendly Tours
-menuTitle: Family Friendly Tours
+title: Family tours in Bhutan
+menuTitle: Family tours
 image: photo-1650747858910-5d48a4116296
 excerpt: Short drives, easy hikes and hands-on activities for every age.
 order: 5

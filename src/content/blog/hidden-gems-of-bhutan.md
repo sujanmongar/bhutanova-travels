@@ -1,7 +1,7 @@
 ---
-title: Discovering the Hidden Gems of Bhutan
+title: "Quiet valleys most visitors miss"
 excerpt: Off-the-beaten-path valleys and villages that offer unique cultural experiences and stunning natural beauty.
-image: photo-1578556881786-851d4b79cb73
+image: photo-1638245771029-9bdb1e3e7a01
 date: 2026-08-20
 tags: [Destinations]
 ---

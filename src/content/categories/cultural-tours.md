@@ -1,7 +1,7 @@
 ---
-title: Bhutan Cultural Extravaganza Tours
-menuTitle: Cultural Tours
-image: photo-1650747857310-c359fd3ee5c5
+title: Cultural tours of Bhutan
+menuTitle: Cultural tours
+image: photo-1605904583059-7880dad25595
 excerpt: Temples, fortress-monasteries and village life in the last great Himalayan kingdom.
 order: 1
 ---

@@ -4,6 +4,11 @@ interface Props { name: string; class?: string; label?: string }
 const { name, class: cls = '', label } = Astro.props;
 const raw = icons[`../icons/${name}.svg`];
 if (!raw) throw new Error(`Unknown icon: ${name}`);
-const svg = raw.replace('<svg', `<svg class="icon ${cls}" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'} focusable="false"`);
+// Gradient ids must be unique per inline copy — otherwise a copy inside a hidden element breaks every other copy.
+const uid = `i${Math.random().toString(36).slice(2, 8)}`;
+const svg = raw
+  .replace(/id="([^"]+)"/g, `id="$1-${uid}"`)
+  .replace(/url\(#([^)]+)\)/g, `url(#$1-${uid})`)
+  .replace('<svg', `<svg class="icon ${cls}" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'} focusable="false"`);
 ---
 <Fragment set:html={svg} />

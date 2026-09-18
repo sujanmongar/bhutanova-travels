@@ -12,7 +12,6 @@ const { tour } = Astro.props;
 const t = tour.data;
 const cat = await getEntry(t.category);
 const gallery = t.gallery.length ? t.gallery : [t.image];
-const allTours = await getCollection('tours');
 
 // ponytail: paragraphs + "- " bullets only; swap for a markdown lib if editors need bold/links here.
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -26,10 +25,10 @@ const md = (s: string) =>
 
 const tabs = [
   ['overview', 'Overview'],
-  ['highlights', 'Tour Highlights', t.highlights.length],
-  ['itinerary', 'Itinerary', t.itinerary.length],
-  ['inclusions', 'Inclusions & Exclusions', t.inclusions.length + t.exclusions.length],
-  ['map', 'Tour Map', t.map],
+  ['highlights', 'Highlights', t.highlights.length],
+  ['itinerary', 'Day by day', t.itinerary.length],
+  ['inclusions', "What's included", t.inclusions.length + t.exclusions.length],
+  ['map', 'Map', t.map],
 ].filter((x) => x.length === 2 || x[2]);
 const tel = SITE.phone.replace(/\s/g, '');
 const url = new URL(Astro.url.pathname, Astro.site).href;
@@ -55,7 +54,8 @@ const schema = [
     <div class="gal__track" id="gal">
       {gallery.map((g, i) => (
         <img src={img(g, 1200)} srcset={srcset(g, [480, 800, 1200])} sizes="(min-width:1200px) 700px, 100vw" alt={`${t.title} photo ${i + 1}`}
-          width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+          width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async"
+          style={i === 0 ? 'view-transition-name: hero-img' : undefined} />
       ))}
     </div>
     {gallery.length > 1 && (
@@ -68,9 +68,13 @@ const schema = [
 
   <div class="container layout">
     <div class="main">
-      <nav class="crumbs" aria-label="Breadcrumb"><a href="/tours/">Tour Packages</a> / <a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="/tours/">Tours</a><span aria-hidden="true">/</span><a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
       <h1>{t.title}</h1>
-      <p class="dur">{t.nights} Nights / {t.days} Days</p>
+      <ul class="facts">
+        <li><Icon name="gauge" />{t.days} days · {t.nights} nights</li>
+        <li><Icon name="location-dot" />{t.route.length} stops</li>
+        <li><Icon name="people" />Private tour</li>
+      </ul>
       <p class="route">{t.route.map((r, i) => <>{i > 0 && <Icon name="arrow-right" />}<span>{r}</span></>)}</p>
 
       <nav class="tabs" aria-label="Tour sections">
@@ -79,22 +83,19 @@ const schema = [
 
       <section id="overview" class="block">
         <h2>Overview</h2>
-        <p>{t.summary}</p>
+        <p class="lead">{t.summary}</p>
       </section>
 
       {t.highlights.length > 0 && (
         <section id="highlights" class="block">
-          <h2>Tour Highlights</h2>
-          <ul class="bullets">{t.highlights.map((h) => <li>{h}</li>)}</ul>
-          {gallery.length > 1 && (
-            <div class="thumbs">{gallery.slice(0, 4).map((g) => <img src={img(g, 400)} alt="" width="200" height="150" loading="lazy" />)}</div>
-          )}
+          <h2>Highlights</h2>
+          <ul class="bullets">{t.highlights.map((h) => <li><Icon name="check" />{h}</li>)}</ul>
         </section>
       )}
 
       {t.itinerary.length > 0 && (
         <section id="itinerary" class="block">
-          <h2>Detailed Itinerary</h2>
+          <h2>Day by day</h2>
           <ol class="days">
             {t.itinerary.map((d, i) => (
               <li>
@@ -103,7 +104,7 @@ const schema = [
                   <div class="day">
                     {d.image && <img src={img(d.image, 900)} alt="" width="900" height="400" loading="lazy" />}
                     <Fragment set:html={md(d.body)} />
-                    {d.overnight && <p class="overnight">Overnight: {d.overnight}</p>}
+                    {d.overnight && <p class="overnight"><Icon name="hotel" />Overnight: {d.overnight}</p>}
                   </div>
                 </details>
               </li>
@@ -114,18 +115,24 @@ const schema = [
 
       {t.inclusions.length > 0 && (
         <section id="inclusions" class="block">
-          <h2>Inclusions</h2>
-          <ul class="checks">{t.inclusions.map((x) => <li><Icon name="check" class="ok" />{x}</li>)}</ul>
-          {t.exclusions.length > 0 && <>
-            <h2 class="mt">Exclusions</h2>
-            <ul class="checks">{t.exclusions.map((x) => <li><Icon name="close" class="no" />{x}</li>)}</ul>
-          </>}
+          <div class="inc">
+            <div>
+              <h2>What's included</h2>
+              <ul class="checks">{t.inclusions.map((x) => <li><Icon name="check" class="ok" />{x}</li>)}</ul>
+            </div>
+            {t.exclusions.length > 0 && (
+              <div>
+                <h2>Not included</h2>
+                <ul class="checks">{t.exclusions.map((x) => <li><Icon name="close" class="no" />{x}</li>)}</ul>
+              </div>
+            )}
+          </div>
         </section>
       )}
 
       {t.map && (
         <section id="map" class="block">
-          <h2>Tour Map</h2>
+          <h2>Route map</h2>
           <img class="map" src={img(t.map, 1000)} alt={`Route map for ${t.title}`} loading="lazy" />
         </section>
       )}
@@ -137,158 +144,220 @@ const schema = [
         <p class="price num"><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b> / person</p>
         {t.priceNotes.length > 0 && (
           <details class="notes">
-            <summary>Show all prices</summary>
+            <summary>Show all prices<Icon name="chevron-up" class="chev" /></summary>
             <ul>{t.priceNotes.map((n) => <li>{n}</li>)}</ul>
           </details>
         )}
-        <button class="btn btn--primary btn--block" type="button" data-open-enquiry>Send Enquiry</button>
+        <button class="btn btn--primary btn--block btn--lg" type="button" data-open-enquiry>Send an enquiry<Icon name="arrow-right" class="i-end" /></button>
+        <p class="assure"><Icon name="check" />No payment needed to enquire</p>
       </div>
       <div class="help-card">
-        <h2>Get our assistance for your easy booking!</h2>
-        <a class="btn btn--outline btn--block" href={`tel:${tel}`}><Icon name="phone" />Want us to call you?</a>
-        <p>Call us at</p>
-        <a class="big-tel" href={`tel:${tel}`}>{SITE.phone}</a>
+        <span class="help-card__ic" aria-hidden="true"><Icon name="headphones" /></span>
+        <h2>Need help booking?</h2>
+        <p>Talk to a local trip expert — we'll tailor this tour to your dates.</p>
+        <a class="btn btn--outline btn--block" href={`tel:${tel}`}><Icon name="phone" />Call {SITE.phone}</a>
+        <a class="btn btn--soft btn--block" href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
       </div>
     </aside>
   </div>
 
-  <!-- Mobile sticky CTA -->
+  <!-- Mobile/tablet sticky booking bar -->
   <div class="bar">
     <p class="num"><small>From</small><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b></p>
-    <button class="btn btn--primary" type="button" data-open-enquiry>Send Enquiry</button>
+    <a class="bar__wa" href={SITE.social.whatsapp} target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
+    <button class="btn btn--primary" type="button" data-open-enquiry>Send an enquiry</button>
   </div>
 
-  <dialog class="enq" id="enquiry" aria-labelledby="enq-title">
-    <div class="enq__head">
-      <h2 id="enq-title">Secure Your Adventure with Bhutanova Travels</h2>
-      <button type="button" class="enq__close" aria-label="Close" data-close><Icon name="close" /></button>
+  <dialog class="sheet enq" id="enquiry" aria-labelledby="enq-title">
+    <div class="sheet__in">
+      <div class="sheet__head">
+        <h2 id="enq-title">Enquire about this tour</h2>
+        <button type="button" class="sheet__close" aria-label="Close" data-close><Icon name="close" /></button>
+      </div>
+      <div class="enq__tour">
+        <img src={img(t.image, 300)} alt="" width="96" height="72" />
+        <div><h3>{t.title}</h3><p class="num">{t.days} days · From <b>USD {t.price.toLocaleString('en-US')}</b></p></div>
+      </div>
+      <Form subject={`Enquiry: ${t.title}`} class="enq__form">
+        <input type="hidden" name="package" value={t.title} />
+        <div class="field full"><label for="e-name">Full name *</label><input class="input" id="e-name" name="name" autocomplete="name" required /></div>
+        <div class="field full"><label for="e-email">Email address *</label><input class="input" id="e-email" name="email" type="email" autocomplete="email" required /></div>
+        <div class="field full"><label for="e-phone">Phone (with country code) *</label><input class="input" id="e-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 000 0000" required /></div>
+        <div class="field"><label for="e-nat">Nationality *</label><input class="input" id="e-nat" name="nationality" autocomplete="country-name" required /></div>
+        <div class="field"><label for="e-count">Travelers *</label><input class="input" id="e-count" name="travelers" type="number" inputmode="numeric" min="1" value="2" required /></div>
+        <div class="field"><label for="e-arr">Arrival *</label><input class="input" id="e-arr" name="arrival" type="date" required /></div>
+        <div class="field"><label for="e-dep">Departure *</label><input class="input" id="e-dep" name="departure" type="date" required /></div>
+        <div class="field full"><label for="e-msg">Your message</label><textarea class="input" id="e-msg" name="message" placeholder="Anything we should know?"></textarea></div>
+        <button class="btn btn--primary btn--block btn--lg full">Send enquiry</button>
+      </Form>
     </div>
-    <div class="enq__tour">
-      <img src={img(t.image, 300)} alt="" width="120" height="90" />
-      <div><h3>{t.title}</h3><p class="muted">{t.nights} Nights / {t.days} Days</p><p><b>USD {t.price.toLocaleString('en-US')}</b> <span class="muted">/ person</span></p></div>
-    </div>
-    <Form subject={`Enquiry: ${t.title}`} class="enq__form">
-      <div class="field full"><label for="e-pkg">Package</label>
-        <select class="input" id="e-pkg" name="package">{allTours.map((x) => <option selected={x.id === tour.id}>{x.data.title}</option>)}</select></div>
-      <div class="field full"><label for="e-name">Full name *</label><input class="input" id="e-name" name="name" autocomplete="name" required /></div>
-      <div class="field full"><label for="e-email">Email address *</label><input class="input" id="e-email" name="email" type="email" autocomplete="email" required /></div>
-      <div class="field full"><label for="e-phone">Phone number (with country code) *</label><input class="input" id="e-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 000 0000" required /></div>
-      <div class="field"><label for="e-nat">Nationality *</label><input class="input" id="e-nat" name="nationality" autocomplete="country-name" required /></div>
-      <div class="field"><label for="e-count">Travelers *</label><input class="input" id="e-count" name="travelers" type="number" min="1" value="2" required /></div>
-      <div class="field"><label for="e-arr">Arrival date *</label><input class="input" id="e-arr" name="arrival" type="date" required /></div>
-      <div class="field"><label for="e-dep">Departure date *</label><input class="input" id="e-dep" name="departure" type="date" required /></div>
-      <div class="field full"><label for="e-msg">Your message</label><textarea class="input" id="e-msg" name="message" placeholder="Anything we should know?"></textarea></div>
-      <button class="btn btn--primary btn--block full">Send Enquiry</button>
-    </Form>
   </dialog>
 </Base>
 
 <script>
   const dlg = document.getElementById('enquiry') as HTMLDialogElement;
   document.querySelectorAll('[data-open-enquiry]').forEach((b) => b.addEventListener('click', () => dlg.showModal()));
-  dlg.querySelector('[data-close]')!.addEventListener('click', () => dlg.close());
-  dlg.addEventListener('click', (e) => e.target === dlg && dlg.close());
+  // .sheet__in fills the dialog, so target === dialog means a backdrop tap
+  dlg.addEventListener('click', (e) => { const t = e.target as Element; if (t === dlg || t.closest('[data-close]')) dlg.close(); });
+
+  // Tabs: highlight the section in view and keep the active tab visible
+  const tabs = document.querySelector<HTMLElement>('.tabs')!;
+  const links = [...tabs.querySelectorAll<HTMLAnchorElement>('a')];
+  const spy = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return;
+    links.forEach((a) => {
+      if (a.hash === '#' + e.target.id) { a.setAttribute('aria-current', 'location'); tabs.scrollTo({ left: a.offsetLeft - (tabs.clientWidth - a.offsetWidth) / 2, behavior: 'smooth' }); }
+      else a.removeAttribute('aria-current');
+    });
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('.block[id]').forEach((s) => spy.observe(s));
+
+  // Hide the booking bar while the price card (same action) is on screen
+  const bar = document.querySelector('.bar');
+  const pc = document.querySelector('.price-card');
+  if (bar && pc) new IntersectionObserver(([e]) => bar.classList.toggle('is-off', e.isIntersecting)).observe(pc);
 </script>
 
 <style>
-  /* Gallery: full-bleed on mobile, centered with side peeks on desktop */
+  /* Gallery: full-bleed on mobile, centered with side peeks on tablet/desktop */
   .gal { position: relative; }
-  .gal__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .gal__track { display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .gal__track::-webkit-scrollbar { display: none; }
-  .gal__track img { flex: 0 0 100%; aspect-ratio: 4 / 3; object-fit: cover; scroll-snap-align: center; }
-  .gal__btn { position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--p-500); color: #fff; font-size: 16px; cursor: pointer; }
-  .gal__btn:disabled { opacity: .5; cursor: default; }
+  .gal__track img { flex: 0 0 100%; aspect-ratio: 4 / 3; object-fit: cover; scroll-snap-align: center; background: var(--s-50); }
+  .gal__btn {
+    position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: rgb(255 255 255 / .92); color: var(--s-800); font-size: 15px; cursor: pointer; box-shadow: 0 6px 20px -4px rgb(12 25 37 / .35);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: opacity var(--dur-2), scale var(--dur-1) var(--ease-out), background var(--dur-1);
+  }
+  .gal__btn:hover { background: #fff; }
+  .gal__btn:not(:disabled):active { scale: .92; }
+  .gal__btn:disabled { opacity: 0; pointer-events: none; }
   .gal__btn--prev { left: 16px; } .gal__btn--next { right: 16px; }
   @media (min-width: 768px) {
-    .gal { max-width: calc(var(--container) + var(--gutter) * 2); margin: 24px auto 0; padding-inline: var(--gutter); }
-    .gal__track { gap: 8px; border-radius: var(--radius); }
-    .gal__track img { flex-basis: 72%; aspect-ratio: 3 / 2; border-radius: var(--radius); }
+    .gal { max-width: calc(var(--container) + var(--gutter) * 2); margin: 28px auto 0; padding-inline: var(--gutter); }
+    .gal__track { gap: 10px; border-radius: var(--r-xl); }
+    .gal__track img { flex-basis: 72%; aspect-ratio: 3 / 2; border-radius: var(--r-xl); }
+    .gal__btn { width: 48px; height: 48px; }
     .gal__btn--prev { left: calc(var(--gutter) + 20px); } .gal__btn--next { right: calc(var(--gutter) + 20px); }
   }
-  @media (min-width: 1200px) { .gal { margin-top: 32px; } .gal__track img { flex-basis: 63%; aspect-ratio: auto; height: 480px; } }
+  @media (min-width: 1200px) { .gal { margin-top: 36px; } .gal__track img { flex-basis: 63%; aspect-ratio: auto; height: 500px; } }
 
   /* Layout */
-  .layout { display: grid; gap: 32px; padding-block: 24px 120px; }
+  .layout { display: grid; gap: 40px; padding-block: 28px 64px; }
   .layout > * { min-width: 0; }
-  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; padding-block: 32px 96px; } }
-  .crumbs { font-size: var(--fs-xs); color: var(--text-2); margin-bottom: 8px; }
-  .crumbs a:hover { color: var(--p-600); }
-  .main h1 { font-size: var(--fs-h2); line-height: var(--lh-h2); }
-  .dur { margin: 4px 0 16px; }
-  .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-2); }
-  .route :global(.icon) { font-size: 14px; color: var(--text); }
+  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; padding-block: 40px var(--section); } }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; font-size: var(--fs-xs); color: var(--text-3); }
+  .crumbs a { padding-block: 12px; margin-block: -12px; color: var(--p-700); font-weight: 650; }
+  .crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; margin: 16px 0 12px; padding: 0; }
+  .facts li { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+  .facts :global(.icon) { font-size: 14px; color: var(--text-3); }
+  .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--text-2); }
+  .route :global(.icon) { font-size: 12px; color: var(--p-500); }
 
   .tabs {
-    position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: 4px; margin: 24px calc(var(--gutter) * -1) 0; padding: 0 var(--gutter);
-    background: #fff; border-block: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+    position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: 4px; margin: 28px calc(var(--gutter) * -1) 0; padding: 0 var(--gutter);
+    background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
   }
   .tabs::-webkit-scrollbar { display: none; }
-  .tabs a { padding: 14px 12px; font-size: .875rem; font-weight: 500; }
-  .tabs a:hover { color: var(--p-600); }
+  .tabs a { position: relative; padding: 16px 12px; font-size: .9375rem; font-weight: 600; color: var(--text-2); transition: color var(--dur-1); }
+  .tabs a::after { content: ''; position: absolute; inset: auto 12px -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
+  .tabs a:hover { color: var(--ink); }
+  .tabs a[aria-current] { color: var(--ink); }
+  .tabs a[aria-current]::after { scale: 1 1; }
+  @media (max-width: 767px) { .tabs { mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 32px), transparent); } }
   @media (min-width: 768px) { .tabs { margin-inline: 0; padding: 0; } }
 
-  .block { padding-block: 32px; border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--header-h) + 56px); }
-  .block h2 { margin-bottom: 16px; font-size: 1.25rem; line-height: 1.4; }
-  .block > p { color: var(--text-2); }
-  .mt { margin-top: 32px; }
-  .bullets { padding-left: 20px; display: grid; gap: 8px; }
-  .thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
-  .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
-  @media (min-width: 768px) { .thumbs { grid-template-columns: repeat(4, 1fr); } }
+  .block { padding-block: 36px; border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--header-h) + 60px); }
+  .block:last-child { border-bottom: 0; }
+  .block h2 { margin-bottom: 18px; font-size: var(--fs-sub); line-height: var(--lh-sub); letter-spacing: var(--ls-sub); }
+  .lead { max-width: 68ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text); }
+  .bullets { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: 32px; } }
+  .bullets li { display: flex; gap: 12px; line-height: 1.5; }
+  .bullets :global(.icon) { flex: none; margin-top: 5px; font-size: 12px; color: var(--s-500); }
 
   .days { list-style: none; margin: 0; padding: 0; }
-  .days li { position: relative; padding-left: 36px; }
-  .days li::before { content: ''; position: absolute; left: 7px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--p-500); box-shadow: 0 0 0 5px var(--p-100); }
-  .days li::after { content: ''; position: absolute; left: 11px; top: 30px; bottom: -6px; width: 2px; background: var(--p-100); }
+  .days li { position: relative; padding-left: 40px; }
+  .days li::before { content: ''; position: absolute; left: 8px; top: 15px; width: 8px; height: 8px; border-radius: 50%; background: var(--s-500); }
+  .days li::after { content: ''; position: absolute; left: 11px; top: 30px; bottom: -8px; width: 2px; background: var(--border-dark); }
   .days li:last-child::after { display: none; }
-  .days summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0 16px; font-weight: 600; cursor: pointer; list-style: none; border-bottom: 1px solid var(--border); }
+  .days summary {
+    display: flex; justify-content: space-between; gap: 12px; padding: 8px 0 16px; cursor: pointer; list-style: none; border-bottom: 1px solid var(--border);
+    font-size: var(--fs-h3); line-height: var(--lh-h3); font-weight: 650; color: var(--ink); transition: color var(--dur-1);
+  }
+  .days summary:hover { color: var(--s-500); }
   .days summary::-webkit-details-marker { display: none; }
-  .days :global(.chev) { font-size: 12px; margin-top: 6px; transform: rotate(180deg); transition: transform .2s; }
-  details[open] > summary :global(.chev) { transform: none; }
-  .day { display: grid; gap: 12px; padding: 16px 0 24px; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
-  .day img { border-radius: 8px; width: 100%; max-height: 260px; object-fit: cover; }
+  .days :global(.chev) { flex: none; font-size: 12px; margin-top: 6px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); color: var(--text-3); }
+  details[open] > summary :global(.chev) { rotate: 0deg; }
+  .day { display: grid; gap: 12px; max-width: 68ch; padding: 18px 0 28px; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-2); }
+  .day img { border-radius: var(--r-md); width: 100%; max-height: 280px; object-fit: cover; background: var(--s-50); }
   .day :global(ul) { padding-left: 18px; display: grid; gap: 8px; margin: 0; }
-  .overnight { font-weight: 600; color: var(--text); }
+  .day :global(li::marker) { color: var(--p-500); }
+  .overnight { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 6px 12px; border-radius: var(--r-sm); background: var(--surface); font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+  .overnight :global(.icon) { color: var(--p-700); }
 
-  .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-  .checks li { display: flex; gap: 10px; }
-  .checks :global(.icon) { font-size: 14px; margin-top: .35em; }
-  .checks :global(.ok) { color: var(--success); } .checks :global(.no) { color: var(--error); }
+  .inc { display: grid; gap: 32px; }
+  @media (min-width: 768px) { .inc { grid-template-columns: 1.4fr 1fr; gap: 40px; } }
+  .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  .checks li { display: flex; gap: 12px; line-height: 1.5; }
+  .checks :global(.icon) { flex: none; margin-top: 5px; font-size: 12px; }
+  .checks :global(.ok) { color: var(--s-500); }
+  .checks :global(.no) { color: var(--text-3); }
   .map { border-radius: var(--radius); border: 1px solid var(--border); }
 
   /* Sidebar */
   .side { display: grid; gap: 16px; align-content: start; }
   @media (min-width: 1200px) { .side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
-  .price-card { padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 24px rgb(0 0 0 / .08); display: grid; gap: 8px; }
-  .from { color: var(--text-2); font-size: var(--fs-sm); }
-  .price b { font-size: 1.375rem; color: var(--s-500); }
-  .price { color: var(--text-2); }
-  .price abbr, .bar abbr { font-size: .75em; font-weight: 600; letter-spacing: .04em; text-decoration: none; }
-  .notes summary { font-size: var(--fs-xs); text-decoration: underline; cursor: pointer; }
-  .notes ul { margin: 8px 0; padding-left: 18px; font-size: var(--fs-xs); color: var(--text-2); display: grid; gap: 4px; }
-  .price-card .btn { margin-top: 8px; }
-  .help-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); text-align: center; display: grid; gap: 12px; }
-  .help-card h2 { font-size: 1rem; line-height: 1.5; }
-  .help-card p { color: var(--text-2); font-size: var(--fs-sm); padding-top: 12px; border-top: 1px solid var(--border); }
-  .big-tel { font-size: 1.375rem; font-weight: 700; }
+  .price-card { display: grid; gap: 10px; padding: 24px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: #fff; }
+  .from { font-size: var(--fs-sm); color: var(--text-3); }
+  .price { font-size: var(--fs-sm); color: var(--text-2); }
+  .price b { font-size: var(--fs-price-lg); line-height: 1.1; letter-spacing: -.02em; color: var(--s-500); }
+  .price abbr, .bar abbr { font-size: .8125rem; font-weight: 650; letter-spacing: .04em; color: var(--text-2); text-decoration: none; }
+  .notes summary { display: inline-flex; align-items: center; gap: 6px; padding-block: 8px; font-size: var(--fs-sm); font-weight: 600; color: var(--s-500); cursor: pointer; list-style: none; }
+  .notes summary::-webkit-details-marker { display: none; }
+  .notes :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
+  .notes ul { margin: 0 0 8px; padding-left: 18px; font-size: var(--fs-sm); color: var(--text-2); display: grid; gap: 6px; }
+  .price-card .btn { margin-top: 6px; }
+  .assure { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: var(--fs-xs); color: var(--text-3); }
+  .assure :global(.icon) { color: var(--success); }
+  .help-card { display: grid; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--surface); }
+  .help-card__ic { display: none; }
+  .help-card h2 { font-size: var(--fs-h3); line-height: var(--lh-h3); }
+  .help-card p { margin-bottom: 6px; font-size: var(--fs-sm); color: var(--text-2); }
 
-  /* Mobile bar */
-  .bar { position: fixed; inset: auto 0 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4px 16px rgb(0 0 0 / .08); }
-  .bar p { display: grid; line-height: 1.3; }
-  .bar small { color: var(--text-2); font-size: .75rem; }
-  .bar b { font-size: 1.125rem; color: var(--s-500); }
+  /* Mobile/tablet booking bar: body padding keeps the footer reachable underneath */
+  @media (max-width: 1199px) {
+    :global(body) { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+    /* Fewer fixed layers while reading: the site header scrolls away, the tabs stick to the top */
+    :global(header.nav[data-nav]) { position: relative; }
+    .tabs { top: 0; }
+    .block { scroll-margin-top: 64px; }
+  }
+  .bar {
+    position: fixed; inset: auto 0 0; z-index: 40; display: flex; align-items: center; gap: 10px;
+    padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom));
+    background: rgb(255 255 255 / .94); -webkit-backdrop-filter: saturate(180%) blur(14px); backdrop-filter: saturate(180%) blur(14px);
+    border-top: 1px solid var(--border); box-shadow: var(--sh-up);
+  }
+  .bar p { margin-right: auto; display: grid; line-height: 1.25; }
+  .bar small { font-size: var(--fs-xs); color: var(--text-3); }
+  .bar b { font-size: 1.25rem; letter-spacing: -.01em; color: var(--s-500); }
+  .bar__wa { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); font-size: 22px; color: var(--ink); }
+  .bar .btn { --btn-h: 52px; }
+  .bar { transition: translate var(--dur-3) var(--ease-out); }
+  .bar.is-off { translate: 0 110%; }
   @media (min-width: 1200px) { .bar { display: none; } }
+  @media (prefers-reduced-motion: no-preference) { .bar { --rise: 100%; animation: rise var(--dur-4) var(--ease-out) 500ms backwards; } }
 
-  /* Enquiry dialog */
-  .enq { width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 24px 20px; border: 0; border-radius: var(--radius); }
-  .enq::backdrop { background: rgb(12 25 37 / .6); }
-  .enq__head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
-  .enq__head h2 { font-size: 1.125rem; line-height: 1.4; }
-  .enq__close { border: 0; background: none; font-size: 18px; cursor: pointer; width: 36px; height: 36px; margin: -6px -8px 0 0; }
-  .enq__tour { display: flex; gap: 16px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; font-size: var(--fs-sm); }
-  .enq__tour img { width: 96px; border-radius: 6px; object-fit: cover; }
-  .enq__tour h3 { font-size: 1rem; }
-  .enq :global(.enq__form) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Enquiry sheet */
+  .enq .sheet__head h2 { font-size: var(--fs-sub); line-height: var(--lh-sub); }
+  @media (min-width: 768px) { .enq { width: min(560px, 100%); } }
+  .enq__tour { display: flex; align-items: center; gap: 14px; padding: 12px; margin-bottom: 20px; border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-sm); color: var(--text-2); }
+  .enq__tour img { width: 96px; height: 72px; border-radius: var(--r-sm); object-fit: cover; }
+  .enq__tour h3 { font-size: 1rem; margin-bottom: 2px; }
+  .enq__tour b { color: var(--s-500); }
+  .enq :global(.enq__form) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
   .enq :global(.enq__form) .full { grid-column: 1 / -1; }
-  @media (min-width: 768px) { .enq { padding: 32px; } .enq__tour img { width: 120px; } }
 </style>

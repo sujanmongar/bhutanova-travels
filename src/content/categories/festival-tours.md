@@ -1,6 +1,6 @@
 ---
-title: Colors and Festivals of Bhutan
-menuTitle: Festival Tours
+title: Bhutan festival tours
+menuTitle: Festival tours
 image: photo-1585903839731-39da51193913
 excerpt: Masked dances, giant thangkas and the colour of Bhutan's tshechu festivals.
 order: 2

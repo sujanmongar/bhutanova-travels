@@ -1,20 +1,92 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
-import BlogCard from '../../components/BlogCard.astro';
+import TourCard from '../../components/TourCard.astro';
+import Arrows from '../../components/Arrows.astro';
+import Icon from '../../components/Icon.astro';
+import PlanCta from '../../components/PlanCta.astro';
+import { img } from '../../config';
+
 export async function getStaticPaths() {
   const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
-  return posts.map((post) => ({ params: { id: post.id }, props: { post, more: posts.filter((p) => p.id !== post.id).slice(0, 3) } }));
+  return posts.map((post) => ({ params: { id: post.id }, props: { post, posts } }));
 }
-const { post, more } = Astro.props;
+const { post, posts } = Astro.props;
 const { Content } = await render(post);
+const others = posts.filter((p) => p.id !== post.id);
+const tours = await getCollection('tours');
+const promo = tours.find((t) => t.data.featured) ?? tours[0];
+const related = tours.filter((t) => t.data.featured).slice(0, 6);
+const u = encodeURIComponent(new URL(Astro.url.pathname, Astro.site).href), t = encodeURIComponent(post.data.title);
+const share = [
+  ['social_whatsapp', 'WhatsApp', `https://wa.me/?text=${t}%20${u}`],
+  ['social_facebook', 'Facebook', `https://www.facebook.com/sharer/sharer.php?u=${u}`],
+  ['social_twitter', 'X', `https://x.com/intent/tweet?url=${u}&text=${t}`],
+  ['social_linkedin', 'LinkedIn', `https://www.linkedin.com/sharing/share-offsite/?url=${u}`],
+];
+const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
-<Article title={post.data.title} description={post.data.excerpt} image={post.data.image} date={post.data.date} author={post.data.author} kicker="Article" back={['/blog/', 'Blog']}>
+<Article title={post.data.title} description={post.data.excerpt} image={post.data.image} date={post.data.date} author={post.data.author} kicker={post.data.tags[0] ?? 'Article'} back={['/blog/', 'Blog']}>
   <Content />
+
+  <Fragment slot="aside">
+    <section class="widget" aria-labelledby="w-share">
+      <h2 class="widget__h" id="w-share">Share this story</h2>
+      <ul class="share">{share.map(([i, n, h]) => <li><a href={h} target="_blank" rel="noopener" aria-label={`Share on ${n}`}><Icon name={i} /></a></li>)}</ul>
+    </section>
+    <section class="widget recent" aria-labelledby="w-recent">
+      <h2 class="widget__h" id="w-recent">Recent posts</h2>
+      <ul>{others.slice(0, 4).map((p) => (
+        <li><a href={`/blog/${p.id}/`}>
+          <img src={img(p.data.image, 160)} alt="" width="72" height="72" loading="lazy" decoding="async" />
+          <span><b>{p.data.title}</b><time datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
+        </a></li>
+      ))}</ul>
+    </section>
+    <div class="widget-sticky">
+      <a class="promo" href={`/tours/${promo.id}/`}>
+        <img src={img(promo.data.image, 700)} alt="" width="336" height="420" loading="lazy" decoding="async" />
+        <span class="promo__txt">
+          <b>{promo.data.title}</b>
+          <span class="num">{promo.data.days} days · From USD {promo.data.price.toLocaleString('en-US')}</span>
+          <span class="promo__cta">View tour <Icon name="arrow-right" /></span>
+        </span>
+      </a>
+      <PlanCta />
+    </div>
+  </Fragment>
+
   <section class="section section--grey" slot="after">
     <div class="container">
-      <div class="sh"><h2>More from the blog</h2></div>
-      <div class="grid-3">{more.map((p) => <BlogCard post={p} />)}</div>
+      <div class="sh sh--row">
+        <h2>Tours for this story</h2>
+        <div class="sh__act"><a class="link-more" href="/tours/">All packages<Icon name="arrow-right" /></a><Arrows target="rail-related" label="tours" /></div>
+      </div>
+      <div class="rail" id="rail-related">{related.map((r) => <TourCard tour={r} />)}</div>
     </div>
   </section>
 </Article>
+
+<style>
+  .share { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .share a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-dark); font-size: 18px; color: var(--ink); transition: border-color var(--dur-2), translate var(--dur-2) var(--ease-out); }
+  .share a:hover { border-color: var(--border-dark); translate: 0 -2px; }
+  .recent ul { list-style: none; margin: 0; padding: 0; }
+  .recent ul { display: grid; gap: 16px; }
+  .recent a { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; }
+  .recent img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--r-md); background: var(--s-50); }
+  .recent b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: .9375rem; line-height: 1.4; font-weight: 650; color: var(--ink); text-decoration: underline 2px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2); }
+  .recent a:hover b { text-decoration-color: var(--p-500); }
+  .recent time { display: block; margin-top: 4px; font-size: var(--fs-xs); color: var(--text-3); }
+  .promo { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; isolation: isolate; color: #fff; }
+  .promo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: scale var(--dur-4) var(--ease-out); }
+  .promo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(12 25 37 / 0) 40%, rgb(12 25 37 / .88)); }
+  .promo:hover img { scale: 1.05; }
+  .promo__txt { position: absolute; inset: auto 0 0; display: grid; gap: 6px; padding: 20px; }
+  .promo b { font-size: 1.25rem; line-height: 1.25; letter-spacing: -.01em; }
+  .promo__txt > .num { font-size: var(--fs-sm); color: var(--on-dark-2); }
+  .promo__cta { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: var(--fs-sm); font-weight: 650; color: var(--p-100); }
+  .promo__cta :global(.icon) { transition: translate var(--dur-2); }
+  .promo:hover .promo__cta :global(.icon) { translate: 3px 0; }
+  @media (max-width: 1023px) { .recent { display: none; } .promo { aspect-ratio: 16 / 10; } }
+</style>

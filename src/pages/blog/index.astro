@@ -3,7 +3,9 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import { img, srcset } from '../../config';
+import { slug } from '../../utils';
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
 const hero = 'photo-1585904194096-15ef66ccd234';
 ---
 <Base title="Blog – Stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
@@ -12,7 +14,19 @@ const hero = 'photo-1585904194096-15ef66ccd234';
     <div><p class="eyebrow">Stories, tips & culture</p><h1>Read Our Blog</h1></div>
   </section>
   <section class="section">
-    <div class="container grid-3 posts">{posts.map((p) => <BlogCard post={p} />)}</div>
+    <div class="container">
+      <nav class="topics" aria-label="Blog topics">
+        <a href="/blog/" aria-current="page">All</a>
+        {tags.map((t) => <a href={`/blog/tag/${slug(t)}/`}>{t}</a>)}
+      </nav>
+      <div class="grid-3 posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} />)}</div>
+    </div>
   </section>
 </Base>
-<style>.posts { row-gap: 48px; }</style>
+<style>
+  .topics { display: flex; gap: 28px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1) 40px; padding: 0 var(--gutter); border-bottom: 1px solid var(--border-dark); }
+  .topics a { flex: none; display: inline-flex; align-items: center; min-height: 48px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: var(--fs-sm); font-weight: 600; color: var(--text-2); transition: color var(--dur-1), border-color var(--dur-2); }
+  .topics a:hover { color: var(--ink); }
+  .topics a[aria-current] { color: var(--ink); border-bottom-color: var(--p-500); }
+  .posts { row-gap: 48px; }
+</style>

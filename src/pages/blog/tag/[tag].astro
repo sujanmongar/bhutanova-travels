@@ -1,0 +1,31 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import BlogCard from '../../../components/BlogCard.astro';
+import { img, srcset } from '../../../config';
+import { slug } from '../../../utils';
+
+export async function getStaticPaths() {
+  const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+  return [...new Set(posts.flatMap((p) => p.data.tags))].map((tag) => ({ params: { tag: slug(tag) }, props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) } }));
+}
+const { tag, posts } = Astro.props;
+const hero = posts[0].data.image;
+---
+<Base title={`${tag} – Bhutan Travel Stories`} description={`Articles about ${tag.toLowerCase()} in Bhutan from the Bhutanova Travels blog.`} image={hero}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="" width="1600" height="700" fetchpriority="high" />
+    <div><p class="eyebrow">Topic</p><h1>{tag}</h1></div>
+  </section>
+  <section class="section">
+    <div class="container">
+      <p class="count"><a href="/blog/">All posts</a> / {posts.length} {posts.length === 1 ? 'article' : 'articles'}</p>
+      <div class="grid-3 posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} />)}</div>
+    </div>
+  </section>
+</Base>
+<style>
+  .count { margin-bottom: 32px; font-size: var(--fs-sm); color: var(--text-3); }
+  .count a { color: var(--p-700); font-weight: 650; }
+  .posts { row-gap: 48px; }
+</style>
