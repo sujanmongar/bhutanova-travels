@@ -38,7 +38,7 @@ const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListEl
 </Base>
 <style>
   .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 40px; list-style: none; margin: 0; padding: 0; }
-  .cats a { display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 14px 0; border-top: 1px solid var(--border-dark); font-weight: 600; color: var(--ink); transition: color var(--dur-1); }
+  .cats a { display: flex; align-items: center; gap: 16px; min-height: 72px; padding: 14px 0; border-top: 1px solid var(--border-dark); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); transition: color var(--dur-1); }
   .cats img { width: 56px; height: 42px; border-radius: var(--r-sm); object-fit: cover; background: var(--s-50); }
   .cats span { flex: 1; }
   .cats a :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }

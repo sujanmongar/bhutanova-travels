@@ -131,7 +131,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
 
 <style>
   /* Top bar */
-  .topbar { background: var(--s-500); color: #fff; font-size: .8125rem; font-weight: 500; letter-spacing: .01em; }
+  .topbar { background: var(--s-500); color: #fff; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; }
   .topbar__in { display: flex; justify-content: space-between; align-items: stretch; min-height: 44px; }
   .topbar__info { display: flex; justify-content: space-between; flex: 1; gap: 12px; list-style: none; margin: 0; padding: 0; white-space: nowrap; min-width: 0; }
   .topbar__info li { align-self: stretch; }
@@ -142,7 +142,6 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .topbar :global(.icon) { font-size: 14px; }
   :global(.hide-sm) { display: none !important; }
   @media (min-width: 768px) {
-    .topbar { font-size: .875rem; }
     .topbar__in { min-height: 48px; }
     .topbar__info { flex: none; justify-content: flex-start; gap: 28px; }
     .topbar__info li, .topbar__info a { gap: 8px; }
@@ -168,11 +167,11 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   @media (max-width: 359px) { .nav__book { display: none; } }
 
   /* Drawer (mobile/tablet) */
-  .drawer__kicker { font-size: var(--fs-h3); font-weight: 650; color: var(--ink); }
+  .drawer__kicker { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); }
   .drawer__list { list-style: none; margin: 0 -12px; padding: 0; display: grid; gap: 2px; }
   .d-link {
     display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 0 14px; border-radius: var(--r-md);
-    font-size: 1.25rem; line-height: 1.2; font-weight: 650; letter-spacing: -.012em; color: var(--ink); cursor: pointer; list-style: none;
+    font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 600; color: var(--ink); cursor: pointer; list-style: none;
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
   .d-link::-webkit-details-marker { display: none; }
@@ -184,18 +183,18 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .d-sub { list-style: none; margin: 0 0 12px; padding: 0 14px; display: grid; }
   .d-sub a {
     display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 10px 0;
-    font-size: 1rem; line-height: 1.3; font-weight: 500; color: var(--text); transition: color var(--dur-1);
+    font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: color var(--dur-1);
   }
   .d-sub li + li { border-top: 1px solid var(--border); }
   .d-sub a:hover, .d-sub a:active { color: var(--ink); }
-  .d-sub a[aria-current='page'] { font-weight: 650; color: var(--ink); }
-  .d-sub__all a { font-weight: 650; color: var(--s-500); }
+  .d-sub a[aria-current='page'] { font-weight: 600; color: var(--ink); }
+  .d-sub__all a { font-weight: 600; color: var(--s-500); }
   .d-sub__all :global(.icon) { font-size: 12px; color: var(--p-700); }
   .drawer__foot { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
-  .drawer__mail { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 12px; font-size: var(--fs-sm); color: var(--text-2); }
+  .drawer__mail { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 12px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
   .drawer__mail :global(.icon) { color: var(--s-300); }
   .drawer__cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .drawer__cta .btn { --btn-h: 52px; font-size: 1rem; }
+  .drawer__cta .btn { --btn-h: 52px; font-size: var(--fs-btn); }
   .drawer__cta .btn--primary { grid-column: 1 / -1; --btn-h: 56px; }
   .drawer__cta :global(.icon) { font-size: 18px; }
   @keyframes d-in { from { opacity: 0; translate: 0 14px; } }
@@ -207,12 +206,12 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   @media (min-width: 1200px) {
     .burger, .drawer { display: none; }
     .nav__logo { margin-right: 0; }
-    .menu { display: block; margin-inline: auto; }
+    .menu { display: block; margin-left: auto; margin-right: 32px; }
     .menu__list { display: flex; gap: 36px; list-style: none; margin: 0; padding: 0; }
     .menu__item { position: relative; }
     .menu__link {
       position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h); cursor: pointer; list-style: none;
-      font-size: .9375rem; line-height: 22px; font-weight: 550; letter-spacing: 0; color: var(--ink);
+      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--ink);
       transition: color var(--dur-1);
     }
     .menu__link::-webkit-details-marker { display: none; }
@@ -231,11 +230,11 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     details[open] > .sub__list { --rise: -6px; animation: rise var(--dur-2) var(--ease-out); }
     .sub__list a {
       display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: var(--r-sm);
-      font-size: .875rem; line-height: 22px; color: var(--text); transition: background var(--dur-1), color var(--dur-1);
+      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
     .sub__list a:hover { background: var(--surface); color: var(--ink); }
-    .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 650; background: var(--p-50); }
-    .sub__all { font-weight: 650; color: var(--s-500) !important; border-bottom: 1px solid var(--border); border-radius: var(--r-sm) var(--r-sm) 0 0 !important; margin-bottom: 4px; }
+    .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; background: var(--p-50); }
+    .sub__all { font-weight: 600; color: var(--s-500) !important; border-bottom: 1px solid var(--border); border-radius: var(--r-sm) var(--r-sm) 0 0 !important; margin-bottom: 4px; }
     .sub__all :global(.icon) { font-size: 11px; color: var(--p-700); }
   }
 </style>

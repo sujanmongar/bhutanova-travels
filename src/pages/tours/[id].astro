@@ -68,14 +68,14 @@ const schema = [
 
   <div class="container layout">
     <div class="main">
-      <nav class="crumbs" aria-label="Breadcrumb"><a href="/tours/">Tours</a><span aria-hidden="true">/</span><a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
+      <nav class="crumbs t-meta" aria-label="Breadcrumb"><a href="/tours/">Tours</a><span aria-hidden="true">/</span><a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
       <h1>{t.title}</h1>
-      <ul class="facts">
+      <ul class="facts t-small">
         <li><Icon name="gauge" />{t.days} days · {t.nights} nights</li>
         <li><Icon name="location-dot" />{t.route.length} stops</li>
         <li><Icon name="people" />Private tour</li>
       </ul>
-      <p class="route">{t.route.map((r, i) => <>{i > 0 && <Icon name="arrow-right" />}<span>{r}</span></>)}</p>
+      <p class="route t-small">{t.route.map((r, i) => <>{i > 0 && <Icon name="arrow-right" />}<span>{r}</span></>)}</p>
 
       <nav class="tabs" aria-label="Tour sections">
         {tabs.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
@@ -104,7 +104,7 @@ const schema = [
                   <div class="day">
                     {d.image && <img src={img(d.image, 900)} alt="" width="900" height="400" loading="lazy" />}
                     <Fragment set:html={md(d.body)} />
-                    {d.overnight && <p class="overnight"><Icon name="hotel" />Overnight: {d.overnight}</p>}
+                    {d.overnight && <p class="overnight t-small"><Icon name="hotel" />Overnight: {d.overnight}</p>}
                   </div>
                 </details>
               </li>
@@ -140,8 +140,8 @@ const schema = [
 
     <aside class="side">
       <div class="price-card">
-        <p class="from">From</p>
-        <p class="price num"><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b> / person</p>
+        <p class="t-meta">From</p>
+        <p class="price num t-meta"><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b> / person</p>
         {t.priceNotes.length > 0 && (
           <details class="notes">
             <summary>Show all prices<Icon name="chevron-up" class="chev" /></summary>
@@ -149,12 +149,12 @@ const schema = [
           </details>
         )}
         <button class="btn btn--primary btn--block btn--lg" type="button" data-open-enquiry>Send an enquiry<Icon name="arrow-right" class="i-end" /></button>
-        <p class="assure"><Icon name="check" />No payment needed to enquire</p>
+        <p class="assure t-meta"><Icon name="check" />No payment needed to enquire</p>
       </div>
       <div class="help-card">
         <span class="help-card__ic" aria-hidden="true"><Icon name="headphones" /></span>
-        <h2>Need help booking?</h2>
-        <p>Talk to a local trip expert — we'll tailor this tour to your dates.</p>
+        <h2 class="t-title">Need help booking?</h2>
+        <p class="t-small">Talk to a local trip expert — we'll tailor this tour to your dates.</p>
         <a class="btn btn--outline btn--block" href={`tel:${tel}`}><Icon name="phone" />Call {SITE.phone}</a>
         <a class="btn btn--soft btn--block" href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
       </div>
@@ -163,7 +163,7 @@ const schema = [
 
   <!-- Mobile/tablet sticky booking bar -->
   <div class="bar">
-    <p class="num"><small>From</small><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b></p>
+    <p class="num"><small class="t-meta">From</small><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b></p>
     <a class="bar__wa" href={SITE.social.whatsapp} target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
     <button class="btn btn--primary" type="button" data-open-enquiry>Send an enquiry</button>
   </div>
@@ -246,13 +246,13 @@ const schema = [
   .layout { display: grid; gap: 40px; padding-block: 28px 64px; }
   .layout > * { min-width: 0; }
   @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; padding-block: 40px var(--section); } }
-  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; font-size: var(--fs-xs); color: var(--text-3); }
-  .crumbs a { padding-block: 12px; margin-block: -12px; color: var(--p-700); font-weight: 650; }
+  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .crumbs a { padding-block: 12px; margin-block: -12px; color: var(--p-700); font-weight: 600; }
   .crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
   .facts { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; margin: 16px 0 12px; padding: 0; }
-  .facts li { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+  .facts li { display: inline-flex; align-items: center; gap: 8px; }
   .facts :global(.icon) { font-size: 14px; color: var(--text-3); }
-  .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: var(--fs-sm); color: var(--text-2); }
+  .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
   .route :global(.icon) { font-size: 12px; color: var(--p-500); }
 
   .tabs {
@@ -261,7 +261,7 @@ const schema = [
     border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
   }
   .tabs::-webkit-scrollbar { display: none; }
-  .tabs a { position: relative; padding: 16px 12px; font-size: .9375rem; font-weight: 600; color: var(--text-2); transition: color var(--dur-1); }
+  .tabs a { position: relative; padding: 16px 12px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text-2); transition: color var(--dur-1); }
   .tabs a::after { content: ''; position: absolute; inset: auto 12px -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
   .tabs a:hover { color: var(--ink); }
   .tabs a[aria-current] { color: var(--ink); }
@@ -271,12 +271,12 @@ const schema = [
 
   .block { padding-block: 36px; border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--header-h) + 60px); }
   .block:last-child { border-bottom: 0; }
-  .block h2 { margin-bottom: 18px; font-size: var(--fs-sub); line-height: var(--lh-sub); letter-spacing: var(--ls-sub); }
-  .lead { max-width: 68ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text); }
+  .block h2 { margin-bottom: 18px; font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); }
+  .lead { max-width: 68ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
   .bullets { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
   @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: 32px; } }
-  .bullets li { display: flex; gap: 12px; line-height: 1.5; }
-  .bullets :global(.icon) { flex: none; margin-top: 5px; font-size: 12px; color: var(--s-500); }
+  .bullets li { display: flex; gap: 12px; }
+  .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * 1rem - 12px) / 2); font-size: 12px; color: var(--s-500); }
 
   .days { list-style: none; margin: 0; padding: 0; }
   .days li { position: relative; padding-left: 40px; }
@@ -285,24 +285,24 @@ const schema = [
   .days li:last-child::after { display: none; }
   .days summary {
     display: flex; justify-content: space-between; gap: 12px; padding: 8px 0 16px; cursor: pointer; list-style: none; border-bottom: 1px solid var(--border);
-    font-size: var(--fs-h3); line-height: var(--lh-h3); font-weight: 650; color: var(--ink); transition: color var(--dur-1);
+    font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); transition: color var(--dur-1);
   }
   .days summary:hover { color: var(--s-500); }
   .days summary::-webkit-details-marker { display: none; }
   .days :global(.chev) { flex: none; font-size: 12px; margin-top: 6px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); color: var(--text-3); }
   details[open] > summary :global(.chev) { rotate: 0deg; }
-  .day { display: grid; gap: 12px; max-width: 68ch; padding: 18px 0 28px; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text-2); }
+  .day { display: grid; gap: 12px; max-width: 68ch; padding: 18px 0 28px; }
   .day img { border-radius: var(--r-md); width: 100%; max-height: 280px; object-fit: cover; background: var(--s-50); }
   .day :global(ul) { padding-left: 18px; display: grid; gap: 8px; margin: 0; }
   .day :global(li::marker) { color: var(--p-500); }
-  .overnight { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 6px 12px; border-radius: var(--r-sm); background: var(--surface); font-size: var(--fs-sm); font-weight: 600; color: var(--text); }
+  .overnight { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 6px 12px; border-radius: var(--r-sm); background: var(--surface); }
   .overnight :global(.icon) { color: var(--p-700); }
 
   .inc { display: grid; gap: 32px; }
   @media (min-width: 768px) { .inc { grid-template-columns: 1.4fr 1fr; gap: 40px; } }
   .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
-  .checks li { display: flex; gap: 12px; line-height: 1.5; }
-  .checks :global(.icon) { flex: none; margin-top: 5px; font-size: 12px; }
+  .checks li { display: flex; gap: 12px; }
+  .checks :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * 1rem - 12px) / 2); font-size: 12px; }
   .checks :global(.ok) { color: var(--s-500); }
   .checks :global(.no) { color: var(--text-3); }
   .map { border-radius: var(--radius); border: 1px solid var(--border); }
@@ -311,21 +311,18 @@ const schema = [
   .side { display: grid; gap: 16px; align-content: start; }
   @media (min-width: 1200px) { .side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
   .price-card { display: grid; gap: 10px; padding: 24px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: #fff; }
-  .from { font-size: var(--fs-sm); color: var(--text-3); }
-  .price { font-size: var(--fs-sm); color: var(--text-2); }
-  .price b { font-size: var(--fs-price-lg); line-height: 1.1; letter-spacing: -.02em; color: var(--s-500); }
-  .price abbr, .bar abbr { font-size: .8125rem; font-weight: 650; letter-spacing: .04em; color: var(--text-2); text-decoration: none; }
-  .notes summary { display: inline-flex; align-items: center; gap: 6px; padding-block: 8px; font-size: var(--fs-sm); font-weight: 600; color: var(--s-500); cursor: pointer; list-style: none; }
+  .price b { font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); color: var(--ink); }
+  .price abbr, .bar abbr { font-size: var(--fs-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); text-decoration: none; }
+  .notes summary { display: inline-flex; align-items: center; gap: 6px; padding-block: 8px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; color: var(--s-500); cursor: pointer; list-style: none; }
   .notes summary::-webkit-details-marker { display: none; }
   .notes :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
-  .notes ul { margin: 0 0 8px; padding-left: 18px; font-size: var(--fs-sm); color: var(--text-2); display: grid; gap: 6px; }
+  .notes ul { margin: 0 0 8px; padding-left: 18px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); display: grid; gap: 6px; }
   .price-card .btn { margin-top: 6px; }
-  .assure { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: var(--fs-xs); color: var(--text-3); }
+  .assure { display: flex; align-items: center; justify-content: center; gap: 6px; }
   .assure :global(.icon) { color: var(--success); }
   .help-card { display: grid; gap: 10px; padding: 24px; border-radius: var(--radius); background: var(--surface); }
   .help-card__ic { display: none; }
-  .help-card h2 { font-size: var(--fs-h3); line-height: var(--lh-h3); }
-  .help-card p { margin-bottom: 6px; font-size: var(--fs-sm); color: var(--text-2); }
+  .help-card p { margin-bottom: 6px; }
 
   /* Mobile/tablet booking bar: body padding keeps the footer reachable underneath */
   @media (max-width: 1199px) {
@@ -341,9 +338,8 @@ const schema = [
     background: rgb(255 255 255 / .94); -webkit-backdrop-filter: saturate(180%) blur(14px); backdrop-filter: saturate(180%) blur(14px);
     border-top: 1px solid var(--border); box-shadow: var(--sh-up);
   }
-  .bar p { margin-right: auto; display: grid; line-height: 1.25; }
-  .bar small { font-size: var(--fs-xs); color: var(--text-3); }
-  .bar b { font-size: 1.25rem; letter-spacing: -.01em; color: var(--s-500); }
+  .bar p { margin-right: auto; display: grid; }
+  .bar b { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); color: var(--ink); }
   .bar__wa { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); font-size: 22px; color: var(--ink); }
   .bar .btn { --btn-h: 52px; }
   .bar { transition: translate var(--dur-3) var(--ease-out); }
@@ -352,12 +348,12 @@ const schema = [
   @media (prefers-reduced-motion: no-preference) { .bar { --rise: 100%; animation: rise var(--dur-4) var(--ease-out) 500ms backwards; } }
 
   /* Enquiry sheet */
-  .enq .sheet__head h2 { font-size: var(--fs-sub); line-height: var(--lh-sub); }
+  .enq .sheet__head h2 { font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); }
   @media (min-width: 768px) { .enq { width: min(560px, 100%); } }
-  .enq__tour { display: flex; align-items: center; gap: 14px; padding: 12px; margin-bottom: 20px; border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-sm); color: var(--text-2); }
+  .enq__tour { display: flex; align-items: center; gap: 14px; padding: 12px; margin-bottom: 20px; border-radius: var(--r-md); background: var(--surface); font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
   .enq__tour img { width: 96px; height: 72px; border-radius: var(--r-sm); object-fit: cover; }
-  .enq__tour h3 { font-size: 1rem; margin-bottom: 2px; }
-  .enq__tour b { color: var(--s-500); }
+  .enq__tour h3 { margin-bottom: 2px; }
+  .enq__tour b { color: var(--ink); }
   .enq :global(.enq__form) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
   .enq :global(.enq__form) .full { grid-column: 1 / -1; }
 </style>
