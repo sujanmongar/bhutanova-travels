@@ -7,7 +7,6 @@ import TourCard from '../components/TourCard.astro';
 import BlogCard from '../components/BlogCard.astro';
 import Faq from '../components/Faq.astro';
 import CtaBanner from '../components/CtaBanner.astro';
-import news from '../data/news.json';
 import reviews from '../data/reviews.json';
 import { img, srcset } from '../config';
 
@@ -65,18 +64,6 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
       {slides.map((_, i) => <button type="button" role="tab" aria-label={`Photo ${i + 1}`} aria-selected={i === 0 ? 'true' : 'false'} data-dot={i} />)}
     </div>
   </section>
-
-  <!-- News ticker -->
-  <div class="news">
-    <p class="news__label">News</p>
-    <div class="news__viewport">
-      <ul class="news__list">
-        {[...news.items, ...news.items].map((n, i) => (
-          <li aria-hidden={i >= news.items.length ? 'true' : undefined}><a href={n.url} tabindex={i >= news.items.length ? -1 : undefined}>{n.text}</a></li>
-        ))}
-      </ul>
-    </div>
-  </div>
 
   <!-- About -->
   <section class="section">
@@ -242,15 +229,6 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
     .hero__nav { width: 48px; height: 48px; font-size: 16px; } .hero__nav--prev { left: 32px; } .hero__nav--next { right: 32px; }
   }
   @media (min-width: 1200px) { .hero { height: 700px; } }
-
-  /* News */
-  .news { display: flex; align-items: stretch; height: 56px; background: var(--surface); overflow: hidden; }
-  .news__label { flex: none; display: flex; align-items: center; padding: 0 36px 0 24px; background: var(--s-500); color: #fff; font-weight: 500; clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%); }
-  .news__viewport { overflow: hidden; flex: 1; display: flex; align-items: center; mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
-  .news__list { display: flex; gap: 48px; list-style: none; margin: 0; padding: 0 0 0 24px; white-space: nowrap; animation: ticker 40s linear infinite; font-size: .875rem; font-weight: 500; }
-  .news__list:hover, .news__list:focus-within { animation-play-state: paused; }
-  .news__list li:nth-child(odd) a { color: var(--p-500); text-decoration: underline; text-underline-offset: 3px; }
-  @keyframes ticker { to { transform: translateX(-50%); } }
 
   /* About */
   .mission { display: grid; gap: 16px; margin-top: 16px; padding: 32px 24px; }

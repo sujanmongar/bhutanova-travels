@@ -98,11 +98,6 @@ collections:
   - name: site
     label: Site Data
     files:
-      - name: news
-        label: News Ticker
-        file: src/data/news.json
-        fields:
-          - { name: items, label: News items, widget: list, fields: [{ name: text, label: Text, widget: string }, { name: url, label: Link, widget: string }] }
       - name: faqs
         label: FAQs
         file: src/data/faqs.json
