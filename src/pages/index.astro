@@ -17,13 +17,17 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) =>
 const [lead, ...rest] = posts;
 const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
+// Each photo tells its own story and points at the real tour that goes there (labels come from tour data).
 const slides = [
-  ['photo-1772702812424-208b331c58a0', 'Druk Wangyal chortens, Dochula Pass'],
-  ['photo-1578556881786-851d4b79cb73', "Paro Taktsang (Tiger's Nest), Paro"],
-  ['photo-1608236475087-615bfbcdf772', 'Punakha Dzong, Punakha'],
-  ['photo-1532918235359-7671f525386d', 'Prayer flags above the Paro valley'],
-  ['photo-1650747857310-c359fd3ee5c5', 'Buddha Dordenma, Thimphu'],
-];
+  { id: 'photo-1608236475087-615bfbcdf772', pos: '50% 50%', alt: 'Punakha Dzong between two rivers', place: 'Punakha · western Bhutan', h: 'Where two rivers meet', line: 'The Pho Chhu and Mo Chhu join at the dzong.', tour: 'glimpse-of-bhutan', kind: 'trip' },
+  { id: 'photo-1585903839731-39da51193913', pos: '72% 30%', alt: 'Masked cham dancers at a tshechu festival', place: 'Cham dance · tshechu festival', h: 'The masks come out in spring', line: 'Paro Tshechu is in March or April. Stay for the dawn thongdrel.', tour: 'paro-tshechu-festival', kind: 'festival trip' },
+  { id: 'photo-1772702812424-208b331c58a0', pos: '60% 50%', alt: 'Druk Wangyal chortens on Dochula Pass', place: 'Dochula Pass · 108 chortens', h: 'Lunch at 3,100 metres', line: 'A picnic on the pass between Thimphu and Punakha.', tour: 'bhutan-luxury-escape', kind: 'luxury trip' },
+  { id: 'photo-1650747857310-c359fd3ee5c5', pos: '50% 40%', alt: 'Buddha Dordenma statue above Thimphu', place: 'Buddha Dordenma · Thimphu', h: '51 metres of bronze', line: 'Seated on a hill above the capital.', tour: 'bhutan-cultural-extravaganza', kind: 'trip' },
+  { id: 'photo-1761048163649-5774b163cb40', pos: '40% 50%', alt: 'Himalayan peaks above forested ridges', place: 'High passes · up to 4,200 m', h: 'Walk to Thimphu the long way', line: 'High lakes and, on a clear day, Jomolhari at 7,326 m.', tour: 'druk-path-trek', kind: 'trek' },
+].map((s) => {
+  const t = tours.find((x) => x.id === s.tour)!; // fails the build if a slug is wrong
+  return { ...s, href: `/tours/${s.tour}/`, name: t.data.title, cta: `See the ${t.data.days}-day ${s.kind}` };
+});
 const pillars = [
   ['arrows-to-circle', 'Community', 'Part of every booking goes back into the villages you visit, and we hire local guides, drivers and cooks.'],
   ['people', 'People', 'Small groups and private trips, paced around you. Our team answers every message personally.'],
@@ -49,26 +53,33 @@ const brand: Record<string, { icon: string; fg: string }> = {
 const [quote, ...quotes] = reviews.items;
 ---
 <Base title="Home">
-  <!-- Hero -->
-  <section class="hero" aria-label="Featured destinations">
+  <!-- Hero: one story per photo -->
+  <section class="hero" aria-roledescription="carousel" aria-label="Places we travel in Bhutan">
+    <h1 class="sr-only">Bhutan tours planned by locals</h1>
     <div class="hero__track" id="hero-track">
-      {slides.map(([id, alt], i) => (
-        <img src={img(id, 1600)} srcset={srcset(id, [640, 960, 1400, 1920])} sizes="100vw" alt={alt} width="1600" height="900"
-          loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+      {slides.map((s, i) => (
+        <img src={img(s.id, 1600)} srcset={srcset(s.id, [640, 960, 1400, 1920])} sizes="100vw" alt={s.alt} width="1600" height="900"
+          style={`object-position:${s.pos}`} loading={i ? 'lazy' : 'eager'} fetchpriority={i ? undefined : 'high'} decoding="async" />
       ))}
     </div>
     <div class="container hero__in">
-      <div class="hero__txt">
-        <h1 class="hero-title">Bhutan, planned by locals</h1>
-        <a class="btn btn--light btn--lg hero__btn" href="/tours/">Explore tours<Icon name="arrow-right" class="i-end" /></a>
+      <div class="hero__slides">
+        {slides.map((s, i) => (
+          <div class:list={['hero__slide', { 'is-on': !i }]} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}`} data-place={s.place} inert={i > 0}>
+            <h2 class="hero-title">{s.h}</h2>
+            <p class="hero__line">{s.line}</p>
+            <a class="btn btn--light hero__cta" href={s.href}>{s.cta}<span class="sr-only">: {s.name}</span><Icon name="arrow-right" class="i-end" /></a>
+          </div>
+        ))}
       </div>
-      <div class="hero__ctrl">
-        <p class="hero__cap" aria-live="polite"><span class="num" data-count>01 / {String(slides.length).padStart(2, '0')}</span><span data-cap>{slides[0][1]}</span></p>
-        <div class="hero__btns">
-          <button type="button" aria-label="Previous photo" data-hero="-1"><Icon name="arrow-left" /></button>
-          <button type="button" aria-label="Next photo" data-hero="1"><Icon name="arrow-right" /></button>
+      <div class="hero__bar">
+        <p class="hero__place" data-caption>{slides[0].place}</p>
+        <div class="hero__dots">
+          {slides.map((s, i) => <button type="button" data-to={i} aria-label={`Slide ${i + 1} of ${slides.length}: ${s.place}`} aria-current={i ? undefined : 'true'}><i></i></button>)}
+          <button type="button" class="hero__pause" data-pause aria-label="Pause slideshow"></button>
         </div>
       </div>
+      <p class="sr-only" aria-live="polite" data-live></p>
     </div>
   </section>
 
@@ -240,31 +251,37 @@ const [quote, ...quotes] = reviews.items;
 <script>
   const track = document.getElementById('hero-track')!;
   const hero = track.parentElement!;
-  const imgs = [...track.querySelectorAll('img')];
-  const count = hero.querySelector('[data-count]')!;
-  const cap = hero.querySelector('[data-cap]')!;
+  const slides = [...hero.querySelectorAll<HTMLElement>('.hero__slide')];
+  const dots = [...hero.querySelectorAll<HTMLButtonElement>('[data-to]')];
+  const caption = hero.querySelector<HTMLElement>('[data-caption]')!;
+  const live = hero.querySelector<HTMLElement>('[data-live]')!;
+  const pause = hero.querySelector<HTMLButtonElement>('[data-pause]')!;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const n = imgs.length;
+  const n = slides.length;
+  let on = 0, auto = false;
   const cur = () => Math.round(track.scrollLeft / track.clientWidth);
   const go = (i: number) => {
     const to = (i + n) % n, left = to * track.clientWidth;
     if (Math.abs(to - cur()) > 1 && !reduce) {
-      // wrap-around: dip to navy instead of rewinding through every slide
+      // wrap-around / big jump: dip to navy instead of rewinding through every slide
       track.animate([{ opacity: 1 }, { opacity: 0, offset: .5 }, { opacity: 1 }], { duration: 600, easing: 'ease-in-out' });
       setTimeout(() => track.scrollTo({ left, behavior: 'instant' }), 300);
     } else track.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
   };
-  hero.querySelectorAll<HTMLButtonElement>('[data-hero]').forEach((b) => (b.onclick = () => go(cur() + Number(b.dataset.hero))));
-  track.addEventListener('scroll', () => {
-    const i = cur();
-    count.textContent = `${String(i + 1).padStart(2, '0')} / ${String(n).padStart(2, '0')}`;
-    cap.textContent = imgs[i].alt;
-  }, { passive: true });
-  if (!reduce) {
-    let paused = false;
-    for (const [ev, v] of [['pointerenter', true], ['pointerleave', false], ['focusin', true], ['focusout', false]] as const) hero.addEventListener(ev, () => (paused = v));
-    setInterval(() => !paused && !document.hidden && go(cur() + 1), 7000);
-  }
+  const show = (i: number) => {
+    if (i === on) return;
+    slides[on].classList.remove('is-on'); slides[on].inert = true; dots[on].removeAttribute('aria-current');
+    slides[i].classList.add('is-on'); slides[i].inert = false; dots[i].setAttribute('aria-current', 'true');
+    caption.textContent = slides[i].dataset.place!;
+    if (!reduce) caption.animate({ opacity: [0, 1] }, 400);
+    live.textContent = auto ? '' : `${i + 1} of ${n}: ${slides[i].querySelector('h2')!.textContent}`;
+    on = i; auto = false;
+  };
+  track.addEventListener('scroll', () => show(cur()), { passive: true });
+  dots.forEach((b, i) => (b.onclick = () => go(i)));
+  // The orange fill in the current line is the timer: when it finishes, advance. Pausing the fill pauses the slideshow.
+  hero.addEventListener('animationend', (e) => { if ((e.target as Element).matches('.hero__dots i')) { auto = true; go(on + 1); } });
+  pause.onclick = () => pause.setAttribute('aria-label', hero.toggleAttribute('data-paused') ? 'Play slideshow' : 'Pause slideshow');
 </script>
 
 <style>
@@ -273,39 +290,61 @@ const [quote, ...quotes] = reviews.items;
   .inline { white-space: nowrap; color: var(--ink); font-weight: 600; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
   .inline:hover { color: var(--p-800); }
 
-  /* Hero — text sits bottom-left like a magazine cover; caption + counter bottom-right */
-  .hero { position: relative; height: min(88svh, 760px); min-height: 540px; color: #fff; overflow: hidden; background: var(--s-800); }
+  /* Hero — one story per photo; frame (bar) stays fixed, only the story moves */
+  .hero { position: relative; height: min(88svh, 760px); min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); }
   .hero__track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .hero__track::-webkit-scrollbar { display: none; }
   .hero__track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
-  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(12 25 37 / .2), transparent 30%, rgb(12 25 37 / .25) 55%, rgb(12 25 37 / .78)); pointer-events: none; }
-  .hero__in { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; gap: 28px; padding-bottom: 32px; pointer-events: none; }
-  .hero__in a, .hero__in button { pointer-events: auto; }
-  .hero__btn { margin-top: 32px; }
-  .hero__ctrl { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-top: 18px; border-top: 1px solid rgb(255 255 255 / .25); font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .85); }
-  .hero__cap { display: flex; gap: 14px; min-width: 0; }
-  .hero__cap [data-cap] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .hero__cap .num { flex: none; white-space: nowrap; color: #fff; }
-  .hero__btns { display: flex; gap: 8px; }
-  .hero__btns button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid rgb(255 255 255 / .4); border-radius: 50%; background: transparent; color: #fff; font-size: 13px; cursor: pointer; transition: background var(--dur-1), border-color var(--dur-1), scale var(--dur-1); }
-  .hero__btns button:hover { background: rgb(255 255 255 / .12); border-color: #fff; }
-  .hero__btns button:active { scale: .92; }
-  @media (max-width: 767px) {
-    .hero::after { background: linear-gradient(rgb(12 25 37 / .2), transparent 22%, rgb(12 25 37 / .5) 48%, rgb(12 25 37 / .88)); }
-    .hero .eyebrow { color: #fff; }
-    .hero__cap { flex-direction: column; gap: 2px; }
-    .hero__cap [data-cap] { white-space: normal; text-wrap: balance; }
-  }
-  @media (min-width: 768px) { .hero__in { padding-bottom: 40px; gap: 48px; } }
+  .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: 28px; padding-bottom: max(12px, env(safe-area-inset-bottom)); pointer-events: none; }
+  .hero__in :is(a, button) { pointer-events: auto; }
+  .hero__slides { display: grid; }
+  .hero__slide { grid-area: 1 / 1; align-self: end; display: grid; justify-items: start; }
+  .hero__slide:not(.is-on) { opacity: 0; visibility: hidden; transition: opacity 200ms var(--ease-in), visibility 0s 200ms; }
   .hero-title { max-width: 15ch; }
-  @media (min-width: 1200px) { .hero { height: min(90svh, 820px); } }
+  .hero__line { max-width: 36ch; margin-top: 12px; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
+  .hero__cta { margin-top: 24px; }
+  .hero__bar { display: grid; justify-items: start; gap: 4px; }
+  .hero__place { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .8); }
+  .hero__dots { display: flex; margin-inline: -6px; }
+  .hero__dots button { display: grid; align-items: center; width: 48px; height: 44px; padding: 0 6px; border: 0; background: none; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .hero__dots i { height: 3px; border-radius: 2px; background: rgb(255 255 255 / .35) linear-gradient(var(--p-500), var(--p-500)) no-repeat; background-size: 0 100%; transition: background-color var(--dur-2); }
+  .hero__dots [aria-current] i { background-size: 100% 100%; }
+  .hero__dots .hero__pause { width: 44px; justify-items: center; }
+  .hero__pause::before { content: ''; width: 8px; height: 10px; border-inline: 2px solid; }
+  .hero[data-paused] .hero__pause::before { width: 9px; border: 0; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  @media (hover: hover) {
+    .hero__dots button:not([aria-current]):hover i { background-color: var(--p-500); }
+    .hero__dots .hero__pause:hover { color: var(--p-500); }
+  }
+  @media (scripting: none) { .hero__dots { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .hero__pause { display: none !important; } }
+  @media (min-width: 768px) {
+    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
+    .hero__in { row-gap: 32px; padding-bottom: 24px; }
+    .hero__cta { margin-top: 32px; }
+    .hero__dots button { width: 56px; }
+  }
+  @media (min-width: 1200px) {
+    .hero { height: min(90svh, 820px); }
+    .hero__in { grid-template-columns: minmax(0, 1fr) auto; column-gap: 48px; align-items: end; padding-bottom: 56px; }
+    .hero__line { margin-top: 16px; }
+    .hero__bar { justify-items: end; text-align: right; }
+    .hero__dots { margin-inline: 0 -6px; }
+  }
+  @keyframes hero-fill { from { background-size: 0 100%; } }
   @media (prefers-reduced-motion: no-preference) {
     .hero__track > img:first-child { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
-    .hero__txt > * { --rise: 18px; animation: rise 900ms var(--ease-out) backwards; }
-    .hero__txt > :nth-child(1) { animation-delay: 150ms; }
-    .hero__txt > :nth-child(2) { animation-delay: 260ms; }
-    .hero__txt > :nth-child(3) { animation-delay: 400ms; }
-    .hero__ctrl { animation: fade var(--dur-4) var(--ease-out) 650ms backwards; }
+    .hero__slide.is-on > * { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
+    .hero__slide.is-on > .hero__line { --rise: 12px; animation-delay: 280ms; }
+    .hero__slide.is-on > .hero__cta { animation: fade 500ms var(--ease-out) 360ms backwards; }
+    .hero__bar { animation: fade var(--dur-4) var(--ease-out) 650ms backwards; }
+    .hero__dots [aria-current] i { animation: hero-fill 7s linear; }
+    .hero:is([data-paused], :has(.hero__in :focus-visible)) .hero__dots i { animation-play-state: paused; }
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .hero:has(.hero__in :is(a, button):hover) .hero__dots i { animation-play-state: paused; }
   }
 
   /* About */

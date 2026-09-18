@@ -101,6 +101,8 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 16px); scrollbar-gutter: stable; }
 html:has(dialog:modal) { overflow: hidden; }
+/* iOS overscroll above a photo hero shows navy, not a white strip */
+html:has(main > .hero:first-child) { background: var(--s-800); }
 body { margin: 0; font-family: var(--ff); font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); color: var(--text); background: var(--white); }
 :is(.topbar, .hero, .banner, .footer, .widget--cta, .promo) { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 img, svg { display: block; max-width: 100%; }

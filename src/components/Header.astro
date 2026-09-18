@@ -131,13 +131,11 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .nav {
     position: sticky; top: 0; z-index: 50; color: var(--ink);
     background: rgb(255 255 255 / .72); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
-    border-bottom: 1px solid rgb(12 25 37 / .08);
-    transition: background-color var(--dur-3) var(--ease-out), border-color var(--dur-3), box-shadow var(--dur-3), color var(--dur-3);
+    transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
     view-transition-name: site-header;
   }
-  .nav.is-stuck { box-shadow: 0 8px 24px -16px rgb(12 25 37 / .25); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
-    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: rgb(255 255 255 / .16); color: #fff;
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff;
   }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--s-800); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .burger { background: rgb(255 255 255 / .16); color: #fff; }
