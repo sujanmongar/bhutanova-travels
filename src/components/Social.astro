@@ -1,0 +1,16 @@
+---
+import Icon from './Icon.astro';
+import { SITE } from '../config';
+const { class: cls = '' } = Astro.props;
+const names = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X (Twitter)', whatsapp: 'WhatsApp' } as const;
+---
+<ul class:list={['social', cls]}>
+  {Object.entries(SITE.social).map(([k, href]) => (
+    <li><a href={href} target="_blank" rel="noopener" aria-label={names[k as keyof typeof names]}><Icon name={`social_${k}`} /></a></li>
+  ))}
+</ul>
+<style>
+  .social { display: flex; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  .social a { display: block; font-size: 24px; transition: transform .2s; }
+  .social a:hover { transform: translateY(-2px); }
+</style>

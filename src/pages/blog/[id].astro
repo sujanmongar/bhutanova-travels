@@ -1,0 +1,20 @@
+---
+import { getCollection, render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+import BlogCard from '../../components/BlogCard.astro';
+export async function getStaticPaths() {
+  const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post, more: posts.filter((p) => p.id !== post.id).slice(0, 3) } }));
+}
+const { post, more } = Astro.props;
+const { Content } = await render(post);
+---
+<Article title={post.data.title} description={post.data.excerpt} image={post.data.image} date={post.data.date} author={post.data.author} kicker="Article" back={['/blog/', 'Blog']}>
+  <Content />
+  <section class="section section--grey" slot="after">
+    <div class="container">
+      <div class="sh"><h2>More from the blog</h2></div>
+      <div class="grid-3">{more.map((p) => <BlogCard post={p} />)}</div>
+    </div>
+  </section>
+</Article>

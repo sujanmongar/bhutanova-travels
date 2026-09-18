@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import Faq from '../../components/Faq.astro';
+import { img, srcset } from '../../config';
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+const groups = [...new Set(guides.map((g) => g.data.group))];
+const hero = 'photo-1532918235359-7671f525386d';
+---
+<Base title="Bhutan Travel Guide – Visa, SDF, Weather & Packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={hero}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Prayer flags on a mountain pass" width="1600" height="700" fetchpriority="high" />
+    <div><p class="eyebrow">Vacation tips & Bhutan information</p><h1>Bhutan Travel Guide</h1></div>
+  </section>
+
+  <nav class="jump container" aria-label="Guide topics">
+    {groups.map((g) => <a href={`#${g.toLowerCase().replace(/[^a-z]+/g, '-')}`}>{g}</a>)}
+  </nav>
+
+  {groups.map((g, i) => (
+    <section class:list={['section', { 'section--flush': i > 0 }]} id={g.toLowerCase().replace(/[^a-z]+/g, '-')}>
+      <div class="container">
+        <div class="sh"><h2>{g}</h2></div>
+        <div class="grid-3 guides">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" />)}</div>
+      </div>
+    </section>
+  ))}
+
+  <section class="section section--grey">
+    <div class="container">
+      <div class="sh sh--center"><h2>Quick Answers</h2></div>
+      <Faq />
+    </div>
+  </section>
+</Base>
+<style>
+  .jump { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-block: 20px; border-bottom: 1px solid var(--border); }
+  .jump a { flex: none; padding: 8px 16px; border: 1px solid var(--border); border-radius: 999px; font-size: var(--fs-sm); font-weight: 600; }
+  .jump a:hover { border-color: var(--p-500); color: var(--p-600); }
+  .guides { row-gap: 40px; }
+</style>

@@ -1,0 +1,8 @@
+---
+import Icon from './Icon.astro';
+const { target, label = 'items' } = Astro.props;
+---
+<div class="arrows" data-rail={target}>
+  <button type="button" class="arrow" aria-controls={target} aria-label={`Previous ${label}`}><Icon name="arrow-left" /></button>
+  <button type="button" class="arrow" aria-controls={target} aria-label={`Next ${label}`}><Icon name="arrow-right" /></button>
+</div>

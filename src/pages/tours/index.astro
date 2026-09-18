@@ -1,0 +1,48 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TourCard from '../../components/TourCard.astro';
+import Callback from '../../components/Callback.astro';
+import { img, srcset } from '../../config';
+
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+const tours = await getCollection('tours');
+const hero = 'photo-1578556881786-851d4b79cb73';
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`/tours/${t.id}/`, Astro.site).href, name: t.data.title })) };
+---
+<Base title="Bhutan Tour Packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Tiger's Nest monastery in Paro" width="1600" height="700" fetchpriority="high" />
+    <div><p class="eyebrow">Handcrafted journeys across the kingdom</p><h1>Bhutan Tour Packages</h1></div>
+  </section>
+
+  <nav class="section cats" aria-label="Tour categories">
+    <div class="container">
+      <div class="sh sh--center"><h2>Browse by Theme</h2><p>Every package includes the Sustainable Development Fee, visa, licensed guide, private vehicle and certified hotels.</p></div>
+      <ul>
+        {cats.map((c) => (
+          <li><a href={`/tours/category/${c.id}/`}><img src={img(c.data.image, 200)} alt="" width="56" height="56" loading="lazy" /><span>{c.data.menuTitle}</span></a></li>
+        ))}
+      </ul>
+    </div>
+  </nav>
+
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh sh--center"><h2>All Tour Packages</h2><p>Choose your desired package</p></div>
+      <div class="grid-3">{tours.slice(0, 6).map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
+    </div>
+  </section>
+  <div class="section section--flush"><Callback /></div>
+  {tours.length > 6 && (
+    <section class="section section--flush">
+      <div class="container grid-3">{tours.slice(6).map((t) => <TourCard tour={t} />)}</div>
+    </section>
+  )}
+</Base>
+<style>
+  .cats ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  .cats a { display: flex; align-items: center; gap: 12px; padding: 6px 18px 6px 6px; border: 1px solid var(--border); border-radius: 999px; font-weight: 600; font-size: var(--fs-sm); transition: border-color .2s, background .2s; }
+  .cats a:hover { border-color: var(--p-500); background: var(--p-50); }
+  .cats img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+</style>

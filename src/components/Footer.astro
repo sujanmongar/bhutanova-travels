@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import Social from './Social.astro';
+import { SITE } from '../config';
+
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order).slice(0, 8);
+const official = [
+  ['Department of Tourism', 'https://www.bhutan.travel/'],
+  ['Department of Immigration', 'https://www.immi.gov.bt/'],
+  ['Drukair', 'https://www.drukair.com.bt/'],
+  ['Bhutan Airlines', 'https://www.bhutanairlines.bt/'],
+  ['Gross National Happiness', 'https://www.gnhcentrebhutan.org/'],
+  ['ABTO', 'https://www.abto.org.bt/'],
+];
+const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
+---
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <h2 class="footer__h">Bhutan Insights</h2>
+      <ul>{guides.map((g) => <li><a href={`/travel-guide/${g.id}/`}>{g.data.title}</a></li>)}</ul>
+    </div>
+    <div>
+      <h2 class="footer__h">Holiday Packages</h2>
+      <ul>{cats.map((c) => <li><a href={`/tours/category/${c.id}/`}>{c.data.menuTitle}</a></li>)}</ul>
+    </div>
+    <div>
+      <h2 class="footer__h">Quick Links</h2>
+      <ul>{official.map(([t, u]) => <li><a href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
+    </div>
+    <div>
+      <h2 class="footer__h">Contact Us</h2>
+      <ul class="footer__contact">
+        <li><Icon name="location-dot" /><span>{SITE.address}</span></li>
+        <li><Icon name="phone" /><span><a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a> / <a href={tel(SITE.phone)}>{SITE.phone}</a></span></li>
+        <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer__bar">
+    <div class="container footer__bar-in">
+      <p>
+        © {new Date().getFullYear()} {SITE.name}. All Rights Reserved
+        <span aria-hidden="true">•</span> <a href="/privacy/">Privacy Policy</a>
+        <span aria-hidden="true">•</span> <a href="/sitemap-index.xml">Sitemap</a>
+        <span aria-hidden="true">•</span> Illustrations by <a href="https://storyset.com" rel="noopener" target="_blank">Storyset</a>
+      </p>
+      <Social />
+    </div>
+  </div>
+</footer>
+<style>
+  .footer { background: var(--s-500); color: var(--on-dark-2); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+  .footer__grid { display: grid; gap: 36px; padding-block: 56px; }
+  .footer__h { color: var(--p-500); font-size: .875rem; line-height: 22px; font-weight: 500; letter-spacing: .01em; margin-bottom: 16px; }
+  .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .footer a { transition: color .2s; }
+  .footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+  .footer__contact li { display: flex; gap: 12px; align-items: flex-start; }
+  .footer__contact :global(.icon) { margin-top: .3em; font-size: 14px; }
+  .footer__bar { background: var(--s-800); font-size: var(--fs-xs); }
+  .footer__bar-in { display: flex; flex-direction: column; gap: 16px; padding-block: 20px; }
+  .footer__bar span { margin-inline: 4px; }
+  @media (min-width: 768px) {
+    .footer__grid { grid-template-columns: repeat(2, 1fr); gap: 40px; padding-block: 64px; }
+    .footer__bar-in { flex-direction: row; justify-content: space-between; align-items: center; }
+  }
+  @media (min-width: 1200px) {
+    .footer__grid { grid-template-columns: repeat(4, 1fr); padding-inline: calc(var(--gutter) + 16px); }
+    .footer ul { gap: 8px; }
+    .footer__bar-in { padding-inline: calc(var(--gutter) + 16px); }
+  }
+</style>

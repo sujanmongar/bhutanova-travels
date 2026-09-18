@@ -1,0 +1,298 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import Arrows from '../components/Arrows.astro';
+import TourCard from '../components/TourCard.astro';
+import BlogCard from '../components/BlogCard.astro';
+import Faq from '../components/Faq.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import news from '../data/news.json';
+import reviews from '../data/reviews.json';
+import { img, srcset } from '../config';
+
+const tours = await getCollection('tours');
+const featured = tours.filter((t) => t.data.featured).concat(tours.filter((t) => !t.data.featured)).slice(0, 6);
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+const count = (id: string) => tours.filter((t) => t.data.category.id === id).length;
+const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 6);
+
+const slides = [
+  ['photo-1650747857310-c359fd3ee5c5', 'Buddha Dordenma overlooking the Thimphu valley'],
+  ['photo-1578556881786-851d4b79cb73', "Paro Taktsang, the Tiger's Nest monastery"],
+  ['photo-1608236475087-615bfbcdf772', 'Punakha Dzong at the meeting of two rivers'],
+  ['photo-1532918235359-7671f525386d', 'Prayer flags on a Himalayan pass'],
+  ['photo-1772702812424-208b331c58a0', 'Druk Wangyal chortens at Dochula Pass'],
+];
+const pillars = [
+  ['arrows-to-circle', 'Community Focus', 'We prioritise community impact. Through responsible tourism and local engagement, we foster sustainable development and empower communities.'],
+  ['people', 'People - Centric', 'At Bhutanova Travels, people come first. We create authentic experiences that enrich the lives of travelers, employees and partners alike.'],
+  ['image-user', 'Self - Reflection', 'Bhutanova Travels encourages self-discovery. Our immersive journeys offer opportunities for introspection and personal transformation.'],
+];
+const services = [
+  ['sliders', 'Personalized Matching', 'Our matching process helps you find the tour you want for your next holiday.'],
+  ['gauge', 'Wide Variety of Tours', 'We offer a wide variety of personally picked tours to destinations all over Bhutan.'],
+  ['star', 'Highly Qualified Service', 'Our tour managers are qualified, skilled and friendly to bring you the best service.'],
+  ['headphones', '24/7 Support', 'You can always get professional support from our staff 24/7 and ask any questions.'],
+  ['hotel', 'Handpicked Hotels', 'Our team offers only the best selection of affordable and luxury hotels to our clients.'],
+  ['tag', 'Best Price Guarantee', 'If you find tours cheaper than ours, we will compensate the difference.'],
+];
+const partners = [
+  ['bhutan-believe', 'Department of Tourism'],
+  ['gab', 'Guide Association of Bhutan'],
+  ['abto', 'Association of Bhutanese Tour Operators'],
+  ['drukair', 'Drukair – Royal Bhutan Airlines'],
+  ['bhutan-airlines', 'Bhutan Airlines'],
+];
+const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 2);
+---
+<Base title="Home">
+  <!-- Hero -->
+  <section class="hero" aria-label="Featured destinations">
+    <div class="hero__track" id="hero-track">
+      {slides.map(([id, alt], i) => (
+        <img src={img(id, 1600)} srcset={srcset(id, [640, 960, 1400, 1920])} sizes="100vw" alt={alt} width="1600" height="900"
+          loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+      ))}
+    </div>
+    <div class="hero__txt">
+      <p class="hero__eyebrow">Enjoy the best destinations with us</p>
+      <h1>Explore Bhutan</h1>
+    </div>
+    <button class="hero__nav hero__nav--prev" type="button" aria-label="Previous photo" data-hero="-1"><Icon name="chevron-left" /></button>
+    <button class="hero__nav hero__nav--next" type="button" aria-label="Next photo" data-hero="1"><Icon name="chevron-right" /></button>
+    <div class="hero__dots" role="tablist" aria-label="Choose photo">
+      {slides.map((_, i) => <button type="button" role="tab" aria-label={`Photo ${i + 1}`} aria-selected={i === 0 ? 'true' : 'false'} data-dot={i} />)}
+    </div>
+  </section>
+
+  <!-- News ticker -->
+  <div class="news">
+    <p class="news__label">News</p>
+    <div class="news__viewport">
+      <ul class="news__list">
+        {[...news.items, ...news.items].map((n, i) => (
+          <li aria-hidden={i >= news.items.length ? 'true' : undefined}><a href={n.url} tabindex={i >= news.items.length ? -1 : undefined}>{n.text}</a></li>
+        ))}
+      </ul>
+    </div>
+  </div>
+
+  <!-- About -->
+  <section class="section">
+    <div class="container">
+      <div class="sh sh--center">
+        <h2>Seek Fresh Perspective with <span class="accent">BHUTANOVA TRAVELS</span></h2>
+        <p>Bhutanova Travels, based in Bhutan, embraces the kingdom's cultural richness and GNH principles. Our foundation is built on benefiting the <b>COMMUNITY</b>, <b>PEOPLE</b>, and <b>SELF</b>, reflecting the essence of Bhutan.</p>
+      </div>
+      <div class="grid-3">
+        {pillars.map(([icon, t, d]) => (
+          <div class="card-soft pillar"><Icon name={icon} /><h3>{t}</h3><p>{d}</p></div>
+        ))}
+      </div>
+      <div class="card-soft mission">
+        <Icon name="bullseye-arrow" />
+        <div>
+          <h3>Our Mission</h3>
+          <p>Bhutanova Travels goes beyond typical travel, pioneering a sustainable tourism landscape that uplifts local communities. With expert guidance and personalised service, we envision every journey creating positive, lasting impacts on destinations and lives.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh sh--center">
+        <h2>Our Services</h2>
+        <p>Discover Bhutan with Bhutanova Travels, experts in curating your ideal trip. Enjoy a seamless journey with personalised experiences and safety prioritised.</p>
+      </div>
+      <div class="grid-3">
+        {services.map(([icon, t, d]) => <div class="card-line"><Icon name={icon} /><h3>{t}</h3><p>{d}</p></div>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Packages -->
+  <section class="section">
+    <div class="container">
+      <div class="sh sh--row">
+        <h2>Affordable Tour Packages</h2>
+        <p>Explore Bhutan's rich culture, spirituality and natural wonders with our curated packages. From spiritual odysseys to Himalayan treks, choose yours and embark on an unforgettable journey.</p>
+        <Arrows target="rail-tours" label="packages" />
+      </div>
+      <div class="rail" id="rail-tours">{featured.map((t) => <TourCard tour={t} />)}</div>
+    </div>
+  </section>
+
+  <!-- Themes -->
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh sh--center">
+        <h2>Featured Bhutan Tour Themes</h2>
+        <p>Pick the kind of journey that suits you — culture, festivals, mountains or pure comfort.</p>
+      </div>
+      <ul class="themes" id="rail-themes">
+        {cats.map((c) => (
+          <li>
+            <a href={`/tours/category/${c.id}/`} class="theme">
+              <img src={img(c.data.image, 360)} alt="" width="180" height="180" loading="lazy" decoding="async" />
+              <h3>{c.data.menuTitle}</h3>
+              <p>{count(c.id)} {count(c.id) === 1 ? 'Tour' : 'Tours'}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+      <div class="themes__arrows"><Arrows target="rail-themes" label="themes" /></div>
+    </div>
+  </section>
+
+  <!-- Blog -->
+  <section class="section">
+    <div class="container">
+      <div class="sh sh--row">
+        <h2>Read Our Blog</h2>
+        <p>Our blog is your gateway to endless explorations in Bhutan. Begin your journey with us today.</p>
+        <Arrows target="rail-blog" label="posts" />
+      </div>
+      <div class="rail" id="rail-blog">{posts.map((p) => <BlogCard post={p} />)}</div>
+      <div class="center"><a href="/blog/" class="btn btn--outline btn--sm">More Blogs</a></div>
+    </div>
+  </section>
+
+  <!-- Reviews -->
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh">
+        <h2>Reviews</h2>
+        <p>Hear from travelers about their journeys through Bhutan with us.</p>
+      </div>
+      <ul class="grid-3 reviews">
+        {reviews.items.map((r) => (
+          <li class="card-soft review">
+            <p class="stars" aria-label={`${r.rating} out of 5 stars`}>{Array.from({ length: r.rating }, () => <Icon name="star" />)}</p>
+            <blockquote>“{r.text}”</blockquote>
+            <footer><span class="avatar" aria-hidden="true">{initials(r.name)}</span><span><b>{r.name}</b><small>{r.place}</small></span></footer>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section">
+    <div class="container">
+      <div class="sh sh--center">
+        <h2>FAQs</h2>
+        <p>Find answers to common questions about our services, bookings and travelling in Bhutan. Still curious? <a href="/contact/" class="accent">Ask us.</a></p>
+      </div>
+      <Faq />
+    </div>
+  </section>
+
+  <CtaBanner />
+
+  <!-- Partners -->
+  <section class="section partners">
+    <div class="container">
+      <h2 class="partners__h">Our official partners:</h2>
+      <ul>
+        {partners.map(([f, n]) => <li><img src={`/images/partners/${f}.png`} alt={n} title={n} width="201" height="140" loading="lazy" /></li>)}
+      </ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const track = document.getElementById('hero-track')!;
+  const dots = [...document.querySelectorAll<HTMLButtonElement>('[data-dot]')];
+  const go = (i: number) => track.scrollTo({ left: ((i + dots.length) % dots.length) * track.clientWidth, behavior: 'smooth' });
+  const cur = () => Math.round(track.scrollLeft / track.clientWidth);
+  document.querySelectorAll<HTMLButtonElement>('[data-hero]').forEach((b) => (b.onclick = () => go(cur() + Number(b.dataset.hero))));
+  dots.forEach((d, i) => (d.onclick = () => go(i)));
+  track.addEventListener('scroll', () => dots.forEach((d, i) => d.setAttribute('aria-selected', String(i === cur()))), { passive: true });
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let paused = false;
+    const hero = track.parentElement!;
+    hero.addEventListener('pointerenter', () => (paused = true));
+    hero.addEventListener('pointerleave', () => (paused = false));
+    setInterval(() => !paused && !document.hidden && go(cur() + 1), 6000);
+  }
+</script>
+
+<style>
+  /* Hero */
+  .hero { position: relative; height: min(78svh, 560px); min-height: 420px; color: #fff; overflow: hidden; }
+  .hero__track { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .hero__track::-webkit-scrollbar { display: none; }
+  .hero__track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(0 0 0 / .15), rgb(0 0 0 / .35)); pointer-events: none; }
+  .hero__txt { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; text-align: center; padding: 0 72px; pointer-events: none; }
+  .hero__eyebrow { font-size: .75rem; line-height: 1.4; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .hero h1 { color: #fff; font-family: var(--ff-display); font-size: var(--fs-hero); line-height: var(--lh-hero); letter-spacing: var(--ls-hero); text-shadow: 0 2px 16px rgb(0 0 0 / .25); }
+  .hero__nav {
+    position: absolute; top: 50%; z-index: 2; translate: 0 -50%; display: grid; place-items: center;
+    width: 44px; height: 44px; border-radius: 50%; border: 1px solid #fff; background: rgb(0 0 0 / .1); color: #fff; font-size: 14px; cursor: pointer;
+  }
+  .hero__nav:hover { background: rgb(255 255 255 / .2); }
+  .hero__nav--prev { left: 12px; } .hero__nav--next { right: 12px; }
+  .hero__dots { position: absolute; bottom: 20px; left: 50%; translate: -50% 0; z-index: 2; display: flex; gap: 6px; align-items: center; }
+  .hero__dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: rgb(255 255 255 / .7); cursor: pointer; }
+  .hero__dots button[aria-selected='true'] { width: 14px; height: 14px; background: #fff; }
+  @media (min-width: 768px) {
+    .hero { height: 620px; } .hero__eyebrow { font-size: 1rem; }
+    .hero__nav { width: 48px; height: 48px; font-size: 16px; } .hero__nav--prev { left: 32px; } .hero__nav--next { right: 32px; }
+  }
+  @media (min-width: 1200px) { .hero { height: 700px; } .hero__eyebrow { font-size: 1.125rem; line-height: 24px; letter-spacing: .015em; } }
+
+  /* News */
+  .news { display: flex; align-items: stretch; height: 56px; background: var(--surface); overflow: hidden; }
+  .news__label { flex: none; display: flex; align-items: center; padding: 0 36px 0 24px; background: var(--s-500); color: #fff; font-weight: 500; clip-path: polygon(0 0, 100% 0, calc(100% - 24px) 100%, 0 100%); }
+  .news__viewport { overflow: hidden; flex: 1; display: flex; align-items: center; mask-image: linear-gradient(90deg, transparent, #000 24px, #000 calc(100% - 24px), transparent); }
+  .news__list { display: flex; gap: 48px; list-style: none; margin: 0; padding: 0 0 0 24px; white-space: nowrap; animation: ticker 40s linear infinite; font-size: .875rem; font-weight: 500; }
+  .news__list:hover, .news__list:focus-within { animation-play-state: paused; }
+  .news__list li:nth-child(odd) a { color: var(--p-500); text-decoration: underline; text-underline-offset: 3px; }
+  @keyframes ticker { to { transform: translateX(-50%); } }
+
+  /* About */
+  .mission { display: grid; gap: 16px; margin-top: 16px; padding: 32px 24px; }
+  .mission > :global(.icon) { font-size: 88px; }
+  .mission h3 { font-size: var(--fs-h2); line-height: var(--lh-h2); font-weight: 700; margin: 0 0 12px; }
+  .mission p { font-size: var(--fs-body); line-height: var(--lh-body); }
+  @media (min-width: 768px) { .mission { grid-template-columns: auto 1fr; gap: 32px; align-items: center; padding: 32px; margin-top: 24px; } .mission > :global(.icon) { font-size: 100px; } }
+
+  /* Themes */
+  .themes { display: grid; grid-auto-flow: column; grid-auto-columns: 148px; gap: 20px; list-style: none; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .themes::-webkit-scrollbar { display: none; }
+  .themes li { scroll-snap-align: start; }
+  .theme { display: grid; justify-items: center; text-align: center; gap: 4px; }
+  .theme img { width: 148px; aspect-ratio: 1; border-radius: 50%; object-fit: cover; margin-bottom: 12px; transition: transform .3s; }
+  .theme:hover img { transform: scale(1.04); }
+  .theme h3 { font-size: 1rem; line-height: 1.5; }
+  .theme p { font-size: var(--fs-xs); color: var(--text-2); }
+  .themes__arrows { display: flex; justify-content: center; margin-top: 24px; }
+  @media (min-width: 1200px) {
+    .themes { grid-auto-flow: row; grid-template-columns: repeat(6, 1fr); overflow: visible; margin: 0; padding: 0; }
+    .theme img { width: 150px; } .themes__arrows { display: none; }
+  }
+
+  /* Reviews — 3 on mobile to keep the section short */
+  .reviews { list-style: none; margin: 0; padding: 0; }
+  .reviews li:nth-child(n + 4) { display: none; }
+  @media (min-width: 768px) { .reviews li:nth-child(n + 4) { display: flex; } .reviews li:nth-child(n + 5) { display: none; } }
+  @media (min-width: 1024px) { .reviews li:nth-child(n + 5) { display: flex; } }
+  .review { display: flex; flex-direction: column; gap: 16px; }
+  .stars { display: flex; gap: 4px; color: var(--warning); font-size: 16px; }
+  .review blockquote { margin: 0; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); flex: 1; }
+  .review footer { display: flex; align-items: center; gap: 12px; }
+  .review footer span:last-child { display: grid; font-size: 1rem; }
+  .review small { font-size: var(--fs-xs); color: var(--text-2); }
+  .avatar { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--s-500); color: #fff; font-weight: 600; font-size: .875rem; }
+
+  /* Partners */
+  .partners__h { text-align: center; margin-bottom: 24px; }
+  .partners ul { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 24px; list-style: none; margin: 0; padding: 0; }
+  .partners li { width: calc(33% - 16px); }
+  .partners img { width: 100%; max-width: 170px; margin-inline: auto; }
+  @media (min-width: 768px) { .partners ul { flex-wrap: nowrap; justify-content: space-between; } .partners li { width: auto; } }
+</style>

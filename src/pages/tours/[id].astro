@@ -1,0 +1,293 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Icon from '../../components/Icon.astro';
+import Form from '../../components/Form.astro';
+import { img, srcset, SITE } from '../../config';
+
+export async function getStaticPaths() {
+  return (await getCollection('tours')).map((tour) => ({ params: { id: tour.id }, props: { tour } }));
+}
+const { tour } = Astro.props;
+const t = tour.data;
+const cat = await getEntry(t.category);
+const gallery = t.gallery.length ? t.gallery : [t.image];
+const allTours = await getCollection('tours');
+
+// ponytail: paragraphs + "- " bullets only; swap for a markdown lib if editors need bold/links here.
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+const md = (s: string) =>
+  s.trim().split(/\n\s*\n/).map((b) => {
+    const lines = b.split('\n').map((l) => l.trim());
+    return lines.every((l) => l.startsWith('- '))
+      ? `<ul>${lines.map((l) => `<li>${esc(l.slice(2))}</li>`).join('')}</ul>`
+      : `<p>${esc(lines.join(' '))}</p>`;
+  }).join('');
+
+const tabs = [
+  ['overview', 'Overview'],
+  ['highlights', 'Tour Highlights', t.highlights.length],
+  ['itinerary', 'Itinerary', t.itinerary.length],
+  ['inclusions', 'Inclusions & Exclusions', t.inclusions.length + t.exclusions.length],
+  ['map', 'Tour Map', t.map],
+].filter((x) => x.length === 2 || x[2]);
+const tel = SITE.phone.replace(/\s/g, '');
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const schema = [
+  {
+    '@context': 'https://schema.org', '@type': 'TouristTrip', name: t.title, description: t.summary, url,
+    image: gallery.map((g) => img(g, 1200)),
+    touristType: cat.data.menuTitle,
+    itinerary: { '@type': 'ItemList', itemListElement: t.itinerary.map((d, i) => ({ '@type': 'ListItem', position: i + 1, name: d.title })) },
+    offers: { '@type': 'Offer', price: t.price, priceCurrency: 'USD', availability: 'https://schema.org/InStock', url },
+    provider: { '@id': new URL('/#org', Astro.site).href },
+  },
+  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Tour Packages', item: new URL('/tours/', Astro.site).href },
+    { '@type': 'ListItem', position: 2, name: cat.data.menuTitle, item: new URL(`/tours/category/${cat.id}/`, Astro.site).href },
+    { '@type': 'ListItem', position: 3, name: t.title },
+  ] },
+];
+---
+<Base title={`${t.title} – ${t.nights}N/${t.days}D Bhutan Tour`} description={t.summary} image={t.image} schema={schema}>
+  <!-- Gallery -->
+  <div class="gal">
+    <div class="gal__track" id="gal">
+      {gallery.map((g, i) => (
+        <img src={img(g, 1200)} srcset={srcset(g, [480, 800, 1200])} sizes="(min-width:1200px) 700px, 100vw" alt={`${t.title} photo ${i + 1}`}
+          width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
+      ))}
+    </div>
+    {gallery.length > 1 && (
+      <div data-rail="gal">
+        <button type="button" class="gal__btn gal__btn--prev" aria-label="Previous photo"><Icon name="chevron-left" /></button>
+        <button type="button" class="gal__btn gal__btn--next" aria-label="Next photo"><Icon name="chevron-right" /></button>
+      </div>
+    )}
+  </div>
+
+  <div class="container layout">
+    <div class="main">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="/tours/">Tour Packages</a> / <a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
+      <h1>{t.title}</h1>
+      <p class="dur">{t.nights} Nights / {t.days} Days</p>
+      <p class="route">{t.route.map((r, i) => <>{i > 0 && <Icon name="arrow-right" />}<span>{r}</span></>)}</p>
+
+      <nav class="tabs" aria-label="Tour sections">
+        {tabs.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
+      </nav>
+
+      <section id="overview" class="block">
+        <h2>Overview</h2>
+        <p>{t.summary}</p>
+      </section>
+
+      {t.highlights.length > 0 && (
+        <section id="highlights" class="block">
+          <h2>Tour Highlights</h2>
+          <ul class="bullets">{t.highlights.map((h) => <li>{h}</li>)}</ul>
+          {gallery.length > 1 && (
+            <div class="thumbs">{gallery.slice(0, 4).map((g) => <img src={img(g, 400)} alt="" width="200" height="150" loading="lazy" />)}</div>
+          )}
+        </section>
+      )}
+
+      {t.itinerary.length > 0 && (
+        <section id="itinerary" class="block">
+          <h2>Detailed Itinerary</h2>
+          <ol class="days">
+            {t.itinerary.map((d, i) => (
+              <li>
+                <details open={i === 0}>
+                  <summary>{d.title}<Icon name="chevron-up" class="chev" /></summary>
+                  <div class="day">
+                    {d.image && <img src={img(d.image, 900)} alt="" width="900" height="400" loading="lazy" />}
+                    <Fragment set:html={md(d.body)} />
+                    {d.overnight && <p class="overnight">Overnight: {d.overnight}</p>}
+                  </div>
+                </details>
+              </li>
+            ))}
+          </ol>
+        </section>
+      )}
+
+      {t.inclusions.length > 0 && (
+        <section id="inclusions" class="block">
+          <h2>Inclusions</h2>
+          <ul class="checks">{t.inclusions.map((x) => <li><Icon name="check" class="ok" />{x}</li>)}</ul>
+          {t.exclusions.length > 0 && <>
+            <h2 class="mt">Exclusions</h2>
+            <ul class="checks">{t.exclusions.map((x) => <li><Icon name="close" class="no" />{x}</li>)}</ul>
+          </>}
+        </section>
+      )}
+
+      {t.map && (
+        <section id="map" class="block">
+          <h2>Tour Map</h2>
+          <img class="map" src={img(t.map, 1000)} alt={`Route map for ${t.title}`} loading="lazy" />
+        </section>
+      )}
+    </div>
+
+    <aside class="side">
+      <div class="price-card">
+        <p class="from">From</p>
+        <p class="price"><b>USD {t.price.toLocaleString('en-US')}</b> / person</p>
+        {t.priceNotes.length > 0 && (
+          <details class="notes">
+            <summary>Show all prices</summary>
+            <ul>{t.priceNotes.map((n) => <li>{n}</li>)}</ul>
+          </details>
+        )}
+        <button class="btn btn--primary btn--block" type="button" data-open-enquiry>Send Enquiry</button>
+      </div>
+      <div class="help-card">
+        <h2>Get our assistance for your easy booking!</h2>
+        <a class="btn btn--outline btn--block" href={`tel:${tel}`}><Icon name="phone" />Want us to call you?</a>
+        <p>Call us at</p>
+        <a class="big-tel" href={`tel:${tel}`}>{SITE.phone}</a>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Mobile sticky CTA -->
+  <div class="bar">
+    <p><small>From</small><b>USD {t.price.toLocaleString('en-US')}</b></p>
+    <button class="btn btn--primary" type="button" data-open-enquiry>Send Enquiry</button>
+  </div>
+
+  <dialog class="enq" id="enquiry" aria-labelledby="enq-title">
+    <div class="enq__head">
+      <h2 id="enq-title">Secure Your Adventure with Bhutanova Travels</h2>
+      <button type="button" class="enq__close" aria-label="Close" data-close><Icon name="close" /></button>
+    </div>
+    <div class="enq__tour">
+      <img src={img(t.image, 300)} alt="" width="120" height="90" />
+      <div><h3>{t.title}</h3><p class="muted">{t.nights} Nights / {t.days} Days</p><p><b>USD {t.price.toLocaleString('en-US')}</b> <span class="muted">/ person</span></p></div>
+    </div>
+    <Form subject={`Enquiry: ${t.title}`} class="enq__form">
+      <div class="field full"><label for="e-pkg">Package</label>
+        <select class="input" id="e-pkg" name="package">{allTours.map((x) => <option selected={x.id === tour.id}>{x.data.title}</option>)}</select></div>
+      <div class="field full"><label for="e-name">Full name *</label><input class="input" id="e-name" name="name" autocomplete="name" required /></div>
+      <div class="field full"><label for="e-email">Email address *</label><input class="input" id="e-email" name="email" type="email" autocomplete="email" required /></div>
+      <div class="field full"><label for="e-phone">Phone number (with country code) *</label><input class="input" id="e-phone" name="phone" type="tel" autocomplete="tel" placeholder="+1 555 000 0000" required /></div>
+      <div class="field"><label for="e-nat">Nationality *</label><input class="input" id="e-nat" name="nationality" autocomplete="country-name" required /></div>
+      <div class="field"><label for="e-count">Travelers *</label><input class="input" id="e-count" name="travelers" type="number" min="1" value="2" required /></div>
+      <div class="field"><label for="e-arr">Arrival date *</label><input class="input" id="e-arr" name="arrival" type="date" required /></div>
+      <div class="field"><label for="e-dep">Departure date *</label><input class="input" id="e-dep" name="departure" type="date" required /></div>
+      <div class="field full"><label for="e-msg">Your message</label><textarea class="input" id="e-msg" name="message" placeholder="Anything we should know?"></textarea></div>
+      <button class="btn btn--primary btn--block full">Send Enquiry</button>
+    </Form>
+  </dialog>
+</Base>
+
+<script>
+  const dlg = document.getElementById('enquiry') as HTMLDialogElement;
+  document.querySelectorAll('[data-open-enquiry]').forEach((b) => b.addEventListener('click', () => dlg.showModal()));
+  dlg.querySelector('[data-close]')!.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('click', (e) => e.target === dlg && dlg.close());
+</script>
+
+<style>
+  /* Gallery: full-bleed on mobile, centered with side peeks on desktop */
+  .gal { position: relative; }
+  .gal__track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .gal__track::-webkit-scrollbar { display: none; }
+  .gal__track img { flex: 0 0 100%; aspect-ratio: 4 / 3; object-fit: cover; scroll-snap-align: center; }
+  .gal__btn { position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--p-500); color: #fff; font-size: 16px; cursor: pointer; }
+  .gal__btn:disabled { opacity: .5; cursor: default; }
+  .gal__btn--prev { left: 16px; } .gal__btn--next { right: 16px; }
+  @media (min-width: 768px) {
+    .gal { max-width: calc(var(--container) + var(--gutter) * 2); margin: 24px auto 0; padding-inline: var(--gutter); }
+    .gal__track { gap: 8px; border-radius: var(--radius); }
+    .gal__track img { flex-basis: 72%; aspect-ratio: 3 / 2; border-radius: var(--radius); }
+    .gal__btn--prev { left: calc(var(--gutter) + 20px); } .gal__btn--next { right: calc(var(--gutter) + 20px); }
+  }
+  @media (min-width: 1200px) { .gal { margin-top: 32px; } .gal__track img { flex-basis: 63%; aspect-ratio: auto; height: 480px; } }
+
+  /* Layout */
+  .layout { display: grid; gap: 32px; padding-block: 24px 120px; }
+  .layout > * { min-width: 0; }
+  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; padding-block: 32px 96px; } }
+  .crumbs { font-size: var(--fs-xs); color: var(--text-2); margin-bottom: 8px; }
+  .crumbs a:hover { color: var(--p-600); }
+  .main h1 { font-size: var(--fs-h2); line-height: var(--lh-h2); }
+  .dur { margin: 4px 0 16px; }
+  .route { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: var(--text-2); }
+  .route :global(.icon) { font-size: 14px; color: var(--text); }
+
+  .tabs {
+    position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: 4px; margin: 24px calc(var(--gutter) * -1) 0; padding: 0 var(--gutter);
+    background: #fff; border-block: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tabs a { padding: 14px 12px; font-size: .875rem; font-weight: 500; }
+  .tabs a:hover { color: var(--p-600); }
+  @media (min-width: 768px) { .tabs { margin-inline: 0; padding: 0; } }
+
+  .block { padding-block: 32px; border-bottom: 1px solid var(--border); scroll-margin-top: calc(var(--header-h) + 56px); }
+  .block h2 { margin-bottom: 16px; font-size: 1.25rem; line-height: 1.4; }
+  .block > p { color: var(--text-2); }
+  .mt { margin-top: 32px; }
+  .bullets { padding-left: 20px; display: grid; gap: 8px; }
+  .thumbs { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 20px; }
+  .thumbs img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; }
+  @media (min-width: 768px) { .thumbs { grid-template-columns: repeat(4, 1fr); } }
+
+  .days { list-style: none; margin: 0; padding: 0; }
+  .days li { position: relative; padding-left: 36px; }
+  .days li::before { content: ''; position: absolute; left: 7px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: var(--p-500); box-shadow: 0 0 0 5px var(--p-100); }
+  .days li::after { content: ''; position: absolute; left: 11px; top: 30px; bottom: -6px; width: 2px; background: var(--p-100); }
+  .days li:last-child::after { display: none; }
+  .days summary { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0 16px; font-weight: 600; cursor: pointer; list-style: none; border-bottom: 1px solid var(--border); }
+  .days summary::-webkit-details-marker { display: none; }
+  .days :global(.chev) { font-size: 12px; margin-top: 6px; transform: rotate(180deg); transition: transform .2s; }
+  details[open] > summary :global(.chev) { transform: none; }
+  .day { display: grid; gap: 12px; padding: 16px 0 24px; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
+  .day img { border-radius: 8px; width: 100%; max-height: 260px; object-fit: cover; }
+  .day :global(ul) { padding-left: 18px; display: grid; gap: 8px; margin: 0; }
+  .overnight { font-weight: 600; color: var(--text); }
+
+  .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+  .checks li { display: flex; gap: 10px; }
+  .checks :global(.icon) { font-size: 14px; margin-top: .35em; }
+  .checks :global(.ok) { color: var(--success); } .checks :global(.no) { color: var(--error); }
+  .map { border-radius: var(--radius); border: 1px solid var(--border); }
+
+  /* Sidebar */
+  .side { display: grid; gap: 16px; align-content: start; }
+  @media (min-width: 1200px) { .side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
+  .price-card { padding: 20px; border-radius: var(--radius); box-shadow: 0 4px 24px rgb(0 0 0 / .08); display: grid; gap: 8px; }
+  .from { color: var(--text-2); font-size: var(--fs-sm); }
+  .price b { font-size: 1.375rem; color: var(--s-500); }
+  .price { color: var(--text-2); }
+  .notes summary { font-size: var(--fs-xs); text-decoration: underline; cursor: pointer; }
+  .notes ul { margin: 8px 0; padding-left: 18px; font-size: var(--fs-xs); color: var(--text-2); display: grid; gap: 4px; }
+  .price-card .btn { margin-top: 8px; }
+  .help-card { padding: 20px; border: 1px solid var(--border); border-radius: var(--radius); text-align: center; display: grid; gap: 12px; }
+  .help-card h2 { font-size: 1rem; line-height: 1.5; }
+  .help-card p { color: var(--text-2); font-size: var(--fs-sm); padding-top: 12px; border-top: 1px solid var(--border); }
+  .big-tel { font-size: 1.375rem; font-weight: 700; }
+
+  /* Mobile bar */
+  .bar { position: fixed; inset: auto 0 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 12px var(--gutter) calc(12px + env(safe-area-inset-bottom)); background: #fff; box-shadow: 0 -4px 16px rgb(0 0 0 / .08); }
+  .bar p { display: grid; line-height: 1.3; }
+  .bar small { color: var(--text-2); font-size: .75rem; }
+  .bar b { font-size: 1.125rem; color: var(--s-500); }
+  @media (min-width: 1200px) { .bar { display: none; } }
+
+  /* Enquiry dialog */
+  .enq { width: min(640px, calc(100% - 24px)); max-height: calc(100dvh - 24px); padding: 24px 20px; border: 0; border-radius: var(--radius); }
+  .enq::backdrop { background: rgb(12 25 37 / .6); }
+  .enq__head { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+  .enq__head h2 { font-size: 1.125rem; line-height: 1.4; }
+  .enq__close { border: 0; background: none; font-size: 18px; cursor: pointer; width: 36px; height: 36px; margin: -6px -8px 0 0; }
+  .enq__tour { display: flex; gap: 16px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 20px; font-size: var(--fs-sm); }
+  .enq__tour img { width: 96px; border-radius: 6px; object-fit: cover; }
+  .enq__tour h3 { font-size: 1rem; }
+  .enq :global(.enq__form) { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .enq :global(.enq__form) .full { grid-column: 1 / -1; }
+  @media (min-width: 768px) { .enq { padding: 32px; } .enq__tour img { width: 120px; } }
+</style>

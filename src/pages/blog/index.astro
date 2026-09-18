@@ -1,0 +1,18 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { img, srcset } from '../../config';
+const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
+const hero = 'photo-1585904194096-15ef66ccd234';
+---
+<Base title="Blog – Stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Masked dancers at a Bhutanese tshechu" width="1600" height="700" fetchpriority="high" />
+    <div><p class="eyebrow">Stories, tips & culture</p><h1>Read Our Blog</h1></div>
+  </section>
+  <section class="section">
+    <div class="container grid-3 posts">{posts.map((p) => <BlogCard post={p} />)}</div>
+  </section>
+</Base>
+<style>.posts { row-gap: 48px; }</style>

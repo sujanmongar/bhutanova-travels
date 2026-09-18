@@ -1,0 +1,92 @@
+---
+import '../styles/global.css';
+import montserrat from '@fontsource/montserrat/files/montserrat-latin-500-normal.woff2?url';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { SITE, img } from '../config';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  published?: Date;
+  schema?: Record<string, unknown> | Record<string, unknown>[];
+  noindex?: boolean;
+}
+const { title, description = SITE.description, image = 'photo-1578556881786-851d4b79cb73', type = 'website', published, schema, noindex } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const fullTitle = Astro.url.pathname === '/' ? `${SITE.name} | ${SITE.tagline}` : `${title} | ${SITE.name}`;
+const ogImage = img(image, 1200);
+
+const org = {
+  '@context': 'https://schema.org',
+  '@type': 'TravelAgency',
+  '@id': new URL('/#org', Astro.site).href,
+  name: SITE.name,
+  url: Astro.site?.href,
+  logo: new URL('/favicon.svg', Astro.site).href,
+  image: ogImage,
+  email: SITE.email,
+  telephone: SITE.phone,
+  address: { '@type': 'PostalAddress', streetAddress: '4730 Babesa', addressLocality: 'Thimphu', addressCountry: 'BT' },
+  areaServed: { '@type': 'Country', name: 'Bhutan' },
+  sameAs: Object.values(SITE.social),
+};
+const ld = [org, ...(schema ? [schema].flat() : [])];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta name="theme-color" content="#162e44" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="preload" href={montserrat} as="font" type="font/woff2" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:locale" content="en_US" />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Header />
+    <main id="main"><slot /></main>
+    <Footer />
+    <script>
+      // Carousel arrows for any [data-rail] (native scroll-snap does the rest)
+      document.querySelectorAll<HTMLElement>('[data-rail]').forEach((rail) => {
+        const box = document.getElementById(rail.dataset.rail!);
+        if (!box) return;
+        const [prev, next] = rail.querySelectorAll<HTMLButtonElement>('button');
+        const step = () => (box.firstElementChild as HTMLElement)?.offsetWidth + 24 || box.clientWidth;
+        const sync = () => {
+          prev.disabled = box.scrollLeft < 4;
+          next.disabled = box.scrollLeft + box.clientWidth >= box.scrollWidth - 4;
+        };
+        prev.onclick = () => box.scrollBy({ left: -step(), behavior: 'smooth' });
+        next.onclick = () => box.scrollBy({ left: step(), behavior: 'smooth' });
+        box.addEventListener('scroll', sync, { passive: true });
+        addEventListener('resize', sync);
+        sync();
+      });
+    </script>
+  </body>
+</html>

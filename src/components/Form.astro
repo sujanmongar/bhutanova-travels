@@ -1,0 +1,12 @@
+---
+import { SITE } from '../config';
+interface Props { subject: string; class?: string; id?: string }
+const { subject, class: cls, id } = Astro.props;
+// No endpoint yet → fall back to the visitor's mail app so enquiries are never lost.
+const action = SITE.formEndpoint || `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}`;
+---
+<form class={cls} id={id} action={action} method="post" enctype={SITE.formEndpoint ? undefined : 'text/plain'}>
+  <input type="hidden" name="_subject" value={subject} />
+  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" hidden />
+  <slot />
+</form>

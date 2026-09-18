@@ -1,0 +1,41 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { img, srcset } from '../config';
+interface Props { tour: CollectionEntry<'tours'>; eager?: boolean }
+const { tour, eager } = Astro.props;
+const t = tour.data;
+const href = `/tours/${tour.id}/`;
+---
+<article class="tc">
+  <a href={href} class="tc__img" tabindex="-1" aria-hidden="true">
+    <img src={img(t.image, 800)} srcset={srcset(t.image, [400, 600, 800])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 86vw"
+      alt="" width="800" height="460" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  </a>
+  <div class="tc__body">
+    <div class="tc__top">
+      <h3><a href={href}>{t.title}</a></h3>
+      <span class="tc__badge" title={`${t.nights} nights, ${t.days} days`}>{t.nights}N/{t.days}D</span>
+    </div>
+    <p class="tc__route">{t.route.map((r) => r.replace(/\s*\(.*\)/, '')).join(' - ')}</p>
+    <div class="tc__foot">
+      <p class="tc__price">USD {t.price.toLocaleString('en-US')}<small>Per Person</small></p>
+      <a href={href} class="btn btn--primary btn--sm">View Details</a>
+    </div>
+  </div>
+</article>
+<style>
+  .tc { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; background: #fff; height: 100%; transition: box-shadow .2s; }
+  .tc:hover { box-shadow: 0 8px 24px rgb(22 46 68 / .08); }
+  .tc__img { aspect-ratio: 16 / 9.2; overflow: hidden; }
+  .tc__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .tc:hover .tc__img img { transform: scale(1.04); }
+  .tc__body { display: flex; flex-direction: column; flex: 1; padding: 16px; }
+  .tc__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .tc h3 { font-size: 1.125rem; line-height: 1.4; }
+  .tc__badge { flex: none; margin-top: 2px; padding: 0 4px; border: 1px solid var(--text); border-radius: 3px; font-size: .75rem; line-height: 18px; }
+  .tc__route { margin: 8px 0 16px; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
+  .tc__foot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+  .tc__price { display: grid; font-size: var(--fs-price); line-height: 1.35; font-weight: 700; color: var(--s-500); }
+  .tc__price small { font-size: .6875rem; line-height: 16px; font-weight: 400; color: var(--text-2); }
+  @media (min-width: 1200px) { .tc h3 { line-height: 24px; } .tc__price small { font-size: .625rem; } }
+</style>

@@ -1,0 +1,27 @@
+---
+import Icon from './Icon.astro';
+import faqs from '../data/faqs.json';
+const { items = faqs.items, open = 1 } = Astro.props;
+const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f: { q: string; a: string }) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+---
+<div class="faq">
+  {items.map((f: { q: string; a: string }, i: number) => (
+    <details open={i === open} name="faq">
+      <summary><span>{f.q}</span><Icon name="add" class="plus" /><Icon name="minus" class="minus" /></summary>
+      <p>{f.a}</p>
+    </details>
+  ))}
+</div>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<style>
+  .faq { max-width: 1120px; margin-inline: auto; }
+  details { border-bottom: 1px solid var(--border); border-radius: var(--radius); transition: border-color .2s; }
+  details[open] { border: 1px solid var(--border); margin-block: 8px; }
+  summary { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 16px; cursor: pointer; list-style: none; font-weight: 600; font-size: 1.0625rem; line-height: 1.45; }
+  summary::-webkit-details-marker { display: none; }
+  summary :global(.icon) { font-size: 20px; margin-top: 2px; color: var(--text-3); }
+  summary :global(.minus), details[open] :global(.plus) { display: none; }
+  details[open] :global(.minus) { display: block; color: var(--p-500); }
+  details p { padding: 0 16px 20px; margin-top: -8px; color: var(--text-2); font-size: var(--fs-sm); line-height: var(--lh-sm); }
+  @media (min-width: 1200px) { summary { font-size: 1rem; line-height: 24px; font-weight: 500; } details p { max-width: 90%; } }
+</style>

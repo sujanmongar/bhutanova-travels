@@ -1,0 +1,22 @@
+---
+const { title = 'First-class Impressions are <em>WAITING</em> for <em>YOU!</em>', text = 'Bhutanova Travels offers travelers tours and excursions to every corner of Bhutan. Browse our packages to find your dream journey!', cta = 'Book Your Adventure Now!', href = '/contact/' } = Astro.props;
+---
+<section class="cta section section--grey">
+  <div class="container cta__in">
+    <img src="/images/illustrations/contact.svg" alt="" width="524" height="354" loading="lazy" />
+    <div class="cta__txt">
+      <h2 set:html={title} />
+      <p>{text}</p>
+      <a class="btn btn--primary" href={href}>{cta}</a>
+    </div>
+  </div>
+</section>
+<style>
+  .cta__in { display: grid; gap: 32px; align-items: center; }
+  .cta img { width: min(100%, 420px); margin-inline: auto; }
+  .cta__txt { display: grid; gap: 16px; justify-items: start; }
+  .cta h2 :global(em) { font-style: normal; color: var(--p-500); }
+  .cta p { color: var(--text-2); }
+  @media (min-width: 768px) { .cta__in { grid-template-columns: 1fr 1fr; gap: 48px; } .cta__txt { gap: 20px; } }
+  @media (min-width: 1200px) { .cta__in { padding-inline: 40px; } .cta img { width: 100%; max-width: 524px; } }
+</style>

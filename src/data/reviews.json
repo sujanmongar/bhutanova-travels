@@ -1,0 +1,10 @@
+{
+  "items": [
+    { "name": "Anna Keller", "place": "Zurich, Switzerland", "text": "Our guide Karma knew every story behind every dzong. The Tiger's Nest hike was paced perfectly and the farmhouse dinner was a highlight.", "rating": 5 },
+    { "name": "Rahul Menon", "place": "Bengaluru, India", "text": "Booking was simple and the team handled permits, hotels and transfers without a hitch. Punakha in spring was unforgettable.", "rating": 5 },
+    { "name": "Mei Tanaka", "place": "Osaka, Japan", "text": "We went for the Paro Tshechu and had front-row spots for the masked dances. Thoughtful, calm and very well organised.", "rating": 5 },
+    { "name": "James Carter", "place": "Melbourne, Australia", "text": "The Druk Path trek was the best week of my year. Great camp crew, great food, and views of Jomolhari on day four.", "rating": 5 },
+    { "name": "Sofia Ruiz", "place": "Madrid, Spain", "text": "Travelling with two kids we needed flexibility, and Bhutanova delivered — archery lessons, a hot stone bath and easy drives.", "rating": 5 },
+    { "name": "Daniel Osei", "place": "Accra, Ghana", "text": "Clear pricing with the SDF explained upfront. No surprises, just a beautiful country and a team that genuinely cared.", "rating": 5 }
+  ]
+}

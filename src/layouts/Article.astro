@@ -1,0 +1,39 @@
+---
+import Base from './Base.astro';
+import { img, srcset } from '../config';
+interface Props { title: string; description: string; image: string; date: Date; kicker: string; back: [string, string]; author?: string; updatedLabel?: string }
+const { title, description, image, date, kicker, back, author = 'Bhutanova Travels', updatedLabel = 'Published' } = Astro.props;
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const schema = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: title, description, image: img(image, 1200), url,
+  datePublished: date.toISOString(), dateModified: date.toISOString(),
+  author: { '@type': 'Organization', name: author }, publisher: { '@id': new URL('/#org', Astro.site).href },
+  mainEntityOfPage: url,
+};
+const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base title={title} description={description} image={image} type="article" published={date} schema={schema}>
+  <article>
+    <header class="container ah">
+      <nav class="crumbs" aria-label="Breadcrumb"><a href={back[0]}>{back[1]}</a> / {kicker}</nav>
+      <h1>{title}</h1>
+      <p class="meta">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · {author}</p>
+    </header>
+    <div class="container">
+      <img class="cover" src={img(image, 1400)} srcset={srcset(image, [480, 800, 1200, 1600])} sizes="(min-width:1200px) 1120px, 100vw" alt="" width="1400" height="700" fetchpriority="high" />
+      <div class="prose body"><slot /></div>
+    </div>
+  </article>
+  <slot name="after" />
+</Base>
+<style>
+  .ah { padding-top: 32px; max-width: calc(800px + var(--gutter) * 2); }
+  .crumbs { font-size: var(--fs-xs); color: var(--text-2); margin-bottom: 12px; }
+  .crumbs a { color: var(--p-600); }
+  h1 { font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); }
+  .meta { margin: 12px 0 24px; font-size: var(--fs-sm); color: var(--text-2); }
+  .cover { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); }
+  .body { margin: 32px auto var(--section); max-width: 800px; }
+  @media (min-width: 768px) { .ah { padding-top: 48px; } .cover { aspect-ratio: 2 / 1; } .body { font-size: 1.0625rem; line-height: 1.75; } }
+  @media (min-width: 1200px) { .body { font-size: 1.0625rem; line-height: 1.7; } }
+</style>

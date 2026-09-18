@@ -1,0 +1,157 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from './Icon.astro';
+import Logo from './Logo.astro';
+import Social from './Social.astro';
+import { SITE } from '../config';
+
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order).slice(0, 8);
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/about/', label: 'About Us' },
+  { href: '/tours/', label: 'Tour Packages', children: cats.map((c) => ({ href: `/tours/category/${c.id}/`, label: c.data.menuTitle })) },
+  { href: '/travel-guide/', label: 'Travel Guide', children: guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })) },
+  { href: '/blog/', label: 'Blogs' },
+  { href: '/contact/', label: 'Contact Us' },
+];
+const path = Astro.url.pathname;
+const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+<div class="topbar">
+  <div class="container topbar__in">
+    <ul class="topbar__info">
+      <li class="hide-sm"><Icon name="location-dot" />{SITE.address}</li>
+      <li><a href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a></li>
+      <li><a href={`tel:${SITE.phone.replace(/\s/g, '')}`}><Icon name="phone" />{SITE.phone}</a></li>
+    </ul>
+    <Social class="hide-sm" />
+  </div>
+</div>
+
+<header class="nav" data-nav>
+  <div class="container nav__in">
+    <a href="/" class="nav__logo" aria-label="Bhutanova Travels home"><Logo /></a>
+
+    <nav id="menu" class="menu" aria-label="Main">
+      <ul class="menu__list">
+        {nav.map((item) => (
+          <li class:list={['menu__item', { 'has-sub': item.children }]}>
+            {item.children ? (
+              <details class="sub" name="menu">
+                <summary class:list={['menu__link', { 'is-active': active(item.href) }]}>
+                  {item.label}<Icon name="chevron-up" class="chev" />
+                </summary>
+                <ul class="sub__list">
+                  <li><a href={item.href}>All {item.label}</a></li>
+                  {item.children.map((c) => <li><a href={c.href}>{c.label}</a></li>)}
+                </ul>
+              </details>
+            ) : (
+              <a href={item.href} class:list={['menu__link', { 'is-active': active(item.href) }]} aria-current={active(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="nav__cta">
+      <a href="/contact/" class="btn btn--primary btn--sm">Book Now</a>
+      <button class="burger" type="button" aria-controls="menu" aria-expanded="false" aria-label="Open menu" data-burger>
+        <Icon name="bars" class="i-open" /><Icon name="close" class="i-close" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const nav = document.querySelector<HTMLElement>('[data-nav]')!;
+  const burger = nav.querySelector<HTMLButtonElement>('[data-burger]')!;
+  burger.addEventListener('click', () => {
+    const open = burger.getAttribute('aria-expanded') !== 'true';
+    // Pin the header to the top so the fixed panel lines up under it
+    const bar = document.querySelector<HTMLElement>('.topbar')!.offsetHeight;
+    if (open && scrollY < bar) scrollTo({ top: bar, behavior: 'instant' });
+    burger.setAttribute('aria-expanded', String(open));
+    burger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    document.documentElement.classList.toggle('menu-open', open);
+  });
+  addEventListener('keydown', (e) => e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true' && burger.click());
+  // Desktop: hover opens dropdowns; clicking elsewhere closes them
+  const desktop = matchMedia('(min-width: 1200px)');
+  nav.querySelectorAll<HTMLDetailsElement>('details.sub').forEach((d) => {
+    d.addEventListener('mouseenter', () => desktop.matches && (d.open = true));
+    d.addEventListener('mouseleave', () => desktop.matches && (d.open = false));
+  });
+  document.addEventListener('click', (e) => {
+    if (desktop.matches) nav.querySelectorAll<HTMLDetailsElement>('details.sub[open]').forEach((d) => !d.contains(e.target as Node) && (d.open = false));
+  });
+  new IntersectionObserver(([e]) => nav.classList.toggle('is-stuck', !e.isIntersecting)).observe(document.querySelector('.topbar')!);
+</script>
+
+<style>
+  .topbar { background: var(--s-500); color: #fff; font-size: .75rem; font-weight: 500; }
+  .topbar__in { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
+  .topbar__info { display: flex; justify-content: space-between; flex: 1; gap: 12px; list-style: none; margin: 0; padding: 0; white-space: nowrap; min-width: 0; }
+  .topbar__info li { min-width: 0; }
+  .topbar__info a { overflow: hidden; text-overflow: ellipsis; }
+  .topbar__info li, .topbar__info a { display: flex; align-items: center; gap: 6px; }
+  @media (min-width: 768px) { .topbar__info { flex: none; justify-content: flex-start; gap: 24px; } .topbar__info li, .topbar__info a { gap: 8px; } }
+  .topbar :global(.icon) { font-size: 14px; }
+  :global(.hide-sm) { display: none !important; }
+  @media (min-width: 768px) { .topbar { font-size: .875rem; } .topbar__in { min-height: 52px; } :global(.hide-sm) { display: flex !important; } }
+
+  .nav { position: sticky; top: 0; z-index: 50; background: #fff; border-bottom: 1px solid var(--border); transition: box-shadow .2s; }
+  .nav.is-stuck { box-shadow: 0 4px 16px rgb(22 46 68 / .08); }
+  .nav__in { display: flex; align-items: center; gap: 16px; height: var(--header-h); }
+  .nav__logo { margin-right: auto; }
+  .nav__cta { display: flex; align-items: center; gap: 12px; }
+  .burger { display: grid; place-items: center; width: 44px; height: 44px; border: 0; background: none; font-size: 24px; cursor: pointer; margin-right: -10px; }
+  .burger :global(.i-close), :global(.menu-open) .burger :global(.i-open) { display: none; }
+  :global(.menu-open) .burger :global(.i-close) { display: block; }
+
+  /* Mobile + tablet: slide-down panel */
+  .menu {
+    position: fixed; inset: var(--header-h) 0 0; background: #fff; overflow-y: auto; overscroll-behavior: contain;
+    padding: 8px var(--gutter) 40px; visibility: hidden; opacity: 0; transform: translateY(-8px);
+    transition: opacity .2s, transform .2s, visibility .2s;
+  }
+  :global(.menu-open) .menu { visibility: visible; opacity: 1; transform: none; }
+  :global(.menu-open) body { overflow: hidden; }
+  .menu__list { list-style: none; margin: 0; padding: 0; }
+  .menu__item { border-bottom: 1px solid var(--border); }
+  .menu__link {
+    display: flex; justify-content: space-between; align-items: center; min-height: 56px;
+    font-size: 1.0625rem; font-weight: 600; cursor: pointer; list-style: none;
+  }
+  .menu__link::-webkit-details-marker { display: none; }
+  .menu__link.is-active { color: var(--p-500); }
+  .menu :global(.chev) { font-size: 12px; transform: rotate(180deg); transition: transform .2s; }
+  details[open] > summary :global(.chev) { transform: none; }
+  .sub__list { list-style: none; margin: 0 0 12px; padding: 0 0 0 12px; border-left: 2px solid var(--p-100); }
+  .sub__list a { display: block; padding: 10px 8px; font-size: 1rem; color: var(--text-2); }
+
+  /* Desktop: inline menu + dropdown */
+  @media (min-width: 1200px) {
+    .burger { display: none; }
+    .nav__logo { margin-right: 0; }
+    .menu { position: static; visibility: visible; opacity: 1; transform: none; padding: 0; overflow: visible; margin-inline: auto; background: none; }
+    .menu__list { display: flex; gap: 28px; }
+    .menu__item { border: 0; position: relative; }
+    .menu__link {
+      min-height: var(--header-h); gap: 6px; font-size: .8125rem; line-height: 22px; font-weight: 500; letter-spacing: .01em;
+      text-transform: uppercase; transition: color .2s;
+    }
+    .menu__link:hover { color: var(--p-500); }
+    .menu__link.is-active { font-weight: 600; }
+    .menu :global(.chev) { font-size: 10px; }
+    .sub__list {
+      position: absolute; top: calc(100% - 12px); left: -16px; min-width: 260px; margin: 0; padding: 8px 0;
+      background: #fff; border: 0; border-radius: 8px; box-shadow: 0 12px 32px rgb(22 46 68 / .14);
+    }
+    .sub__list a { padding: 8px 16px; font-size: .8125rem; line-height: 22px; color: var(--text); }
+    .sub__list a:hover { background: var(--surface); color: var(--p-600); }
+  }
+</style>

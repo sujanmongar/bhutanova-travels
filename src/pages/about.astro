@@ -1,0 +1,84 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import CtaBanner from '../components/CtaBanner.astro';
+import { img, srcset } from '../config';
+
+const values = [
+  ['arrows-to-circle', 'Community Focus', 'We believe in contributing to the communities we touch. Bhutanova Travels is dedicated to initiatives that benefit local communities, fostering sustainable tourism that uplifts the lives of those we meet.'],
+  ['people', 'People - Centric', 'Our commitment to our clients is unwavering. We add value to your travel experience with expert guidance, personalised services and dedication to making your journey memorable and stress-free.'],
+  ['image-user', 'Self - Reflection', "Rooted in the principles of GNH, we value personal growth and well-being. A journey with Bhutanova Travels is not just about exploration; it's an opportunity for self-discovery."],
+];
+const why = [
+  ['sliders', 'Expertise', 'Our team of seasoned professionals brings a wealth of knowledge about Bhutan, so your trip is curated to perfection.'],
+  ['gauge', 'Convenience', 'We understand the complexities of travel planning. Let us take the reins while you focus on the joys of your journey.'],
+  ['star', 'Personalized Services', 'No two travelers are alike. We craft experiences tailored to your preferences for a unique and enriching adventure.'],
+  ['headphones', 'Peace of Mind', 'Travel confidently, knowing our team is dedicated to your safety, comfort and enjoyment throughout your Bhutanese escape.'],
+];
+const hero = 'photo-1650747857310-c359fd3ee5c5';
+---
+<Base title="About Us" description="Meet Bhutanova Travels — a Thimphu-based tour operator guided by Gross National Happiness, creating responsible cultural, festival and trekking tours across Bhutan." image={hero}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Buddha Dordenma statue above Thimphu" width="1600" height="700" fetchpriority="high" />
+    <div><p class="eyebrow">A leader in client-focused travel management</p><h1>About Bhutanova Travels</h1></div>
+  </section>
+
+  <section class="section">
+    <div class="container intro">
+      <h2>BHUTANOVA TRAVELS</h2>
+      <p>Bhutanova Travels is a company based in Bhutan, a kingdom in South Asia rich in culture and tradition and governed by the core values of Gross National Happiness (GNH). We have built our foundation on three pillars that resonate with the essence of Bhutan — for the benefit of the COMMUNITY, the PEOPLE, and the SELF.</p>
+      <p>These pillars drive our primary objective: adding value to your travel experience through expertise, convenience, personalised service and peace of mind. Whether you seek spiritual retreats, scenic wonders or cultural encounters, we are here to turn your travel dreams into reality.</p>
+      <p><b>Welcome to Bhutan, and thank you for choosing Bhutanova Travels. Your adventure awaits!</b></p>
+    </div>
+  </section>
+
+  <section class="section section--flush">
+    <div class="container split">
+      <img src="/images/illustrations/vision.svg" alt="" width="420" height="420" loading="lazy" />
+      <div><h2>Our Vision</h2><p>To foster sustainable tourism, uplift local communities, and provide unparalleled travel experiences rooted in expert guidance, personalised services, and a commitment to the well-being and self-discovery of our clients.</p></div>
+    </div>
+    <div class="container split split--rev">
+      <img src="/images/illustrations/mission.svg" alt="" width="420" height="420" loading="lazy" />
+      <div>
+        <h2>Our Mission</h2>
+        <p>Our vision extends beyond conventional travel. We aspire to be trailblazers in shaping a sustainable tourism landscape that explores the world's wonders and uplifts local communities.</p>
+        <p>Our approach is anchored in expert guidance, personalised services and a steadfast dedication to the well-being of our clients. We envision a future where every journey with Bhutanova Travels broadens horizons and leaves a positive, lasting impact.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="sh sh--center"><h2>Core Values</h2></div>
+      <div class="grid-3">{values.map(([i, t, d]) => <div class="card-soft pillar"><Icon name={i} /><h3>{t}</h3><p>{d}</p></div>)}</div>
+    </div>
+  </section>
+
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh sh--center">
+        <h2>Why Choose BHUTANOVA TRAVELS</h2>
+        <p>Discover Bhutan with experts in curating your ideal trip. Enjoy a seamless journey with personalised experiences and safety prioritised.</p>
+      </div>
+      <div class="grid-2">{why.map(([i, t, d]) => <div class="card-line"><Icon name={i} /><h3>{t}</h3><p>{d}</p></div>)}</div>
+    </div>
+  </section>
+
+  <CtaBanner title="What are you waiting for? Contact us Now!" cta="Contact Us" />
+</Base>
+<style>
+  .intro { display: grid; gap: 16px; max-width: calc(900px + var(--gutter) * 2); text-align: center; }
+  .intro h2 { margin-bottom: 8px; }
+  .intro p { color: var(--text-2); }
+  .split { display: grid; gap: 24px; align-items: center; margin-bottom: 48px; }
+  .split img { width: min(100%, 320px); margin-inline: auto; }
+  .split div { display: grid; gap: 12px; }
+  .split p { color: var(--text-2); }
+  @media (min-width: 768px) {
+    .split { grid-template-columns: 2fr 3fr; gap: 48px; margin-bottom: 64px; }
+    .split--rev img { order: 2; }
+    .split img { width: 100%; max-width: 420px; }
+  }
+  .grid-2 { display: grid; gap: 16px; }
+  @media (min-width: 768px) { .grid-2 { grid-template-columns: 1fr 1fr; gap: 24px; } }
+</style>

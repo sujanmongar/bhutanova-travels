@@ -1,0 +1,28 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import { img, srcset } from '../config';
+interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string }
+const { post, base = '/blog/' } = Astro.props;
+const href = `${base}${post.id}/`;
+---
+<article class="bc">
+  <a href={href} class="bc__img" tabindex="-1" aria-hidden="true">
+    <img src={img(post.data.image, 800)} srcset={srcset(post.data.image, [400, 600, 800])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 86vw"
+      alt="" width="800" height="460" loading="lazy" decoding="async" />
+  </a>
+  <h3><a href={href}>{post.data.title}</a></h3>
+  <p>{post.data.excerpt}</p>
+  <a href={href} class="link-more" aria-label={`Read more: ${post.data.title}`}>Read More <Icon name="arrow-up-right" /></a>
+</article>
+<style>
+  .bc { display: flex; flex-direction: column; gap: 12px; }
+  .bc__img { aspect-ratio: 16 / 9.2; border-radius: var(--radius); overflow: hidden; margin-bottom: 4px; }
+  .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s; }
+  .bc:hover .bc__img img { transform: scale(1.04); }
+  .bc h3 { font-size: 1.125rem; line-height: 1.55; }
+  .bc h3 a:hover { color: var(--p-600); }
+  .bc p { font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .bc .link-more { margin-top: auto; }
+  @media (min-width: 1200px) { .bc h3 { line-height: 30px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
+</style>

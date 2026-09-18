@@ -1,0 +1,26 @@
+---
+import { getCollection, render } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+export async function getStaticPaths() {
+  const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+  return guides.map((guide) => ({ params: { id: guide.id }, props: { guide, guides } }));
+}
+const { guide, guides } = Astro.props;
+const { Content } = await render(guide);
+---
+<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed">
+  <Content />
+  <section class="section section--grey" slot="after">
+    <div class="container">
+      <div class="sh"><h2>More travel guides</h2></div>
+      <ul class="more">{guides.filter((g) => g.id !== guide.id).map((g) => <li><a href={`/travel-guide/${g.id}/`}><b>{g.data.title}</b><span>{g.data.excerpt}</span></a></li>)}</ul>
+    </div>
+  </section>
+</Article>
+<style>
+  .more { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  @media (min-width: 768px) { .more { grid-template-columns: 1fr 1fr; gap: 16px; } }
+  .more a { display: grid; gap: 4px; padding: 16px 20px; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); transition: border-color .2s; }
+  .more a:hover { border-color: var(--p-500); }
+  .more span { font-size: var(--fs-sm); color: var(--text-2); }
+</style>
