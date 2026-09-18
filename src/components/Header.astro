@@ -17,16 +17,6 @@ const path = Astro.url.pathname;
 const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
 ---
-<div class="topbar">
-  <div class="container topbar__in">
-    <ul class="topbar__info">
-      <li class="hide-sm"><a href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a></li>
-      <li><a href={tel}><Icon name="phone" />{SITE.phone}</a></li>
-      <li class="sm-only"><a href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp us</a></li>
-    </ul>
-  </div>
-</div>
-
 <header class="nav" data-nav>
   <div class="container nav__in">
     <a href="/" class="nav__logo" aria-label="Bhutanova Travels home"><Logo /></a>
@@ -126,41 +116,43 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   document.addEventListener('click', (e) => {
     nav.querySelectorAll<HTMLDetailsElement>('details.sub[open]').forEach((d) => !d.contains(e.target as Node) && (d.open = false));
   });
-  new IntersectionObserver(([e]) => nav.classList.toggle('is-stuck', !e.isIntersecting)).observe(document.querySelector('.topbar')!);
+  // Transparent over hero/banner photos; frosted glass once the page scrolls
+  const onScroll = () => nav.classList.toggle('is-stuck', scrollY > 8);
+  addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
 </script>
 
 <style>
-  /* Top bar */
-  .topbar { background: var(--s-500); color: #fff; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; }
-  .topbar__in { display: flex; justify-content: space-between; align-items: stretch; min-height: 44px; }
-  .topbar__info { display: flex; justify-content: space-between; flex: 1; gap: 12px; list-style: none; margin: 0; padding: 0; white-space: nowrap; min-width: 0; }
-  .topbar__info li { align-self: stretch; }
-  .topbar__info a { height: 100%; }
-  .topbar__info li, .topbar__info a { display: flex; align-items: center; gap: 6px; }
-  .topbar__info a { transition: color var(--dur-1); }
-  .topbar__info a:hover { color: var(--p-100); }
-  .topbar :global(.icon) { font-size: 14px; }
   :global(.hide-sm) { display: none !important; }
-  @media (min-width: 768px) {
-    .topbar__in { min-height: 48px; }
-    .topbar__info { flex: none; justify-content: flex-start; gap: 28px; }
-    .topbar__info li, .topbar__info a { gap: 8px; }
-    :global(.hide-sm) { display: flex !important; }
-    :global(.sm-only) { display: none !important; }
-  }
+  @media (min-width: 768px) { :global(.hide-sm) { display: flex !important; } :global(.sm-only) { display: none !important; } }
 
   /* Bar */
-  .nav { position: sticky; top: 0; z-index: 50; background: rgb(255 255 255 / .96); -webkit-backdrop-filter: saturate(180%) blur(12px); backdrop-filter: saturate(180%) blur(12px); border-bottom: 1px solid var(--border); transition: box-shadow var(--dur-3) var(--ease-out); view-transition-name: site-header; }
-  .nav.is-stuck { box-shadow: var(--sh-sm); }
+  /* Glass bar. Over a hero/banner photo it starts transparent with white text, then frosts on scroll. */
+  .nav {
+    position: sticky; top: 0; z-index: 50; color: var(--ink);
+    background: rgb(255 255 255 / .72); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
+    border-bottom: 1px solid rgb(12 25 37 / .08);
+    transition: background-color var(--dur-3) var(--ease-out), border-color var(--dur-3), box-shadow var(--dur-3), color var(--dur-3);
+    view-transition-name: site-header;
+  }
+  .nav.is-stuck { box-shadow: 0 8px 24px -16px rgb(12 25 37 / .25); }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; border-color: rgb(255 255 255 / .16); color: #fff;
+  }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--s-800); }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .burger { background: rgb(255 255 255 / .16); color: #fff; }
+  @media (hover: hover) {
+    :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); }
+  }
   .nav__in { display: flex; align-items: center; gap: 12px; height: var(--header-h); }
   .nav__logo { margin-right: auto; }
   .nav__cta { display: flex; align-items: center; gap: 10px; }
   .burger {
-    display: grid; place-items: center; width: 44px; height: 44px; margin-right: -2px; border: 0; border-radius: var(--r-md);
-    background: var(--surface); color: var(--s-500); font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    transition: background var(--dur-1), scale var(--dur-1) var(--ease-out);
+    display: grid; place-items: center; width: 44px; height: 44px; margin-right: -2px; border: 0; border-radius: 50%;
+    background: rgb(12 25 37 / .06); color: inherit; font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
   }
-  .burger:hover { background: var(--surface-2); }
+  .burger:hover { background: rgb(12 25 37 / .1); }
   .burger:active { scale: .92; }
   .menu { display: none; }
   @media (max-width: 1199px) { .nav__book { --btn-h: 44px; } }
@@ -211,7 +203,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     .menu__item { position: relative; }
     .menu__link {
       position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h); cursor: pointer; list-style: none;
-      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--ink);
+      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: inherit;
       transition: color var(--dur-1);
     }
     .menu__link::-webkit-details-marker { display: none; }
@@ -220,7 +212,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
     .menu__link:hover::after, .menu__link.is-active::after, details[open] > .menu__link::after { scale: 1 1; }
-    .menu__link:hover { color: var(--s-500); }
+    .menu__link:hover { opacity: .75; }
     .menu :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
     details[open] > .menu__link :global(.chev) { rotate: 0deg; }
     .sub__list {

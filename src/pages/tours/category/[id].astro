@@ -34,7 +34,7 @@ const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', it
   <section class="section section--flush">
     <div class="container">
       <div class="sh sh--split"><h2>{tours.length} {tours.length === 1 ? 'package' : 'packages'}</h2><p>Every one can be tailored to your dates, pace and budget.</p></div>
-      {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} showCategory={false} />)}</div>
+      {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
         : <p class="center muted t-lead">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
     </div>
   </section>
