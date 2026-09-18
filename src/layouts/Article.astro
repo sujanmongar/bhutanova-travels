@@ -34,6 +34,6 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
   .meta { margin: 12px 0 24px; font-size: var(--fs-sm); color: var(--text-2); }
   .cover { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: var(--radius); }
   .body { margin: 32px auto var(--section); max-width: 800px; }
-  @media (min-width: 768px) { .ah { padding-top: 48px; } .cover { aspect-ratio: 2 / 1; } .body { font-size: 1.0625rem; line-height: 1.75; } }
-  @media (min-width: 1200px) { .body { font-size: 1.0625rem; line-height: 1.7; } }
+  .body { font-size: var(--fs-prose); line-height: var(--lh-prose); }
+  @media (min-width: 768px) { .ah { padding-top: 48px; } .cover { aspect-ratio: 2 / 1; } }
 </style>

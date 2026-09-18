@@ -18,7 +18,7 @@ const href = `/tours/${tour.id}/`;
     </div>
     <p class="tc__route">{t.route.map((r) => r.replace(/\s*\(.*\)/, '')).join(' - ')}</p>
     <div class="tc__foot">
-      <p class="tc__price">USD {t.price.toLocaleString('en-US')}<small>Per Person</small></p>
+      <p class="tc__price num"><span><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</span><small>Per Person</small></p>
       <a href={href} class="btn btn--primary btn--sm">View Details</a>
     </div>
   </div>
@@ -36,6 +36,7 @@ const href = `/tours/${tour.id}/`;
   .tc__route { margin: 8px 0 16px; font-size: var(--fs-sm); line-height: var(--lh-sm); color: var(--text-2); }
   .tc__foot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
   .tc__price { display: grid; font-size: var(--fs-price); line-height: 1.35; font-weight: 700; color: var(--s-500); }
+  .tc__price abbr { font-size: .75em; font-weight: 600; letter-spacing: .04em; text-decoration: none; }
   .tc__price small { font-size: .6875rem; line-height: 16px; font-weight: 400; color: var(--text-2); }
   @media (min-width: 1200px) { .tc h3 { line-height: 24px; } .tc__price small { font-size: .625rem; } }
 </style>

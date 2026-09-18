@@ -134,7 +134,7 @@ const schema = [
     <aside class="side">
       <div class="price-card">
         <p class="from">From</p>
-        <p class="price"><b>USD {t.price.toLocaleString('en-US')}</b> / person</p>
+        <p class="price num"><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b> / person</p>
         {t.priceNotes.length > 0 && (
           <details class="notes">
             <summary>Show all prices</summary>
@@ -154,7 +154,7 @@ const schema = [
 
   <!-- Mobile sticky CTA -->
   <div class="bar">
-    <p><small>From</small><b>USD {t.price.toLocaleString('en-US')}</b></p>
+    <p class="num"><small>From</small><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b></p>
     <button class="btn btn--primary" type="button" data-open-enquiry>Send Enquiry</button>
   </div>
 
@@ -263,6 +263,7 @@ const schema = [
   .from { color: var(--text-2); font-size: var(--fs-sm); }
   .price b { font-size: 1.375rem; color: var(--s-500); }
   .price { color: var(--text-2); }
+  .price abbr, .bar abbr { font-size: .75em; font-weight: 600; letter-spacing: .04em; text-decoration: none; }
   .notes summary { font-size: var(--fs-xs); text-decoration: underline; cursor: pointer; }
   .notes ul { margin: 8px 0; padding-left: 18px; font-size: var(--fs-xs); color: var(--text-2); display: grid; gap: 4px; }
   .price-card .btn { margin-top: 8px; }

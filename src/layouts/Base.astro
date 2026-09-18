@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import montserrat from '@fontsource/montserrat/files/montserrat-latin-500-normal.woff2?url';
+import fontUrl from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE, img } from '../config';
@@ -47,7 +47,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <meta name="theme-color" content="#162e44" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="preload" href={montserrat} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
 
     <meta property="og:type" content={type} />

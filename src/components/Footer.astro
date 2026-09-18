@@ -1,11 +1,9 @@
 ---
-import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
+import Logo from './Logo.astro';
 import Social from './Social.astro';
 import { SITE } from '../config';
 
-const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order).slice(0, 8);
 const official = [
   ['Department of Tourism', 'https://www.bhutan.travel/'],
   ['Department of Immigration', 'https://www.immi.gov.bt/'],
@@ -18,58 +16,74 @@ const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 ---
 <footer class="footer">
   <div class="container footer__grid">
-    <div>
-      <h2 class="footer__h">Bhutan Insights</h2>
-      <ul>{guides.map((g) => <li><a href={`/travel-guide/${g.id}/`}>{g.data.title}</a></li>)}</ul>
-    </div>
-    <div>
-      <h2 class="footer__h">Holiday Packages</h2>
-      <ul>{cats.map((c) => <li><a href={`/tours/category/${c.id}/`}>{c.data.menuTitle}</a></li>)}</ul>
-    </div>
-    <div>
-      <h2 class="footer__h">Quick Links</h2>
-      <ul>{official.map(([t, u]) => <li><a href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
-    </div>
-    <div>
-      <h2 class="footer__h">Contact Us</h2>
+    <section class="footer__about" aria-labelledby="f-about">
+      <h2 id="f-about" class="sr-only">About Us</h2>
+      <a href="/" aria-label="Bhutanova Travels home"><Logo light /></a>
+      <p>A Thimphu-based tour operator crafting cultural, festival and trekking journeys across Bhutan — guided by the values of Gross National Happiness.</p>
+      <a class="footer__more" href="/about/">About Us <Icon name="arrow-right" /></a>
+    </section>
+
+    <nav aria-labelledby="f-links">
+      <h2 id="f-links" class="footer__h">Quick Links</h2>
+      <ul class="footer__links">{official.map(([t, u]) => <li><a href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
+    </nav>
+
+    <section aria-labelledby="f-contact">
+      <h2 id="f-contact" class="footer__h">Contact Us</h2>
       <ul class="footer__contact">
         <li><Icon name="location-dot" /><span>{SITE.address}</span></li>
-        <li><Icon name="phone" /><span><a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a> / <a href={tel(SITE.phone)}>{SITE.phone}</a></span></li>
+        <li><Icon name="phone" /><span><a href={tel(SITE.phone)}>{SITE.phone}</a><br /><a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></span></li>
         <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
       </ul>
-    </div>
+    </section>
   </div>
+
+  <div class="container footer__social">
+    <p>Follow our journeys</p>
+    <Social />
+  </div>
+
   <div class="footer__bar">
     <div class="container footer__bar-in">
-      <p>
-        © {new Date().getFullYear()} {SITE.name}. All Rights Reserved
-        <span aria-hidden="true">•</span> <a href="/privacy/">Privacy Policy</a>
-        <span aria-hidden="true">•</span> <a href="/sitemap-index.xml">Sitemap</a>
-        <span aria-hidden="true">•</span> Illustrations by <a href="https://storyset.com" rel="noopener" target="_blank">Storyset</a>
-      </p>
-      <Social />
+      <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
+      <p><a href="/sitemap-index.xml">Sitemap</a><span aria-hidden="true">·</span><a href="/privacy/">Privacy</a><span aria-hidden="true">·</span><a href="https://storyset.com" rel="noopener" target="_blank">Illustrations: Storyset</a></p>
     </div>
   </div>
 </footer>
+
 <style>
   .footer { background: var(--s-500); color: var(--on-dark-2); font-size: var(--fs-sm); line-height: var(--lh-sm); }
-  .footer__grid { display: grid; gap: 36px; padding-block: 56px; }
-  .footer__h { color: var(--p-500); font-size: .875rem; line-height: 22px; font-weight: 500; letter-spacing: .01em; margin-bottom: 16px; }
-  .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
   .footer a { transition: color .2s; }
-  .footer a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+  .footer a:hover { color: #fff; }
+
+  .footer__grid { display: grid; gap: 40px; padding-block: 56px 40px; }
+  .footer__about { display: grid; gap: 16px; justify-items: start; max-width: 380px; }
+  .footer__about :global(.logo) { width: 150px; }
+  .footer__more { display: inline-flex; align-items: center; gap: 8px; color: var(--p-500); font-weight: 600; }
+  .footer__more :global(.icon) { font-size: 12px; transition: transform .2s; }
+  .footer__more:hover :global(.icon) { transform: translateX(3px); }
+
+  .footer__h { color: #fff; font-size: 1rem; line-height: 1.5; font-weight: 600; margin-bottom: 16px; }
+  .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .footer__links a:hover { text-decoration: underline; text-underline-offset: 3px; }
   .footer__contact li { display: flex; gap: 12px; align-items: flex-start; }
-  .footer__contact :global(.icon) { margin-top: .3em; font-size: 14px; }
+  .footer__contact :global(.icon) { flex: none; margin-top: .3em; font-size: 14px; color: var(--p-500); }
+
+  .footer__social { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px; border-top: 1px solid rgb(255 255 255 / .12); }
+  .footer__social p { color: #fff; font-weight: 500; }
+
   .footer__bar { background: var(--s-800); font-size: var(--fs-xs); }
-  .footer__bar-in { display: flex; flex-direction: column; gap: 16px; padding-block: 20px; }
-  .footer__bar span { margin-inline: 4px; }
+  .footer__bar-in { display: flex; flex-direction: column; gap: 8px; padding-block: 18px; }
+  .footer__bar span { margin-inline: 8px; }
+
   @media (min-width: 768px) {
-    .footer__grid { grid-template-columns: repeat(2, 1fr); gap: 40px; padding-block: 64px; }
-    .footer__bar-in { flex-direction: row; justify-content: space-between; align-items: center; }
+    .footer__grid { grid-template-columns: 1fr 1fr; column-gap: 48px; padding-block: 64px 48px; }
+    .footer__about { grid-column: 1 / -1; }
+    .footer__bar-in { flex-direction: row; justify-content: space-between; }
   }
-  @media (min-width: 1200px) {
-    .footer__grid { grid-template-columns: repeat(4, 1fr); padding-inline: calc(var(--gutter) + 16px); }
-    .footer ul { gap: 8px; }
-    .footer__bar-in { padding-inline: calc(var(--gutter) + 16px); }
+  @media (min-width: 1024px) {
+    .footer__grid { grid-template-columns: 1.4fr 1fr 1fr; column-gap: 64px; }
+    .footer__about { grid-column: auto; }
+    .footer ul { gap: 10px; }
   }
 </style>

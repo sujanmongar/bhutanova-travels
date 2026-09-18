@@ -56,8 +56,8 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
       ))}
     </div>
     <div class="hero__txt">
-      <p class="hero__eyebrow">Enjoy the best destinations with us</p>
-      <h1>Explore Bhutan</h1>
+      <p class="eyebrow">Enjoy the best destinations with us</p>
+      <h1 class="hero-title">Explore Bhutan</h1>
     </div>
     <button class="hero__nav hero__nav--prev" type="button" aria-label="Previous photo" data-hero="-1"><Icon name="chevron-left" /></button>
     <button class="hero__nav hero__nav--next" type="button" aria-label="Next photo" data-hero="1"><Icon name="chevron-right" /></button>
@@ -226,10 +226,8 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
   .hero__track { display: flex; height: 100%; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .hero__track::-webkit-scrollbar { display: none; }
   .hero__track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
-  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(0 0 0 / .15), rgb(0 0 0 / .35)); pointer-events: none; }
+  .hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(22 46 68 / .15), rgb(22 46 68 / .5)); pointer-events: none; }
   .hero__txt { position: absolute; inset: 0; z-index: 1; display: grid; place-content: center; text-align: center; padding: 0 72px; pointer-events: none; }
-  .hero__eyebrow { font-size: .75rem; line-height: 1.4; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
-  .hero h1 { color: #fff; font-family: var(--ff-display); font-size: var(--fs-hero); line-height: var(--lh-hero); letter-spacing: var(--ls-hero); text-shadow: 0 2px 16px rgb(0 0 0 / .25); }
   .hero__nav {
     position: absolute; top: 50%; z-index: 2; translate: 0 -50%; display: grid; place-items: center;
     width: 44px; height: 44px; border-radius: 50%; border: 1px solid #fff; background: rgb(0 0 0 / .1); color: #fff; font-size: 14px; cursor: pointer;
@@ -240,10 +238,10 @@ const initials = (n: string) => n.split(' ').map((w) => w[0]).join('').slice(0, 
   .hero__dots button { width: 10px; height: 10px; padding: 0; border: 0; border-radius: 50%; background: rgb(255 255 255 / .7); cursor: pointer; }
   .hero__dots button[aria-selected='true'] { width: 14px; height: 14px; background: #fff; }
   @media (min-width: 768px) {
-    .hero { height: 620px; } .hero__eyebrow { font-size: 1rem; }
+    .hero { height: 620px; }
     .hero__nav { width: 48px; height: 48px; font-size: 16px; } .hero__nav--prev { left: 32px; } .hero__nav--next { right: 32px; }
   }
-  @media (min-width: 1200px) { .hero { height: 700px; } .hero__eyebrow { font-size: 1.125rem; line-height: 24px; letter-spacing: .015em; } }
+  @media (min-width: 1200px) { .hero { height: 700px; } }
 
   /* News */
   .news { display: flex; align-items: stretch; height: 56px; background: var(--surface); overflow: hidden; }

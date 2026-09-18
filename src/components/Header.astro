@@ -92,7 +92,7 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
 </script>
 
 <style>
-  .topbar { background: var(--s-500); color: #fff; font-size: .75rem; font-weight: 500; }
+  .topbar { background: var(--s-500); color: #fff; font-size: .8125rem; font-weight: 500; letter-spacing: .01em; }
   .topbar__in { display: flex; justify-content: space-between; align-items: center; min-height: 44px; }
   .topbar__info { display: flex; justify-content: space-between; flex: 1; gap: 12px; list-style: none; margin: 0; padding: 0; white-space: nowrap; min-width: 0; }
   .topbar__info li { min-width: 0; }
@@ -141,11 +141,10 @@ const active = (href: string) => (href === '/' ? path === '/' : path.startsWith(
     .menu__list { display: flex; gap: 28px; }
     .menu__item { border: 0; position: relative; }
     .menu__link {
-      min-height: var(--header-h); gap: 6px; font-size: .8125rem; line-height: 22px; font-weight: 500; letter-spacing: .01em;
+      min-height: var(--header-h); gap: 6px; font-size: .8125rem; line-height: 22px; font-weight: 600; letter-spacing: var(--ls-caps);
       text-transform: uppercase; transition: color .2s;
     }
     .menu__link:hover { color: var(--p-500); }
-    .menu__link.is-active { font-weight: 600; }
     .menu :global(.chev) { font-size: 10px; }
     .sub__list {
       position: absolute; top: calc(100% - 12px); left: -16px; min-width: 260px; margin: 0; padding: 8px 0;
