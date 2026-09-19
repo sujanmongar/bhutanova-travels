@@ -26,6 +26,10 @@ export function wa(pageUrl: string, about?: string) {
 }
 export const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 
+/** JSON for a <script type="application/ld+json"> tag. JSON.stringify alone doesn't escape "</script>",
+ *  which would let CMS-edited text (FAQ answers, titles) break out of the tag and inject a script. */
+export const ldJson = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
+
 /** Unsplash IDs ("photo-…") or full URLs → responsive src. */
 export function img(src: string, w = 1200) {
   const url = src.startsWith('photo-') ? `https://images.unsplash.com/${src}` : src;

@@ -1,5 +1,6 @@
 ---
 // Breadcrumbs + BreadcrumbList schema. Pass the trail after Home; the last item is the current page.
+import { ldJson } from '../config';
 interface Props { items: Array<[string, string?]>; light?: boolean }
 const { items, light = false } = Astro.props;
 const trail: Array<[string, string?]> = [['Home', '/'], ...items];
@@ -15,4 +16,4 @@ const schema = {
     ))}
   </ol>
 </nav>
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<script type="application/ld+json" set:html={ldJson(schema)} />

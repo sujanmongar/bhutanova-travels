@@ -1,5 +1,6 @@
 ---
 import faqs from '../data/faqs.json';
+import { ldJson } from '../config';
 const { items = faqs.items, open = 0 } = Astro.props;
 const split = Astro.slots.has('default');
 const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f: { q: string; a: string }) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
@@ -15,7 +16,7 @@ const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntit
     ))}
   </div>
 </div>
-<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+<script type="application/ld+json" set:html={ldJson(schema)} />
 <style>
   .faq { max-width: 820px; }
   .faq__list { border-bottom: 1px solid var(--border-dark); }
