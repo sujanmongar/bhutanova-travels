@@ -17,9 +17,10 @@ function walk(dir) {
   }
 }
 
+// script-src also gates type="speculationrules" (Chrome), unlike inert types such as ld+json.
 function scan(file) {
   const html = readFileSync(file, 'utf8');
-  for (const m of html.matchAll(/<script type="module">([\s\S]*?)<\/script>/g)) {
+  for (const m of html.matchAll(/<script type="(?:module|speculationrules)">([\s\S]*?)<\/script>/g)) {
     const hash = createHash('sha256').update(m[1]).digest('base64');
     hashes.add(`'sha256-${hash}'`);
   }
