@@ -29,9 +29,9 @@ const slides = [
   return { ...s, href: `/tours/${s.tour}/`, name: t.data.title, cta: `See the ${t.data.days}-day ${s.kind}` };
 });
 const pillars = [
-  ['arrows-to-circle', 'Community', 'Part of every booking goes back into the villages you visit, and we hire local guides, drivers and cooks.'],
-  ['people', 'People', 'Small groups and private trips, paced around you. Our team answers every message personally.'],
-  ['image-user', 'Self', 'Quiet mornings at monasteries, long walks and time to reflect — travel the way Bhutan intends.'],
+  ['Community', 'Part of every booking goes back into the villages you visit, and we hire local guides, drivers and cooks.'],
+  ['People', 'Small groups and private trips, paced around you. Our team answers every message personally.'],
+  ['Self', 'Quiet mornings at monasteries, long walks and time to reflect — travel the way Bhutan intends.'],
 ];
 const why = [
   ['Local team', 'Bhutanese-owned and based in Thimphu.'],
@@ -58,7 +58,7 @@ const [quote, ...quotes] = reviews.items;
     <h1 class="sr-only">Bhutan tours planned by locals</h1>
     <div class="hero__track" id="hero-track">
       {slides.map((s, i) => (
-        <img src={img(s.id, 1600)} srcset={srcset(s.id, [640, 960, 1400, 1920])} sizes="100vw" alt={s.alt} width="1600" height="900"
+        <img src={img(s.id, 1600)} srcset={srcset(s.id, [640, 960, 1400, 1920, 2560])} sizes="100vw" alt={s.alt} width="1600" height="900"
           style={`object-position:${s.pos}`} loading={i ? 'lazy' : 'eager'} fetchpriority={i ? undefined : 'high'} decoding="async" />
       ))}
     </div>
@@ -66,9 +66,11 @@ const [quote, ...quotes] = reviews.items;
       <div class="hero__slides">
         {slides.map((s, i) => (
           <div class:list={['hero__slide', { 'is-on': !i }]} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}`} data-place={s.place} inert={i > 0}>
-            <h2 class="hero-title">{s.h}</h2>
-            <p class="hero__line">{s.line}</p>
-            <a class="btn btn--light hero__cta" href={s.href}>{s.cta}<span class="sr-only">: {s.name}</span><Icon name="arrow-right" class="i-end" /></a>
+            <div class="hero__copy">
+              <h2 class="hero-title">{s.h}</h2>
+              <p class="hero__line">{s.line}</p>
+            </div>
+            <a class="btn btn--light btn--lg hero__cta" href={s.href}>{s.cta}<span class="sr-only">: {s.name}</span><Icon name="arrow-right" class="i-end" /></a>
           </div>
         ))}
       </div>
@@ -91,7 +93,7 @@ const [quote, ...quotes] = reviews.items;
         <p>We are a small, Bhutanese-owned team based in Babesa, Thimphu. Our trips follow the values the kingdom is known for — Gross National Happiness — and are built around three simple ideas.</p>
       </div>
       <ul class="items items--3" data-reveal="stagger">
-        {pillars.map(([, t, d]) => <li class="item"><h3>{t}</h3><p>{d}</p></li>)}
+        {pillars.map(([t, d]) => <li class="item"><h3>{t}</h3><p>{d}</p></li>)}
       </ul>
       <div class="mission" data-reveal>
         <img src={img('photo-1762179861385-793eba9c7623', 900)} srcset={srcset('photo-1762179861385-793eba9c7623', [480, 800, 1200])} sizes="(min-width:1024px) 45vw, 100vw"
@@ -300,11 +302,10 @@ const [quote, ...quotes] = reviews.items;
   .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: 28px; padding-bottom: max(12px, env(safe-area-inset-bottom)); pointer-events: none; }
   .hero__in :is(a, button) { pointer-events: auto; }
   .hero__slides { display: grid; }
-  .hero__slide { grid-area: 1 / 1; align-self: end; display: grid; justify-items: start; }
+  .hero__slide { grid-area: 1 / 1; align-self: end; display: grid; justify-items: start; gap: 24px; }
   .hero__slide:not(.is-on) { opacity: 0; visibility: hidden; transition: opacity 200ms var(--ease-in), visibility 0s 200ms; }
   .hero-title { max-width: 15ch; }
   .hero__line { max-width: 36ch; margin-top: 12px; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
-  .hero__cta { margin-top: 24px; }
   .hero__bar { display: grid; justify-items: start; gap: 4px; }
   .hero__place { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .8); }
   .hero__dots { display: flex; margin-inline: -6px; }
@@ -323,21 +324,26 @@ const [quote, ...quotes] = reviews.items;
   @media (min-width: 768px) {
     .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
     .hero__in { row-gap: 32px; padding-bottom: 24px; }
-    .hero__cta { margin-top: 32px; }
     .hero__dots button { width: 56px; }
+  }
+  /* Desktop: story on the left, the button pinned to the right edge; caption + progress run underneath */
+  @media (min-width: 1024px) {
+    .hero__slide { grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 48px; }
+    .hero__cta { margin-bottom: 6px; }
+    .hero__bar { grid-auto-flow: column; justify-content: space-between; align-items: center; }
+    .hero__dots { margin-inline: 0 -6px; }
   }
   @media (min-width: 1200px) {
     .hero { height: min(90svh, 820px); }
-    .hero__in { grid-template-columns: minmax(0, 1fr) auto; column-gap: 48px; align-items: end; padding-bottom: 56px; }
+    .hero__in { padding-bottom: 40px; }
     .hero__line { margin-top: 16px; }
-    .hero__bar { justify-items: end; text-align: right; }
-    .hero__dots { margin-inline: 0 -6px; }
   }
+
   @keyframes hero-fill { from { background-size: 0 100%; } }
   @media (prefers-reduced-motion: no-preference) {
     .hero__track > img:first-child { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
-    .hero__slide.is-on > * { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
-    .hero__slide.is-on > .hero__line { --rise: 12px; animation-delay: 280ms; }
+    .hero__slide.is-on .hero-title { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
+    .hero__slide.is-on .hero__line { --rise: 12px; animation: rise 800ms var(--ease-out) 280ms backwards; }
     .hero__slide.is-on > .hero__cta { animation: fade 500ms var(--ease-out) 360ms backwards; }
     .hero__bar { animation: fade var(--dur-4) var(--ease-out) 650ms backwards; }
     .hero__dots [aria-current] i { animation: hero-fill 7s linear; }

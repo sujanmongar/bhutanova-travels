@@ -1,13 +1,15 @@
 ---
 import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Icon from '../components/Icon.astro';
 import Form from '../components/Form.astro';
 import Faq from '../components/Faq.astro';
-import { SITE, img, srcset } from '../config';
+import { SITE, img, srcset, wa } from '../config';
 const hero = 'photo-1662547150045-7a8d3a9ad0b2';
 const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 const info = [
   ['location-dot', 'Visit us', SITE.address, 'https://maps.google.com/?q=Babesa,Thimphu,Bhutan'],
+  ['social_whatsapp', 'WhatsApp', SITE.phone, wa(`${new URL(Astro.url.pathname, Astro.site).href}#contact`)],
   ['phone', 'Call us', `${SITE.phone} / ${SITE.phoneAlt}`, tel(SITE.phone)],
   ['envelope', 'Email us', SITE.email, `mailto:${SITE.email}`],
   ['headphones', 'Office hours', 'Mon–Sat, 9am–6pm (BTT, GMT+6)', ''],
@@ -16,11 +18,11 @@ const info = [
 <Base title="Contact Us" description="Plan your Bhutan trip with Bhutanova Travels. Call, email or send an enquiry — we reply within 24 hours." image={hero}>
   <section class="banner">
     <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Paro valley" width="1600" height="700" fetchpriority="high" />
-    <div><p class="eyebrow">We reply within 24 hours</p><h1>Contact Us</h1></div>
+    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us</h1><p class="banner__line">We reply within 24 hours, usually much sooner on WhatsApp.</p></div>
   </section>
 
   <section class="section">
-    <div class="container contact">
+    <div class="container contact" id="contact">
       <div>
         <div class="sh" data-reveal><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. A local trip expert will reply with ideas and a clear quote.</p></div>
         <ul class="info" data-reveal="stagger">

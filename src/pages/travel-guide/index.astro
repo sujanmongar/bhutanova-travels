@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import Faq from '../../components/Faq.astro';
 import { img, srcset } from '../../config';
@@ -12,7 +13,7 @@ const hero = 'photo-1532918235359-7671f525386d';
 <Base title="Bhutan Travel Guide – Visa, SDF, Weather & Packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={hero}>
   <section class="banner">
     <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Prayer flags on a mountain pass" width="1600" height="700" fetchpriority="high" />
-    <div><p class="eyebrow">Vacation tips & Bhutan information</p><h1>Bhutan Travel Guide</h1></div>
+    <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1></div>
   </section>
 
   <nav class="jump" aria-label="Guide topics">

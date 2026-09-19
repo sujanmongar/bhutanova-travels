@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
-import { SITE } from '../config';
+import { SITE, wa } from '../config';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order).slice(0, 8);
@@ -87,7 +87,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
       <a class="drawer__mail" href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a>
       <div class="drawer__cta">
         <a class="btn btn--soft" href={tel}><Icon name="phone" />Call us</a>
-        <a class="btn btn--soft" href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp</a>
+        <a class="btn btn--soft" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp</a>
         <a class="btn btn--primary btn--lg" href="/contact/">Plan a trip<Icon name="arrow-right" class="i-end" /></a>
       </div>
     </div>

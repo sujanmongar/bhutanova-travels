@@ -1,6 +1,9 @@
 /* One variable file (wght 400–900). Italic file only downloads if a page actually uses <em>. */
 @import '@fontsource-variable/schibsted-grotesk';
 @import '@fontsource-variable/schibsted-grotesk/wght-italic.css';
+/* Editorial serif for headlines only (opsz axis: one file, sized correctly from meta caption to hero). */
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/newsreader/opsz-italic.css';
 
 /* ---------- Tokens ---------- */
 :root {
@@ -51,13 +54,14 @@
      h3       sub-sections, prose h2     body / prose / small / meta
      Values below are MOBILE; tablet and desktop override further down. */
   --ff: 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --ff-display: var(--ff);
-  --fs-display: 2.5rem;   --lh-display: 1.05;  --ls-display: -0.025em;
-  --fs-h1: 2rem;          --lh-h1: 1.1;        --ls-h1: -0.02em;
-  --fs-h2: 1.625rem;      --lh-h2: 1.18;       --ls-h2: -0.015em;
-  --fs-h3: 1.25rem;       --lh-h3: 1.3;        --ls-h3: -0.01em;
+  --ff-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
+  --ff-display: var(--ff-serif);
+  --fs-display: 2.5rem;   --lh-display: 1.08;  --ls-display: -0.005em;
+  --fs-h1: 2rem;          --lh-h1: 1.12;       --ls-h1: -0.005em;
+  --fs-h2: 1.625rem;      --lh-h2: 1.2;        --ls-h2: 0;
+  --fs-h3: 1.25rem;       --lh-h3: 1.32;       --ls-h3: 0;
   --fs-title: 1.0625rem;  --lh-title: 1.4;     --ls-title: -0.005em;
-  --fs-quote: 1.375rem;   --lh-quote: 1.4;     --ls-quote: -0.01em;
+  --fs-quote: 1.375rem;   --lh-quote: 1.42;    --ls-quote: 0;
   --fs-lead: 1.0625rem;   --lh-lead: 1.65;
   --fs-body: 1rem;        --lh-body: 1.7;      --ls-body: 0;
   --fs-prose: 1.0625rem;  --lh-prose: 1.75;
@@ -74,10 +78,10 @@
 @media (min-width: 768px) {
   :root {
     --gutter: 40px; --section: 80px; --stack: 40px; --header-h: 80px;
-    --fs-display: 3.25rem;  --lh-display: 1.04;
-    --fs-h1: 2.5rem;        --lh-h1: 1.08;
-    --fs-h2: 1.875rem;      --lh-h2: 1.15;
-    --fs-h3: 1.375rem;      --lh-h3: 1.28;
+    --fs-display: 3.25rem;  --lh-display: 1.06;
+    --fs-h1: 2.5rem;        --lh-h1: 1.1;
+    --fs-h2: 1.875rem;      --lh-h2: 1.18;
+    --fs-h3: 1.375rem;      --lh-h3: 1.3;
     --fs-title: 1.125rem;   --lh-title: 1.35;
     --fs-quote: 1.625rem;   --lh-quote: 1.35;
     --fs-lead: 1.125rem;    --lh-lead: 1.6;
@@ -87,11 +91,11 @@
 @media (min-width: 1200px) {
   :root {
     --gutter: 24px; --section: 104px; --stack: 48px;
-    --fs-display: 4rem;     --lh-display: 1.02;  --ls-display: -0.03em;
-    --fs-h1: 3rem;          --lh-h1: 1.06;       --ls-h1: -0.025em;
-    --fs-h2: 2.25rem;       --lh-h2: 1.12;       --ls-h2: -0.02em;
-    --fs-h3: 1.5rem;        --lh-h3: 1.25;       --ls-h3: -0.012em;
-    --fs-quote: 1.875rem;   --lh-quote: 1.3;     --ls-quote: -0.015em;
+    --fs-display: 4rem;     --lh-display: 1.04;  --ls-display: -0.01em;
+    --fs-h1: 3rem;          --lh-h1: 1.08;       --ls-h1: -0.008em;
+    --fs-h2: 2.25rem;       --lh-h2: 1.15;       --ls-h2: -0.005em;
+    --fs-h3: 1.5rem;        --lh-h3: 1.28;       --ls-h3: 0;
+    --fs-quote: 1.875rem;   --lh-quote: 1.32;    --ls-quote: 0;
     --fs-lead: 1.1875rem;   --lh-lead: 1.6;
     --lh-body: 1.6;
     --fs-prose: 1.125rem;   --lh-prose: 1.7;
@@ -114,13 +118,14 @@ h1, h2, h3, h4 { font-weight: 600; color: var(--ink); text-wrap: balance; }
 p, li, blockquote { text-wrap: pretty; }
 b, strong { font-weight: 600; }
 
-/* Type roles — every text element uses exactly one of these */
-.t-display { font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--ls-display); font-weight: 600; }
-h1, .t-h1 { font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 600; }
-h2, .t-h2 { font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 600; }
-.t-h3 { font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 600; }
+/* Type roles — every text element uses exactly one of these.
+   Editorial split: display/h1/h2/h3/quote (headlines) run the serif; title/lead/body/small/meta (UI + copy) stay on the grotesque. */
+.t-display { font-family: var(--ff-display); font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--ls-display); font-weight: 500; font-variant-numeric: lining-nums; }
+h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 500; font-variant-numeric: lining-nums; }
+h2, .t-h2 { font-family: var(--ff-display); font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 500; font-variant-numeric: lining-nums; }
+.t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 500; font-variant-numeric: lining-nums; }
 h3, .t-title { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; }
-.t-quote { font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; color: var(--ink); }
+.t-quote { font-family: var(--ff-display); font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; font-style: italic; color: var(--ink); font-variant-numeric: lining-nums; }
 .t-lead { font-size: var(--fs-lead); line-height: var(--lh-lead); font-weight: 400; color: var(--text-2); }
 .t-body { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 400; }
 .t-small { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 400; color: var(--text-2); }
@@ -242,11 +247,24 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(12 25 37 / .15), rgb(12 25 37 / .2) 40%, rgb(12 25 37 / .72)); z-index: -1; }
 .eyebrow { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; margin-bottom: 14px; color: rgb(255 255 255 / .88); }
 .banner h1, .hero-title {
-  color: #fff; font-family: var(--ff-display); font-weight: 600; font-size: var(--fs-display); line-height: var(--lh-display);
-  letter-spacing: var(--ls-display); max-width: 14ch; text-wrap: balance;
+  color: #fff; font-family: var(--ff-display); font-weight: 500; font-size: var(--fs-display); line-height: var(--lh-display);
+  letter-spacing: var(--ls-display); font-variant-numeric: lining-nums; max-width: 14ch; text-wrap: balance;
 }
 @media (min-width: 768px) { .banner { min-height: calc(440px + var(--header-h)); padding-bottom: 64px; } }
 @media (min-width: 1200px) { .banner { min-height: calc(520px + var(--header-h)); padding-bottom: 80px; } }
+
+/* ---------- Breadcrumbs ---------- */
+.crumbs ol { display: flex; flex-wrap: wrap; align-items: center; list-style: none; margin: 0; padding: 0; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
+.crumbs li + li::before { content: '/'; margin-inline: 8px; opacity: .6; }
+.crumbs a { display: inline-block; padding-block: 12px; margin-block: -12px; color: var(--text-2); transition: color var(--dur-1); }
+.crumbs a:hover { color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+.crumbs [aria-current] { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
+.crumbs--light ol { color: rgb(255 255 255 / .7); }
+.crumbs--light a { color: rgb(255 255 255 / .82); }
+.crumbs--light a:hover { color: #fff; }
+.crumbs--light [aria-current] { color: #fff; }
+.banner .crumbs { margin-bottom: 16px; }
+.banner__line { margin-top: 14px; max-width: 46ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
 
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 68ch; color: var(--text); }

@@ -1,11 +1,13 @@
 ---
 import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { SITE } from '../config';
 ---
 <Base title="Privacy Policy" description="How Bhutanova Travels collects and uses your personal information.">
   <section class="section">
     <div class="container prose">
-      <h1>Privacy Policy</h1>
+      <Breadcrumbs items={[['Privacy policy']]} />
+      <h1>Privacy policy</h1>
       <p>We collect only the details you send us through our forms or by email — such as your name, contact details, travel dates and passport information needed for your visa — and use them solely to plan and operate your trip.</p>
       <p>We share your details only with the parties needed to deliver your booking (for example the Department of Immigration, hotels and airlines). We never sell your data.</p>
       <p>This website does not use advertising or tracking cookies. To access or delete your data, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>

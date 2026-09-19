@@ -1,8 +1,9 @@
 ---
-import { getCollection, render } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
 import TourCard from '../../../components/TourCard.astro';
-import Callback from '../../../components/Callback.astro';
+import WhatsAppCta from '../../../components/WhatsAppCta.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { img, srcset } from '../../../config';
 
 export async function getStaticPaths() {
@@ -10,41 +11,27 @@ export async function getStaticPaths() {
   return (await getCollection('categories')).map((cat) => ({ params: { id: cat.id }, props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) } }));
 }
 const { cat, tours } = Astro.props;
-const { Content } = await render(cat);
-const crumbs = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-  { '@type': 'ListItem', position: 1, name: 'Tour Packages', item: new URL('/tours/', Astro.site).href },
-  { '@type': 'ListItem', position: 2, name: cat.data.menuTitle },
-] };
 ---
-<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} schema={crumbs}>
-  <section class="banner banner--short">
+<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image}>
+  <section class="banner">
     <img src={img(cat.data.image, 1600)} srcset={srcset(cat.data.image)} sizes="100vw" alt="" width="1600" height="560" fetchpriority="high" />
-    <div><p class="eyebrow">Tours</p><h1>{cat.data.menuTitle}</h1></div>
+    <div>
+      <Breadcrumbs items={[['Tours', '/tours/'], [cat.data.menuTitle]]} light />
+      <h1>{cat.data.menuTitle}</h1>
+      <p class="banner__line">{cat.data.excerpt}</p>
+    </div>
   </section>
 
   <section class="section">
     <div class="container">
-      <div class="lead" data-reveal>
-        <h2>{cat.data.title}</h2>
-        <div class="prose"><Content /></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--flush">
-    <div class="container">
-      <div class="sh sh--split"><h2>{tours.length} {tours.length === 1 ? 'package' : 'packages'}</h2><p>Every one can be tailored to your dates, pace and budget.</p></div>
+      <p class="count t-meta">{tours.length} {tours.length === 1 ? 'package' : 'packages'} · each one can be tailored to your dates</p>
       {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
-        : <p class="center muted t-lead">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
+        : <p class="t-lead">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
     </div>
   </section>
-  <Callback />
+  <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>
 <style>
-  .banner--short { min-height: 280px; }
-  @media (min-width: 1200px) { .banner--short { min-height: 420px; } }
-  .lead { display: grid; justify-items: start; gap: 16px; max-width: 760px; }
-  .lead .prose { color: var(--text-2); font-size: var(--fs-lead); line-height: var(--lh-lead); }
-  .lead :global(strong) { color: var(--ink); }
+  .count { margin-bottom: 28px; }
   .tours { row-gap: 48px; }
 </style>

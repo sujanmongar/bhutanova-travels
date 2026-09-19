@@ -1,0 +1,18 @@
+---
+// Breadcrumbs + BreadcrumbList schema. Pass the trail after Home; the last item is the current page.
+interface Props { items: Array<[string, string?]>; light?: boolean }
+const { items, light = false } = Astro.props;
+const trail: Array<[string, string?]> = [['Home', '/'], ...items];
+const schema = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: trail.map(([name, href], i) => ({ '@type': 'ListItem', position: i + 1, name, ...(href ? { item: new URL(href, Astro.site).href } : {}) })),
+};
+---
+<nav class:list={['crumbs', { 'crumbs--light': light }]} aria-label="Breadcrumb">
+  <ol>
+    {trail.map(([label, href], i) => (
+      <li>{href && i < trail.length - 1 ? <a href={href}>{label}</a> : <span aria-current="page">{label}</span>}</li>
+    ))}
+  </ol>
+</nav>
+<script type="application/ld+json" set:html={JSON.stringify(schema)} />

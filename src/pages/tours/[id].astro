@@ -3,7 +3,8 @@ import { getCollection, getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Icon from '../../components/Icon.astro';
 import Form from '../../components/Form.astro';
-import { img, srcset, SITE } from '../../config';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { img, srcset, SITE, wa } from '../../config';
 
 export async function getStaticPaths() {
   return (await getCollection('tours')).map((tour) => ({ params: { id: tour.id }, props: { tour } }));
@@ -31,6 +32,7 @@ const tabs = [
   ['map', 'Map', t.map],
 ].filter((x) => x.length === 2 || x[2]);
 const tel = SITE.phone.replace(/\s/g, '');
+const chat = (anchor: string) => wa(`${new URL(Astro.url.pathname, Astro.site).href}#${anchor}`, t.title);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const schema = [
   {
@@ -41,11 +43,6 @@ const schema = [
     offers: { '@type': 'Offer', price: t.price, priceCurrency: 'USD', availability: 'https://schema.org/InStock', url },
     provider: { '@id': new URL('/#org', Astro.site).href },
   },
-  { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Tour Packages', item: new URL('/tours/', Astro.site).href },
-    { '@type': 'ListItem', position: 2, name: cat.data.menuTitle, item: new URL(`/tours/category/${cat.id}/`, Astro.site).href },
-    { '@type': 'ListItem', position: 3, name: t.title },
-  ] },
 ];
 ---
 <Base title={`${t.title} – ${t.nights}N/${t.days}D Bhutan Tour`} description={t.summary} image={t.image} schema={schema}>
@@ -68,7 +65,7 @@ const schema = [
 
   <div class="container layout">
     <div class="main">
-      <nav class="crumbs t-meta" aria-label="Breadcrumb"><a href="/tours/">Tours</a><span aria-hidden="true">/</span><a href={`/tours/category/${cat.id}/`}>{cat.data.menuTitle}</a></nav>
+      <Breadcrumbs items={[['Tours', '/tours/'], [cat.data.menuTitle, `/tours/category/${cat.id}/`], [t.title]]} />
       <h1>{t.title}</h1>
       <ul class="facts t-small">
         <li><Icon name="gauge" />{t.days} days · {t.nights} nights</li>
@@ -156,7 +153,7 @@ const schema = [
         <h2 class="t-title">Need help booking?</h2>
         <p class="t-small">Talk to a local trip expert — we'll tailor this tour to your dates.</p>
         <a class="btn btn--outline btn--block" href={`tel:${tel}`}><Icon name="phone" />Call {SITE.phone}</a>
-        <a class="btn btn--soft btn--block" href={SITE.social.whatsapp} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
+        <a class="btn btn--soft btn--block" href={chat('overview')} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
       </div>
     </aside>
   </div>
@@ -164,7 +161,7 @@ const schema = [
   <!-- Mobile/tablet sticky booking bar -->
   <div class="bar">
     <p class="num"><small class="t-meta">From</small><b><abbr title="US dollars">USD</abbr> {t.price.toLocaleString('en-US')}</b></p>
-    <a class="bar__wa" href={SITE.social.whatsapp} target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
+    <a class="bar__wa" href={chat('overview')} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour"><Icon name="social_whatsapp" /></a>
     <button class="btn btn--primary" type="button" data-open-enquiry>Send an enquiry</button>
   </div>
 
@@ -246,9 +243,7 @@ const schema = [
   .layout { display: grid; gap: 40px; padding-block: 28px 64px; }
   .layout > * { min-width: 0; }
   @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; padding-block: 40px var(--section); } }
-  .crumbs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-  .crumbs a { padding-block: 12px; margin-block: -12px; color: var(--p-700); font-weight: 600; }
-  .crumbs a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .main :global(.crumbs) { margin-bottom: 14px; }
   .facts { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; margin: 16px 0 12px; padding: 0; }
   .facts li { display: inline-flex; align-items: center; gap: 8px; }
   .facts :global(.icon) { font-size: 14px; color: var(--text-3); }

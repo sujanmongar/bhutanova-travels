@@ -9,7 +9,7 @@ const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-
 ---
 <article class="bc">
   <div class="bc__img">
-    <img src={img(d.image, 800)} srcset={srcset(d.image, [400, 600, 800])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 84vw"
+    <img src={img(d.image, 800)} srcset={srcset(d.image, [400, 600, 800, 1200])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 84vw"
       alt="" width="800" height="533" loading="lazy" decoding="async" />
   </div>
   <p class="bc__meta">{meta}</p>

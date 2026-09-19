@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import BlogCard from '../../components/BlogCard.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import { img, srcset } from '../../config';
 import { slug } from '../../utils';
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
@@ -11,22 +12,59 @@ const hero = 'photo-1585904194096-15ef66ccd234';
 <Base title="Blog – Stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
   <section class="banner">
     <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Masked dancers at a Bhutanese tshechu" width="1600" height="700" fetchpriority="high" />
-    <div><p class="eyebrow">Stories, tips & culture</p><h1>Read Our Blog</h1></div>
+    <div><Breadcrumbs items={[['Blog']]} light /><h1>Stories from Bhutan</h1></div>
   </section>
   <section class="section">
     <div class="container">
-      <nav class="topics" aria-label="Blog topics">
-        <a href="/blog/" aria-current="page">All</a>
-        {tags.map((t) => <a href={`/blog/tag/${slug(t)}/`}>{t}</a>)}
-      </nav>
-      <div class="grid-3 posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} />)}</div>
+      <div class="topics" role="toolbar" aria-label="Filter posts by topic" data-filter>
+        <button type="button" aria-pressed="true" data-topic="">All <span class="num">{posts.length}</span></button>
+        {tags.map((t) => (
+          <button type="button" aria-pressed="false" data-topic={slug(t)}>{t} <span class="num">{posts.filter((p) => p.data.tags.includes(t)).length}</span></button>
+        ))}
+      </div>
+      <p class="sr-only" aria-live="polite" data-status></p>
+      <ul class="grid-3 posts" data-reveal="stagger">
+        {posts.map((p) => <li data-tags={p.data.tags.map(slug).join(' ')}><BlogCard post={p} /></li>)}
+      </ul>
     </div>
   </section>
 </Base>
+<script>
+  // Filter in place; the chosen topic lives in ?topic= so a filtered view can be shared.
+  const bar = document.querySelector<HTMLElement>('[data-filter]')!;
+  const buttons = [...bar.querySelectorAll<HTMLButtonElement>('button')];
+  const items = [...document.querySelectorAll<HTMLElement>('.posts > li')];
+  const status = document.querySelector<HTMLElement>('[data-status]')!;
+  const apply = (topic: string, announce = true) => {
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.topic === topic)));
+    let shown = 0;
+    items.forEach((li) => {
+      const on = !topic || li.dataset.tags!.split(' ').includes(topic);
+      li.hidden = !on;
+      if (on) { shown++; li.animate?.([{ opacity: 0, translate: '0 12px' }, { opacity: 1, translate: '0 0' }], { duration: 400, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+    });
+    const url = new URL(location.href);
+    topic ? url.searchParams.set('topic', topic) : url.searchParams.delete('topic');
+    history.replaceState(null, '', url);
+    if (announce) status.textContent = `${shown} ${shown === 1 ? 'post' : 'posts'} shown`;
+  };
+  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.topic!)));
+  const initial = new URL(location.href).searchParams.get('topic');
+  if (initial && buttons.some((b) => b.dataset.topic === initial)) apply(initial, false);
+</script>
 <style>
-  .topics { display: flex; gap: 28px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1) 40px; padding: 0 var(--gutter); border-bottom: 1px solid var(--border-dark); }
-  .topics a { flex: none; display: inline-flex; align-items: center; min-height: 48px; margin-bottom: -1px; border-bottom: 2px solid transparent; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text-2); transition: color var(--dur-1), border-color var(--dur-2); }
-  .topics a:hover { color: var(--ink); }
-  .topics a[aria-current] { color: var(--ink); border-bottom-color: var(--p-500); }
+  .topics { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1) 40px; padding: 2px var(--gutter); }
+  .topics::-webkit-scrollbar { display: none; }
+  .topics button {
+    flex: none; display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border: 1px solid var(--border-dark); border-radius: var(--r-full);
+    background: #fff; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); cursor: pointer;
+    transition: background-color var(--dur-1), border-color var(--dur-1), color var(--dur-1);
+  }
+  .topics .num { font-size: var(--fs-meta); color: var(--text-3); }
+  .topics button[aria-pressed='true'] { background: var(--s-500); border-color: var(--s-500); color: #fff; }
+  .topics button[aria-pressed='true'] .num { color: var(--on-dark-2); }
+  @media (hover: hover) { .topics button[aria-pressed='false']:hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); } .topics button[aria-pressed='false']:hover .num { color: var(--s-800); } }
+  @media (scripting: none) { .topics { display: none; } }
   .posts { row-gap: 48px; }
+  .posts > li[hidden] { display: none; }
 </style>

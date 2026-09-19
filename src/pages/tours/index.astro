@@ -1,9 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Icon from '../../components/Icon.astro';
 import TourCard from '../../components/TourCard.astro';
-import Callback from '../../components/Callback.astro';
+import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { img, srcset } from '../../config';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
@@ -14,7 +15,7 @@ const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListEl
 <Base title="Bhutan Tour Packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
   <section class="banner">
     <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Tiger's Nest monastery in Paro" width="1600" height="700" fetchpriority="high" />
-    <div><p class="eyebrow">Nine itineraries, each one adjustable</p><h1>Bhutan tour packages</h1></div>
+    <div><Breadcrumbs items={[['Tours']]} light /><h1>Bhutan tour packages</h1></div>
   </section>
 
   <nav class="section cats" aria-label="Tour categories">
@@ -34,7 +35,7 @@ const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListEl
       <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
     </div>
   </section>
-  <Callback />
+  <WhatsAppCta about="your tour packages" />
 </Base>
 <style>
   .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 0 40px; list-style: none; margin: 0; padding: 0; }

@@ -1,6 +1,6 @@
 ---
 import Icon from './Icon.astro';
-import { SITE, img, srcset } from '../config';
+import { SITE, img, srcset, wa } from '../config';
 const {
   title = 'Your Bhutan journey starts with a conversation',
   text = 'Tell us when you would like to travel and what draws you to Bhutan. A trip planner in Thimphu will reply within a day with ideas and a clear quote.',
@@ -9,14 +9,14 @@ const {
   image = 'photo-1662547150045-7a8d3a9ad0b2',
 } = Astro.props;
 ---
-<section class="cta">
+<section class="cta" id="plan">
   <img src={img(image, 1600)} srcset={srcset(image)} sizes="100vw" alt="" width="1600" height="900" loading="lazy" decoding="async" />
   <div class="container cta__in" data-reveal>
     <h2>{title}</h2>
     <p>{text}</p>
     <div class="cta__act">
       <a class="btn btn--light btn--lg" href={href}>{cta}<Icon name="arrow-right" class="i-end" /></a>
-      <a class="cta__tel" href={`tel:${SITE.phone.replace(/\s/g, '')}`}><Icon name="phone" />{SITE.phone}</a>
+      <a class="cta__tel" href={wa(`${new URL(Astro.url.pathname, Astro.site).href}#plan`)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />{SITE.phone}</a>
     </div>
   </div>
 </section>
