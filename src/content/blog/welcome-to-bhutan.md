@@ -4,7 +4,8 @@ excerpt: Welcome to BHutanWelcome to BHutanWelcome to BHutanWelcome to BHutanWel
 image: /images/uploads/dochula in winter.jpg
 date: 2026-09-19
 author: Bhutanova Travels
-tags: []
+tags:
+  - Destinations
 draft: false
 ---
 
