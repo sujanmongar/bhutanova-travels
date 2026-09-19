@@ -7,6 +7,12 @@
     <title>Bhutanova Travels CMS</title>
   </head>
   <body>
-    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+    <!-- Pinned + integrity-checked so a compromised upstream release can't silently run
+         in a page holding your GitHub token. Bump the version and regenerate the hash with:
+         curl -s https://unpkg.com/@sveltia/cms@<version>/dist/sveltia-cms.js | openssl dgst -sha384 -binary | openssl base64 -A -->
+    <script
+      src="https://unpkg.com/@sveltia/cms@0.216.0/dist/sveltia-cms.js"
+      integrity="sha384-2J6N1TXcxRzFVP01Oj89X5M6AJHfz3O+VKyPyhst59uQHwYA6TrG7CCHgC4kl8rK"
+      crossorigin="anonymous"></script>
   </body>
 </html>
