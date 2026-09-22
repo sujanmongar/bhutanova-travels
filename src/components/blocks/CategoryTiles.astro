@@ -139,7 +139,7 @@ const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b
   .cat__txt { padding: 20px 20px 22px; }
   .cat h3 { color: #fff; }
   .cat h3 a::after { content: ''; position: absolute; inset: 0; }
-  .cat p { margin-top: 8px; font-size: var(--fs-small); line-height: 1.55; color: rgb(255 255 255 / .82);
+  .cat p { margin-top: 8px; font-size: var(--fs-small); line-height: var(--lh-small); color: rgb(255 255 255 / .82);
     display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
   .cat:has(a:focus-visible) { outline: 2px solid var(--p-500); outline-offset: 3px; }
   .cat a:focus-visible { outline: 0; }
