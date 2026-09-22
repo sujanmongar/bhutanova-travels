@@ -246,7 +246,7 @@ const reviewList = defineType({
   title: 'Reviews',
   type: 'object',
   icon: StarIcon,
-  description: 'A sliding row of testimonials (the centred one is featured) from Content → Reviews, with your Google and Tripadvisor badges.',
+  description: 'One review in the spotlight (big guest photo + quote), the other guests as small photos to click through, and your Google and Tripadvisor badges. Reviews come from Content → Reviews.',
   fields: [heading('What travelers say'), grey()],
   preview: preview('Reviews'),
 })

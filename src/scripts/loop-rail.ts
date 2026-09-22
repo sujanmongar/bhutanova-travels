@@ -1,10 +1,7 @@
-// Endless, self-advancing card row, shared by the category and review sliders.
+// Endless, self-advancing card row (the category slider).
 // The real cards are in the HTML (for search engines and no-JS); copies are added on each side so the loop never
 // runs out. Copies stay clickable but are hidden from screen readers and the Tab key.
-// Markup: <ul data-loop [data-focus]> in a <section> that has [data-prev], [data-next] and [data-play] buttons.
-// data-focus="0.28": the centred card is the prominent one. Cards get --d (0 at the centre → 1 one card away),
-// --o (the side facing the centre) and --t (a pull towards the centre so gaps stay even once side cards shrink by
-// the given fraction); the track gets --k (that fraction) for the CSS scale.
+// Markup: a card list in a <section> that has [data-prev], [data-next] and [data-play] buttons.
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 
@@ -30,36 +27,13 @@ export function loopRail(track: HTMLElement) {
   const current = () => Math.round((track.scrollLeft - centre(items[0])) / step());
   const jump = (left: number) => track.scrollTo({ left, behavior: 'instant' });
 
-  const focus = track.hasAttribute('data-focus');
-  const shrink = parseFloat(track.dataset.focus || '0') || 0;
-  if (focus) track.style.setProperty('--k', String(shrink));
-  let queued = false;
-  const emphasise = () => {
-    queued = false;
-    const mid = track.scrollLeft + track.clientWidth / 2, s = step(), w = real[0].offsetWidth;
-    const cards = items.map((li) => { const c = li.offsetLeft + li.offsetWidth / 2; return { li, c, d: Math.min(1, Math.abs(c - mid) / s) }; });
-    for (const side of [-1, 1]) {
-      let pull = 0; // width already given up by the cards between this one and the centre
-      for (const x of cards.filter((x) => Math.sign(x.c - mid) === side).sort((a, b) => Math.abs(a.c - mid) - Math.abs(b.c - mid))) {
-        x.li.style.setProperty('--d', x.d.toFixed(3));
-        x.li.style.setProperty('--o', side < 0 ? '100%' : '0%');
-        x.li.style.setProperty('--t', `${(-side * pull).toFixed(1)}px`);
-        pull += w * shrink * x.d;
-      }
-    }
-    for (const x of cards.filter((x) => x.c === mid)) { x.li.style.setProperty('--d', '0'); x.li.style.setProperty('--t', '0px'); }
-  };
-  const refocus = () => { if (focus && !queued) { queued = true; requestAnimationFrame(emphasise); } };
-
   jump(centre(items[first]));
-  if (focus) emphasise();
   // Only a real width change re-centres (mobile browsers fire resize while the URL bar hides), and it keeps the card.
   let width = innerWidth;
   addEventListener('resize', () => {
     if (innerWidth === width) return;
     width = innerWidth;
     jump(centre(items[Math.min(Math.max(current(), 0), items.length - 1)]));
-    refocus();
   });
 
   // Native smooth-scroll is quick and its speed can't be set, so move one card over ~1s with an ease-in-out curve.
@@ -84,7 +58,6 @@ export function loopRail(track: HTMLElement) {
   // Once scrolling settles inside a copy, hop to the same card in the real set (invisible: identical cards).
   let settle: number | undefined;
   track.addEventListener('scroll', () => {
-    refocus();
     clearTimeout(settle);
     settle = setTimeout(() => {
       if (gliding) return;
