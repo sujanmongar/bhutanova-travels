@@ -47,10 +47,18 @@ npm run dev      # http://localhost:3333
 npm run deploy   # publishes to bhutanova.sanity.studio
 ```
 
-**Rebuild on publish:** Sanity → Manage → API → Webhooks calls
-`POST https://api.github.com/repos/sujanmongar/bhutanova-travels/actions/workflows/deploy.yml/dispatches`
-with body `{"ref": "main"}` and an `Authorization: Bearer <token>` header, where the token is a GitHub
-fine-grained token limited to this repo with **Actions: Read and write** only (it can start a deploy, not change code).
+**Rebuild on publish:** a Sanity webhook ("Rebuild website on publish") starts the GitHub `Deploy` workflow.
+It authenticates with a GitHub fine-grained token limited to this repo with **Actions: Read and write** only
+(it can start a deploy, not read or change code). When that token expires, publishing stops updating the site;
+create a new one and run this from `studio/`, pasting the token once:
+
+```bash
+read -rs 'GH_DEPLOY_TOKEN?GitHub token: ' && GH_DEPLOY_TOKEN="$GH_DEPLOY_TOKEN" npx sanity exec scripts/set-deploy-hook.ts --with-user-token
+```
+
+**Plan:** the project runs on Sanity's Free plan (after the automatic 30-day Growth trial). Free covers this site:
+public dataset, 2 webhooks (1 used), 20 seats. Free only has Administrator and Viewer roles, so anyone who
+edits content must be an Administrator; restricted "Editor" roles need the paid Growth plan.
 
 ## Forms
 
