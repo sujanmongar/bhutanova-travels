@@ -80,8 +80,16 @@ export const reviews = defineType({
             defineField({name: 'source', title: 'Posted on', type: 'string', options: {list: PLATFORMS}}),
             defineField({name: 'rating', title: 'Rating', type: 'number', initialValue: 5, validation: (r) => r.required().integer().min(1).max(5)}),
             defineField({name: 'text', title: 'Review', type: 'text', rows: 4, validation: (r) => r.required()}),
+            defineField({
+              name: 'photo',
+              title: 'Guest photo',
+              type: 'image',
+              options: {hotspot: true},
+              description:
+                'A photo of the guest on their trip — only with their permission. The first review shows it large; the others as a small portrait. Drag the focal point onto their face. Without a photo, the tour’s own picture is shown.',
+            }),
           ],
-          preview: {select: {title: 'name', subtitle: 'text'}},
+          preview: {select: {title: 'name', subtitle: 'text', media: 'photo'}},
         }),
       ],
     }),

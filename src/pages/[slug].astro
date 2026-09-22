@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Blocks from '../components/Blocks.astro';
+import { coverImage } from '../config';
+
+// Every page built in the Studio (About, landing pages…) except the homepage, at /<slug>/.
+export async function getStaticPaths() {
+  return (await getCollection('pages', (p) => p.id !== 'home')).map((page) => ({ params: { slug: page.id }, props: { page } }));
+}
+const { title, sections, seo } = Astro.props.page.data;
+// Share image falls back to the banner/slideshow photo when the SEO tab has none.
+---
+<Base title={title} image={coverImage(sections)} seo={seo}>
+  <Blocks sections={sections} title={title} />
+</Base>

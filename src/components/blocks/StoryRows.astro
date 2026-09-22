@@ -1,0 +1,33 @@
+---
+import { img, srcset, focal, type BlockImage } from '../../config';
+import { ptParagraphs } from '../../pt';
+interface Props { rows?: { _key: string; image?: BlockImage; heading: string; text?: any[] }[]; grey?: boolean }
+const { rows = [], grey = false } = Astro.props;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container story">
+    {rows.map((r, i) => (
+      <div class:list={['story__row', { 'story__row--rev': i % 2 }]} data-reveal>
+        {r.image?.url && <img src={img(r.image.url, 900)} srcset={srcset(r.image.url, [480, 800, 1200])} sizes="(min-width:1024px) 50vw, 100vw" alt={r.image.alt ?? ''} width="900" height="675" loading="lazy" decoding="async" style={`object-position:${focal(r.image.hotspot)}`} />}
+        <div>
+          <h2>{r.heading}</h2>
+          {ptParagraphs(r.text).map((p) => <p set:html={p} />)}
+        </div>
+      </div>
+    ))}
+  </div>
+</section>
+<style>
+  /* Photo and text side by side, alternating sides row by row */
+  .story { display: grid; gap: 56px; }
+  .story__row { display: grid; gap: 24px; align-items: center; }
+  .story__row img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
+  .story__row p { margin-top: 14px; max-width: 52ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
+  .story__row :global(:is(b, strong)) { color: var(--ink); }
+  @media (min-width: 768px) {
+    .story { gap: 80px; }
+    .story__row { grid-template-columns: 1fr 1fr; gap: 56px; }
+    .story__row--rev img { order: 2; }
+  }
+  @media (min-width: 1200px) { .story__row { gap: 96px; } }
+</style>

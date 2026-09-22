@@ -3,7 +3,11 @@ import {Box, Card, Stack, Text} from '@sanity/ui'
 
 const SITE = 'https://bhutanova-travels.pages.dev'
 const SUFFIX = ' | Bhutanova Travels'
+const HOME_TITLE = 'Bhutanova Travels | Bhutan tours, treks & festival journeys'
+const SITE_DESC =
+  'Bhutanova Travels is a Thimphu-based tour operator crafting cultural, festival, trekking and luxury tours across Bhutan, guided by the values of Gross National Happiness.'
 const PATHS: Record<string, string> = {
+  page: '/',
   tour: '/tours/',
   category: '/tours/category/',
   post: '/blog/',
@@ -33,8 +37,11 @@ function SeoInput(props: ObjectInputProps) {
   const slug = (useFormValue(['slug', 'current']) as string) ?? ''
   const fallbackDesc = ((useFormValue(['excerpt']) ?? useFormValue(['summary'])) as string) ?? ''
   const seo = (props.value ?? {}) as {title?: string; description?: string; noindex?: boolean}
-  const shownTitle = seo.title || `${title}${SUFFIX}`
-  const shownDesc = seo.description || fallbackDesc
+  const id = ((useFormValue(['_id']) as string) ?? '').replace(/^drafts\./, '')
+  const home = id === 'home'
+  const shownTitle = seo.title || (home ? HOME_TITLE : `${title}${SUFFIX}`)
+  // Pages have no excerpt, so the site falls back to its general description (same as here).
+  const shownDesc = seo.description || fallbackDesc || (type === 'page' ? SITE_DESC : '')
   const clip = (s: string, n: number) => (s.length > n ? `${s.slice(0, n - 1)}…` : s)
 
   return (
@@ -47,7 +54,7 @@ function SeoInput(props: ObjectInputProps) {
           <Text size={1} muted>
             {SITE.replace('https://', '')}
             {PATHS[type] ?? '/'}
-            {slug}
+            {home ? '' : `${slug}/`}
           </Text>
           <Box>
             <Text size={3}>

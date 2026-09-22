@@ -1,0 +1,21 @@
+---
+interface Props { heading: string; items?: { _key: string; title: string; text?: string }[]; grey?: boolean }
+const { heading, items = [], grey = true } = Astro.props;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    <div class="sh" data-reveal><h2>{heading}</h2></div>
+    <ul class="why" data-reveal="stagger">
+      {items.map((r) => <li><h3>{r.title}</h3>{r.text && <p class="t-small">{r.text}</p>}</li>)}
+    </ul>
+  </div>
+</section>
+<style>
+  /* Short, concrete points: 1 → 2 → 4 columns */
+  .why { display: grid; gap: 0 32px; list-style: none; margin: 0; padding: 0; }
+  .why li { padding-block: 20px; border-top: 1px solid var(--border-dark); }
+  .why h3 { margin-bottom: 4px; }
+  .why p { max-width: 30ch; }
+  @media (min-width: 768px) { .why { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 1024px) { .why { grid-template-columns: repeat(4, 1fr); } .why li { padding-block: 24px 0; } }
+</style>

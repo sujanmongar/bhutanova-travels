@@ -1,0 +1,139 @@
+---
+import Icon from '../Icon.astro';
+import { img, srcset, focal, type BlockImage } from '../../config';
+interface Slide { _key: string; image?: BlockImage; place?: string; title: string; text?: string; tour?: { id: string; title: string; days: number }; tripWord?: string }
+interface Props { heading?: string; slides?: Slide[] }
+const { heading = 'Bhutan tours planned by locals', slides: all = [] } = Astro.props;
+const slides = all.filter((s) => s.image?.url);
+---
+<section class="hero" aria-roledescription="carousel" aria-label="Places we travel in Bhutan">
+  <h1 class="sr-only">{heading}</h1>
+  <div class="hero__track" id="hero-track">
+    {slides.map((s, i) => (
+      <img src={img(s.image!.url, 1600)} srcset={srcset(s.image!.url, [640, 960, 1400, 1920, 2560])} sizes="100vw" alt={s.image!.alt ?? ''} width="1600" height="900"
+        style={`object-position:${focal(s.image!.hotspot)}`} loading={i ? 'lazy' : 'eager'} fetchpriority={i ? undefined : 'high'} decoding="async" />
+    ))}
+  </div>
+  <div class="container hero__in">
+    <div class="hero__slides">
+      {slides.map((s, i) => (
+        <div class:list={['hero__slide', { 'is-on': !i }]} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${slides.length}`} data-place={s.place ?? ''} inert={i > 0}>
+          <div class="hero__copy">
+            <h2 class="hero-title">{s.title}</h2>
+            {s.text && <p class="hero__line">{s.text}</p>}
+          </div>
+          {s.tour && (
+            <a class="btn btn--light btn--lg hero__cta" href={`/tours/${s.tour.id}/`}>{`See the ${s.tour.days}-day ${s.tripWord || 'trip'}`}<span class="sr-only">: {s.tour.title}</span><Icon name="arrow-right" class="i-end" /></a>
+          )}
+        </div>
+      ))}
+    </div>
+    <div class="hero__bar">
+      <p class="hero__place" data-caption>{slides[0]?.place}</p>
+      <div class="hero__dots">
+        {slides.map((s, i) => <button type="button" data-to={i} aria-label={`Slide ${i + 1} of ${slides.length}: ${s.place ?? s.title}`} aria-current={i ? undefined : 'true'}><i></i></button>)}
+        <button type="button" class="hero__pause" data-pause aria-label="Pause slideshow"></button>
+      </div>
+    </div>
+    <p class="sr-only" aria-live="polite" data-live></p>
+  </div>
+</section>
+
+<script>
+  const track = document.getElementById('hero-track')!;
+  const hero = track.parentElement!;
+  const slides = [...hero.querySelectorAll<HTMLElement>('.hero__slide')];
+  const dots = [...hero.querySelectorAll<HTMLButtonElement>('[data-to]')];
+  const caption = hero.querySelector<HTMLElement>('[data-caption]')!;
+  const live = hero.querySelector<HTMLElement>('[data-live]')!;
+  const pause = hero.querySelector<HTMLButtonElement>('[data-pause]')!;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const n = slides.length;
+  let on = 0, auto = false;
+  const cur = () => Math.round(track.scrollLeft / track.clientWidth);
+  const go = (i: number) => {
+    const to = (i + n) % n, left = to * track.clientWidth;
+    if (Math.abs(to - cur()) > 1 && !reduce) {
+      // wrap-around / big jump: dip to navy instead of rewinding through every slide
+      track.animate([{ opacity: 1 }, { opacity: 0, offset: .5 }, { opacity: 1 }], { duration: 600, easing: 'ease-in-out' });
+      setTimeout(() => track.scrollTo({ left, behavior: 'instant' }), 300);
+    } else track.scrollTo({ left, behavior: reduce ? 'auto' : 'smooth' });
+  };
+  const show = (i: number) => {
+    if (i === on) return;
+    slides[on].classList.remove('is-on'); slides[on].inert = true; dots[on].removeAttribute('aria-current');
+    slides[i].classList.add('is-on'); slides[i].inert = false; dots[i].setAttribute('aria-current', 'true');
+    caption.textContent = slides[i].dataset.place!;
+    if (!reduce) caption.animate({ opacity: [0, 1] }, 400);
+    live.textContent = auto ? '' : `${i + 1} of ${n}: ${slides[i].querySelector('h2')!.textContent}`;
+    on = i; auto = false;
+  };
+  track.addEventListener('scroll', () => show(cur()), { passive: true });
+  dots.forEach((b, i) => (b.onclick = () => go(i)));
+  // The orange fill in the current line is the timer: when it finishes, advance. Pausing the fill pauses the slideshow.
+  hero.addEventListener('animationend', (e) => { if ((e.target as Element).matches('.hero__dots i')) { auto = true; go(on + 1); } });
+  pause.onclick = () => pause.setAttribute('aria-label', hero.toggleAttribute('data-paused') ? 'Play slideshow' : 'Pause slideshow');
+</script>
+
+<style>
+  /* Hero — one story per photo; frame (bar) stays fixed, only the story moves */
+  .hero { position: relative; height: min(88svh, 760px); min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); }
+  .hero__track { position: absolute; inset: 0; display: flex; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .hero__track::-webkit-scrollbar { display: none; }
+  .hero__track img { flex: 0 0 100%; width: 100%; height: 100%; object-fit: cover; scroll-snap-align: start; }
+  .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: 28px; padding-bottom: max(12px, env(safe-area-inset-bottom)); pointer-events: none; }
+  .hero__in :is(a, button) { pointer-events: auto; }
+  .hero__slides { display: grid; }
+  .hero__slide { grid-area: 1 / 1; align-self: end; display: grid; justify-items: start; gap: 24px; }
+  .hero__slide:not(.is-on) { opacity: 0; visibility: hidden; transition: opacity 200ms var(--ease-in), visibility 0s 200ms; }
+  .hero-title { max-width: 15ch; }
+  .hero__line { max-width: 36ch; margin-top: 12px; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
+  .hero__bar { display: grid; justify-items: start; gap: 4px; }
+  .hero__place { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .8); }
+  .hero__dots { display: flex; margin-inline: -6px; }
+  .hero__dots button { display: grid; align-items: center; width: 48px; height: 44px; padding: 0 6px; border: 0; background: none; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .hero__dots i { height: 3px; border-radius: 2px; background: rgb(255 255 255 / .35) linear-gradient(var(--p-500), var(--p-500)) no-repeat; background-size: 0 100%; transition: background-color var(--dur-2); }
+  .hero__dots [aria-current] i { background-size: 100% 100%; }
+  .hero__dots .hero__pause { width: 44px; justify-items: center; }
+  .hero__pause::before { content: ''; width: 8px; height: 10px; border-inline: 2px solid; }
+  .hero[data-paused] .hero__pause::before { width: 9px; border: 0; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  @media (hover: hover) {
+    .hero__dots button:not([aria-current]):hover i { background-color: var(--p-500); }
+    .hero__dots .hero__pause:hover { color: var(--p-500); }
+  }
+  @media (scripting: none) { .hero__dots { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .hero__pause { display: none !important; } }
+  @media (min-width: 768px) {
+    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
+    .hero__in { row-gap: 32px; padding-bottom: 24px; }
+    .hero__dots button { width: 56px; }
+  }
+  /* Desktop: story on the left, the button pinned to the right edge; caption + progress run underneath */
+  @media (min-width: 1024px) {
+    .hero__slide { grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: 48px; }
+    .hero__cta { margin-bottom: 6px; }
+    .hero__bar { grid-auto-flow: column; justify-content: space-between; align-items: center; }
+    .hero__dots { margin-inline: 0 -6px; }
+  }
+  @media (min-width: 1200px) {
+    .hero { height: min(90svh, 820px); }
+    .hero__in { padding-bottom: 40px; }
+    .hero__line { margin-top: 16px; }
+  }
+
+  @keyframes hero-fill { from { background-size: 0 100%; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__track > img:first-child { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
+    .hero__slide.is-on .hero-title { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
+    .hero__slide.is-on .hero__line { --rise: 12px; animation: rise 800ms var(--ease-out) 280ms backwards; }
+    .hero__slide.is-on > .hero__cta { animation: fade 500ms var(--ease-out) 360ms backwards; }
+    .hero__bar { animation: fade var(--dur-4) var(--ease-out) 650ms backwards; }
+    .hero__dots [aria-current] i { animation: hero-fill 7s linear; }
+    .hero:is([data-paused], :has(.hero__in :focus-visible)) .hero__dots i { animation-play-state: paused; }
+  }
+  @media (prefers-reduced-motion: no-preference) and (hover: hover) {
+    .hero:has(.hero__in :is(a, button):hover) .hero__dots i { animation-play-state: paused; }
+  }
+</style>

@@ -1,0 +1,20 @@
+---
+import Faq from '../Faq.astro';
+import { ptParagraphs } from '../../pt';
+interface Props { heading: string; text?: any[]; grey?: boolean }
+const { heading, text, grey = true } = Astro.props;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    <Faq>
+      <div class="sh" data-reveal>
+        <h2>{heading}</h2>
+        {ptParagraphs(text).map((p) => <p set:html={p} />)}
+      </div>
+    </Faq>
+  </div>
+</section>
+<style>
+  .sh :global(a) { white-space: nowrap; color: var(--ink); font-weight: 600; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+  .sh :global(a:hover) { color: var(--p-800); }
+</style>

@@ -201,6 +201,9 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; transition: color var(--dur-1), text-decoration-color var(--dur-2);
 }
 .link-more .icon { font-size: .8em; color: var(--p-700); transition: translate var(--dur-2) var(--ease-out); }
+/* Mobile-only "see all" link under a row whose header link is hidden on phones (after .link-more so display:none wins) */
+.m-only { margin-top: 18px; }
+@media (min-width: 768px) { .m-only { display: none; } }
 @media (hover: hover) { .link-more:hover { color: var(--p-800); } .link-more:hover .icon { translate: 3px 0; } }
 
 

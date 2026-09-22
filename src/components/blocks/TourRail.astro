@@ -1,0 +1,23 @@
+---
+import { getCollection } from 'astro:content';
+import Arrows from '../Arrows.astro';
+import TourCard from '../TourCard.astro';
+interface Props { _key: string; heading: string; text?: string; tours?: string[]; grey?: boolean }
+const { _key, heading, text, tours: picked = [], grey = false } = Astro.props;
+const all = await getCollection('tours');
+// Editor's picks in their order; otherwise featured tours first, six in total.
+const tours = picked.length
+  ? picked.map((id) => all.find((t) => t.id === id)).filter((t) => t !== undefined)
+  : all.filter((t) => t.data.featured).concat(all.filter((t) => !t.data.featured)).slice(0, 6);
+const rail = `rail-${_key}`;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    <div class="sh sh--row" data-reveal>
+      <h2>{heading}</h2>
+      {text && <p>{text}</p>}
+      <div class="sh__act"><Arrows target={rail} label="packages" /></div>
+    </div>
+    <div class="rail" id={rail} data-reveal="stagger">{tours.map((t) => <TourCard tour={t} />)}</div>
+  </div>
+</section>

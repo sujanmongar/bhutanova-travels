@@ -1,0 +1,160 @@
+---
+import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
+import { img, srcset } from '../../config';
+interface Props { heading: string; text?: string; grey?: boolean }
+const { heading, text, grey = false } = Astro.props;
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+---
+<section class:list={['section cats-sec', { 'section--grey': grey }]}>
+  <div class="container">
+    <div class="sh sh--center" data-reveal>
+      <h2>{heading}</h2>
+      {text && <p>{text}</p>}
+    </div>
+    <ul class="cats" data-cats data-reveal>
+      {cats.map((c) => (
+        <li>
+          <article class="cat">
+            <img src={img(c.data.image, 700)} srcset={srcset(c.data.image, [400, 700, 1000])} sizes="(min-width:1200px) 300px, (min-width:768px) 280px, 74vw"
+              alt="" width="600" height="800" loading="lazy" decoding="async" />
+            <div class="cat__txt">
+              <h3 class="t-h3"><a href={`/tours/category/${c.id}/`}>{c.data.menuTitle}</a></h3>
+              <p>{c.data.excerpt}</p>
+            </div>
+          </article>
+        </li>
+      ))}
+    </ul>
+    <div class="arrows cats__nav">
+      <button type="button" class="arrow" data-prev aria-label="Previous tour style"><Icon name="arrow-left" /></button>
+      <button type="button" class="arrow cats__play" data-play aria-pressed="false" aria-label="Pause the slideshow"></button>
+      <button type="button" class="arrow" data-next aria-label="Next tour style"><Icon name="arrow-right" /></button>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Endless, self-advancing row. The real cards are in the HTML (for search engines and no-JS); copies are added
+  // on each side so the loop never runs out. Copies stay clickable but are hidden from screen readers and the Tab key.
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
+  document.querySelectorAll<HTMLElement>('[data-cats]').forEach((track) => {
+    const section = track.closest('section')!;
+    const real = [...track.children] as HTMLElement[];
+    const n = real.length;
+    if (n < 2) return;
+    const step = () => real[1].offsetLeft - real[0].offsetLeft;
+    // Enough copies per side to fill even a very wide (or later widened) screen around any centred card.
+    const sets = Math.max(1, Math.ceil((Math.max(screen.width, innerWidth) / 2 + step()) / (n * step())));
+    const copies = () => real.map((li) => {
+      const c = li.cloneNode(true) as HTMLElement;
+      c.setAttribute('aria-hidden', 'true');
+      c.querySelectorAll('a').forEach((a) => (a.tabIndex = -1));
+      return c;
+    });
+    for (let k = 0; k < sets; k++) { track.prepend(...copies()); track.append(...copies()); }
+    const items = [...track.children] as HTMLElement[];
+    const first = sets * n; // index of the first real card
+    const centre = (el: HTMLElement) => el.offsetLeft + el.offsetWidth / 2 - track.clientWidth / 2;
+    const current = () => Math.round((track.scrollLeft - centre(items[0])) / step());
+    const jump = (left: number) => track.scrollTo({ left, behavior: 'instant' });
+    jump(centre(items[first]));
+    // Only a real width change re-centres (mobile browsers fire resize while the URL bar hides), and it keeps the card.
+    let width = innerWidth;
+    addEventListener('resize', () => {
+      if (innerWidth === width) return;
+      width = innerWidth;
+      jump(centre(items[Math.min(Math.max(current(), 0), items.length - 1)]));
+    });
+
+    // Native smooth-scroll is quick and its speed can't be set, so move one card over ~1s with an ease-in-out curve.
+    // Snapping is paused during the glide (it would fight each frame) and restored at the end.
+    let gliding = false;
+    const glide = (dir: 1 | -1) => {
+      if (gliding) return;
+      if (still) return track.scrollBy({ left: dir * step(), behavior: 'instant' });
+      gliding = true;
+      const from = track.scrollLeft, by = dir * step(), start = performance.now();
+      track.style.scrollSnapType = 'none';
+      const frame = (now: number) => {
+        const p = Math.min(1, (now - start) / 1000);
+        track.scrollLeft = from + by * ease(p);
+        if (p < 1) return requestAnimationFrame(frame);
+        track.style.scrollSnapType = '';
+        gliding = false;
+      };
+      requestAnimationFrame(frame);
+    };
+
+    // Once scrolling settles inside a copy, hop to the same card in the real set (invisible: identical cards).
+    let settle: number | undefined;
+    track.addEventListener('scroll', () => {
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        if (gliding) return;
+        const i = current();
+        if (i < first) jump(track.scrollLeft + n * step());
+        else if (i >= first + n) jump(track.scrollLeft - n * step());
+      }, 150);
+    }, { passive: true });
+
+    // Auto-advance, with a pause/play button (WCAG 2.2.2). Using the arrows or swiping hands control to the
+    // visitor and stops it for good; it also waits while the row is hovered, focused or off screen.
+    const toggle = section.querySelector<HTMLButtonElement>('[data-play]')!;
+    let playing = !still, seen = false;
+    const setPlaying = (on: boolean) => {
+      playing = on;
+      toggle.setAttribute('aria-pressed', String(!on));
+      toggle.setAttribute('aria-label', on ? 'Pause the slideshow' : 'Play the slideshow');
+    };
+    setPlaying(playing);
+    toggle.addEventListener('click', () => setPlaying(!playing));
+    const takeOver = () => setPlaying(false);
+    section.querySelector('[data-prev]')!.addEventListener('click', () => { takeOver(); glide(-1); });
+    section.querySelector('[data-next]')!.addEventListener('click', () => { takeOver(); glide(1); });
+    track.addEventListener('pointerdown', takeOver);
+    track.addEventListener('wheel', (e) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) takeOver(); }, { passive: true });
+    new IntersectionObserver(([e]) => (seen = e.isIntersecting)).observe(track);
+    setInterval(() => {
+      if (playing && seen && !document.hidden && !track.matches(':hover, :focus-within')) glide(1);
+    }, 5000);
+  });
+</script>
+
+<style>
+  /* Full-width row: cards run from screen edge to screen edge, one centred, neighbours peeking in */
+  .cats-sec { overflow-x: clip; }
+  .cats {
+    position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: min(74vw, 280px); gap: 16px;
+    list-style: none; margin: -8px calc(50% - 50vw); padding: 8px 0; /* 8px keeps the focus ring unclipped */
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .cats::-webkit-scrollbar { display: none; }
+  .cats > li { scroll-snap-align: center; }
+
+  .cat { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 3 / 4; border-radius: var(--r-xl); overflow: hidden; isolation: isolate; background: var(--s-800); color: #fff; -webkit-font-smoothing: antialiased; }
+  .cat img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: scale var(--dur-4) var(--ease-out); }
+  .cat::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 25%, rgb(12 25 37 / .4) 50%, rgb(12 25 37 / .9)); }
+  .cat__txt { padding: 20px 20px 22px; }
+  .cat h3 { color: #fff; }
+  .cat h3 a::after { content: ''; position: absolute; inset: 0; }
+  .cat p { margin-top: 8px; font-size: var(--fs-small); line-height: 1.55; color: rgb(255 255 255 / .82);
+    display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+  .cat:has(a:focus-visible) { outline: 2px solid var(--p-500); outline-offset: 3px; }
+  .cat a:focus-visible { outline: 0; }
+  @media (hover: hover) {
+    .cat:hover img { scale: 1.05; }
+    .cat:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
+  }
+  @media (min-width: 768px) { .cats { grid-auto-columns: 280px; gap: 24px; } }
+  @media (min-width: 1200px) {
+    .cats { grid-auto-columns: 300px; gap: 28px; }
+    .cat__txt { padding: 24px 24px 26px; }
+  }
+  .cats__nav { justify-content: center; margin-top: 28px; }
+  /* pause bars ⇄ play triangle, drawn in CSS like the hero's control */
+  .cats__play::before { content: ''; width: 8px; height: 10px; border-inline: 2px solid; }
+  .cats__play[aria-pressed='true']::before { width: 9px; border: 0; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
+  @media (prefers-reduced-motion: reduce) { .cats__play { display: none; } }
+</style>

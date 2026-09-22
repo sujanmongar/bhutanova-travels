@@ -1,0 +1,10 @@
+---
+import Breadcrumbs from '../Breadcrumbs.astro';
+import { img, srcset, focal, type BlockImage } from '../../config';
+interface Props { heading: string; text?: string; image?: BlockImage; pageTitle: string }
+const { heading, text, image, pageTitle } = Astro.props;
+---
+<section class="banner">
+  {image?.url && <img src={img(image.url, 1600)} srcset={srcset(image.url)} sizes="100vw" alt={image.alt ?? ''} width="1600" height="700" fetchpriority="high" style={`object-position:${focal(image.hotspot)}`} />}
+  <div>{Astro.url.pathname !== '/' && <Breadcrumbs items={[[pageTitle]]} light />}<h1>{heading}</h1>{text && <p class="banner__line">{text}</p>}</div>
+</section>

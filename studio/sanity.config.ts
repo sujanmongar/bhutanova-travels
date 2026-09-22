@@ -2,9 +2,11 @@ import {defineConfig} from 'sanity'
 import {structureTool} from 'sanity/structure'
 import {visionTool} from '@sanity/vision'
 import {table} from '@sanity/table'
+import {HomeIcon} from '@sanity/icons/Home'
 import {schemaTypes} from './schemaTypes'
 
 // FAQs and Reviews are one fixed document each: no "create new", no delete, no duplicate.
+// The Homepage and About page are always linked from the site, so they get the same protection.
 const SINGLETONS = new Set(['faqs', 'reviews'])
 
 export default defineConfig({
@@ -20,6 +22,12 @@ export default defineConfig({
         S.list()
           .title('Content')
           .items([
+            S.listItem().title('Homepage').id('home').icon(HomeIcon).child(S.document().schemaType('page').documentId('home')),
+            S.listItem()
+              .title('Pages')
+              .schemaType('page')
+              .child(S.documentTypeList('page').title('Pages').filter('_type == "page" && !(_id in ["home", "drafts.home"])')),
+            S.divider(),
             S.documentTypeListItem('tour').title('Tours'),
             S.documentTypeListItem('category').title('Tour categories'),
             S.divider(),
@@ -46,8 +54,8 @@ export default defineConfig({
   },
 
   document: {
-    actions: (actions, {schemaType}) =>
-      SINGLETONS.has(schemaType)
+    actions: (actions, {schemaType, documentId}) =>
+      SINGLETONS.has(schemaType) || ['home', 'page-about'].includes(documentId ?? '')
         ? actions.filter(({action}) => action && ['publish', 'discardChanges', 'restore'].includes(action))
         : actions,
   },

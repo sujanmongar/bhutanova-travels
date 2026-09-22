@@ -24,17 +24,17 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     <nav class="menu" aria-label="Main">
       <ul class="menu__list">
         {nav.map((item) => (
-          <li class="menu__item">
+          <li class:list={['menu__item', { 'has-sub': item.children }]}>
             {item.children ? (
-              <details class="sub" name="menu">
-                <summary class:list={['menu__link', { 'is-active': active(item.href) }]}>
+              <>
+                <a href={item.href} class:list={['menu__link', { 'is-active': active(item.href) }]} aria-current={path === item.href ? 'page' : undefined}>
                   {item.label}<Icon name="chevron-up" class="chev" />
-                </summary>
+                </a>
                 <ul class="sub__list">
-                  <li><a href={item.href} class="sub__all">View all<Icon name="arrow-right" /></a></li>
                   {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                  <li><a href={item.href} class="sub__all">View all {item.label.toLowerCase()}<Icon name="arrow-right" /></a></li>
                 </ul>
-              </details>
+              </>
             ) : (
               <a href={item.href} class:list={['menu__link', { 'is-active': active(item.href) }]} aria-current={active(item.href) ? 'page' : undefined}>
                 {item.label}
@@ -67,13 +67,18 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
         {nav.map((item, i) => (
           <li style={`--i:${i}`}>
             {item.children ? (
-              <details name="drawer" open={active(item.href) || undefined}>
-                <summary class:list={['d-link', { 'is-active': active(item.href) }]}>{item.label}<Icon name="chevron-up" class="chev" /></summary>
-                <ul class="d-sub">
-                  <li class="d-sub__all"><a href={item.href}>View all<Icon name="arrow-right" /></a></li>
+              <>
+                <div class="d-row">
+                  <a href={item.href} class:list={['d-link', { 'is-active': active(item.href) }]} aria-current={path === item.href ? 'page' : undefined}>{item.label}</a>
+                  <button type="button" class="d-toggle" aria-expanded={active(item.href) ? 'true' : 'false'} aria-controls={`d-sub-${i}`} data-toggle>
+                    <Icon name="chevron-up" class="chev" /><span class="sr-only">{item.label}: show all links</span>
+                  </button>
+                </div>
+                <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item.href)}>
                   {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                  <li class="d-sub__all"><a href={item.href}>View all {item.label.toLowerCase()}<Icon name="arrow-right" /></a></li>
                 </ul>
-              </details>
+              </>
             ) : (
               <a href={item.href} class:list={['d-link', { 'is-active': active(item.href) }]} aria-current={active(item.href) ? 'page' : undefined}>
                 {item.label}
@@ -107,15 +112,26 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   });
   addEventListener('resize', () => matchMedia('(min-width: 1200px)').matches && drawer.open && drawer.close());
 
-  // Desktop: hover opens dropdowns; clicking elsewhere closes them
-  const desktop = matchMedia('(min-width: 1200px)');
-  nav.querySelectorAll<HTMLDetailsElement>('details.sub').forEach((d) => {
-    d.addEventListener('mouseenter', () => desktop.matches && (d.open = true));
-    d.addEventListener('mouseleave', () => desktop.matches && (d.open = false));
+  // Drawer: the chevron beside "Tours"/"Travel guide" expands its links; opening one closes the other.
+  const toggles = [...drawer.querySelectorAll<HTMLButtonElement>('[data-toggle]')];
+  toggles.forEach((b) => b.addEventListener('click', () => {
+    const open = b.getAttribute('aria-expanded') !== 'true';
+    toggles.forEach((o) => {
+      const on = o === b && open;
+      o.setAttribute('aria-expanded', String(on));
+      document.getElementById(o.getAttribute('aria-controls')!)!.hidden = !on;
+    });
+  }));
+  // Desktop: Esc closes the open dropdown (hovered or keyboard-opened); focus returns to its top link if it was inside.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const item = (e.target as Element).closest?.('.has-sub') ?? nav.querySelector('.has-sub:hover');
+    if (!item) return;
+    item.classList.add('is-closed');
+    if (item.contains(document.activeElement)) item.querySelector<HTMLAnchorElement>('.menu__link')?.focus();
   });
-  document.addEventListener('click', (e) => {
-    nav.querySelectorAll<HTMLDetailsElement>('details.sub[open]').forEach((d) => !d.contains(e.target as Node) && (d.open = false));
-  });
+  nav.querySelectorAll('.has-sub').forEach((i) => i.addEventListener('mouseenter', () => i.classList.remove('is-closed')));
+  nav.addEventListener('focusout', (e) => { const i = (e.target as Element).closest('.has-sub'); if (i && !i.contains(e.relatedTarget as Node)) i.classList.remove('is-closed'); });
   // Transparent over hero/banner photos; frosted glass once the page scrolls
   const onScroll = () => nav.classList.toggle('is-stuck', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true });
@@ -153,24 +169,31 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .burger:hover { background: rgb(12 25 37 / .1); }
   .burger:active { scale: .92; }
   .menu { display: none; }
+  .nav__book { font-size: var(--fs-btn); padding-inline: 22px; }
   @media (max-width: 1199px) { .nav__book { --btn-h: 44px; } }
+  @media (min-width: 1200px) { .nav__book { --btn-h: 44px; } }
   @media (max-width: 359px) { .nav__book { display: none; } }
 
   /* Drawer (mobile/tablet) */
   .drawer__kicker { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); }
   .drawer__list { list-style: none; margin: 0 -12px; padding: 0; display: grid; gap: 2px; }
+  .d-row { display: flex; align-items: center; }
   .d-link {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; padding: 0 14px; border-radius: var(--r-md);
-    font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 600; color: var(--ink); cursor: pointer; list-style: none;
+    flex: 1; display: flex; align-items: center; min-height: 60px; padding: 0 14px; border-radius: var(--r-md);
+    font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--ink);
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
-  .d-link::-webkit-details-marker { display: none; }
   .d-link:hover, .d-link:active { background: var(--surface); }
   .d-link.is-active { text-decoration: underline 2px var(--p-500); text-underline-offset: 7px; }
-  .d-link :global(.icon) { font-size: 14px; color: var(--s-300); transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out); }
-  .d-link :global(.chev) { rotate: 180deg; }
-  details[open] > .d-link :global(.chev) { rotate: 0deg; }
+  .d-toggle {
+    display: grid; place-items: center; flex: none; width: 52px; height: 52px; border: 0; border-radius: var(--r-md); background: none;
+    color: var(--s-300); font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
+  }
+  .d-toggle:hover, .d-toggle:active { background: var(--surface); }
+  .d-toggle :global(.chev) { rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
+  .d-toggle[aria-expanded='true'] :global(.chev) { rotate: 0deg; }
   .d-sub { list-style: none; margin: 0 0 12px; padding: 0 14px; display: grid; }
+  .d-sub[hidden] { display: none; }
   .d-sub a {
     display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 10px 0;
     font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: color var(--dur-1);
@@ -197,34 +220,37 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     .burger, .drawer { display: none; }
     .nav__logo { margin-right: 0; }
     .menu { display: block; margin-left: auto; margin-right: 32px; }
-    .menu__list { display: flex; gap: 36px; list-style: none; margin: 0; padding: 0; }
+    .menu__list { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
     .menu__item { position: relative; }
     .menu__link {
-      position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h); cursor: pointer; list-style: none;
-      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: inherit;
-      transition: color var(--dur-1);
+      position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h);
+      font-size: .9375rem; line-height: 1.3; letter-spacing: .06em; text-transform: uppercase; font-weight: 600; color: inherit;
+      transition: color var(--dur-1), opacity var(--dur-1);
     }
-    .menu__link::-webkit-details-marker { display: none; }
     .menu__link::after {
       content: ''; position: absolute; left: 0; right: 0; bottom: 22px; height: 2px; border-radius: 2px; background: var(--p-500);
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
-    .menu__link:hover::after, .menu__link.is-active::after, details[open] > .menu__link::after { scale: 1 1; }
+    .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link::after { scale: 1 1; }
     .menu__link:hover { opacity: .75; }
     .menu :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
-    details[open] > .menu__link :global(.chev) { rotate: 0deg; }
+    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link :global(.chev) { rotate: 0deg; }
     .sub__list {
-      position: absolute; top: calc(100% - 14px); left: -18px; min-width: 272px; margin: 0; padding: 8px; list-style: none;
+      display: none; position: absolute; top: calc(100% - 14px); left: -18px; min-width: 272px; margin: 0; padding: 8px; list-style: none;
       background: #fff; border: 1px solid rgb(12 25 37 / .06); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     }
-    details[open] > .sub__list { --rise: -6px; animation: rise var(--dur-2) var(--ease-out); }
+    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .sub__list { display: block; --rise: -6px; animation: rise var(--dur-2) var(--ease-out); }
+    /* The item under the pointer wins, so two panels never show at once */
+    .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .sub__list { display: none; }
+    .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link :global(.chev) { rotate: 180deg; }
+    .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link:not(.is-active)::after { scale: 0 1; }
     .sub__list a {
       display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: var(--r-sm);
       font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
     .sub__list a:hover { background: var(--surface); color: var(--ink); }
     .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; background: var(--p-50); }
-    .sub__all { font-weight: 600; color: var(--s-500) !important; border-bottom: 1px solid var(--border); border-radius: var(--r-sm) var(--r-sm) 0 0 !important; margin-bottom: 4px; }
+    .sub__all { font-weight: 600; color: var(--s-500) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: 4px; }
     .sub__all :global(.icon) { font-size: 11px; color: var(--p-700); }
   }
 </style>

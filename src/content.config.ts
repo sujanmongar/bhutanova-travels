@@ -1,60 +1,28 @@
 import { defineCollection, reference } from 'astro:content';
 import type { Loader } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { toHTML } from '@portabletext/to-html';
-import GithubSlugger from 'github-slugger';
+import { ptHtml } from './pt';
 
 // Content lives in Sanity (studio/). The dataset is public and only published documents are
 // readable without a token, so the build needs no secrets.
 const API = 'https://234ghw8x.api.sanity.io/v2025-02-19/data/query/production';
 
+// An editor's crop becomes the CDN's rect=left,top,width,height (pixels), and the focal point is
+// re-expressed inside the cropped area so object-position still lands on the subject.
+function applyCrop({ url, crop, dims, hotspot, ...rest }: any) {
+  const [l, t] = [crop?.left ?? 0, crop?.top ?? 0];
+  const [w, h] = [1 - l - (crop?.right ?? 0), 1 - t - (crop?.bottom ?? 0)];
+  if (!dims || (w > 0.999 && h > 0.999)) return { ...rest, url, hotspot };
+  const clamp = (n: number) => Math.min(1, Math.max(0, n));
+  const rect = [l * dims.width, t * dims.height, w * dims.width, h * dims.height].map(Math.round).join(',');
+  return { ...rest, url: `${url}?rect=${rect}`, hotspot: hotspot && { x: clamp((hotspot.x - l) / w), y: clamp((hotspot.y - t) / h) } };
+}
+
 async function groq(query: string) {
   const res = await fetch(`${API}?perspective=published&query=${encodeURIComponent(query)}`);
   if (!res.ok) throw new Error(`Sanity query failed (${res.status}): ${await res.text()}`);
   // Sanity returns null for empty fields; dropping them lets zod defaults/optional apply.
-  return JSON.parse(await res.text(), (_, v) => (v === null ? undefined : v)).result;
-}
-
-// Typographic quotes, as Astro's markdown did: it's → it’s, "x" → “x”. `prev` carries context across spans.
-// ponytail: no decade/abbreviation rules ('90s becomes ‘90s); swap in retext-smartypants if that ever matters.
-const curl = (s: string, prev = ' ') =>
-  s.replace(/['"]/g, (q, i: number) => {
-    const open = /[\s([{–—-]/.test(i ? s[i - 1] : prev);
-    return q === '"' ? (open ? '“' : '”') : open ? '‘' : '’';
-  });
-
-// Portable Text → HTML, with h2/h3 ids from the same slugger Astro's markdown used, so TOC anchors don't change.
-function renderBody(blocks: any[] = []) {
-  for (const b of blocks) {
-    let prev = ' ';
-    for (const span of b.children ?? []) {
-      span.text = curl(span.text ?? '', prev);
-      prev = span.text.slice(-1) || prev;
-    }
-    for (const row of b.rows ?? []) row.cells = (row.cells ?? []).map((c: string) => curl(c ?? ''));
-  }
-  const slugger = new GithubSlugger();
-  const headings: { depth: number; slug: string; text: string }[] = [];
-  const heading = (depth: 2 | 3) => ({ children, value }: any) => {
-    const text = value.children.map((c: any) => c.text).join('');
-    const slug = slugger.slug(text);
-    headings.push({ depth, slug, text });
-    return `<h${depth} id="${slug}">${children}</h${depth}>`;
-  };
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const html = toHTML(blocks, {
-    components: {
-      block: { h2: heading(2), h3: heading(3) },
-      types: {
-        table: ({ value }: any) => {
-          const [head, ...rows] = value.rows ?? [];
-          const tr = (r: any, tag: string) => `<tr>${(r.cells ?? []).map((c: string) => `<${tag}>${esc(c ?? '')}</${tag}>`).join('')}</tr>`;
-          return `<table>${head ? `<thead>${tr(head, 'th')}</thead>` : ''}<tbody>${rows.map((r: any) => tr(r, 'td')).join('')}</tbody></table>`;
-        },
-      },
-    },
-  });
-  return { html, metadata: { headings } };
+  return JSON.parse(await res.text(), (_, v) => (v === null ? undefined : v?.url && v.dims ? applyCrop(v) : v)).result;
 }
 
 function sanity(query: string): Loader {
@@ -64,13 +32,14 @@ function sanity(query: string): Loader {
       store.clear();
       for (const item of await groq(query)) {
         const { id, body, ...rest } = item;
-        store.set({ id, data: await parseData({ id, data: rest }), digest: generateDigest(item), rendered: renderBody(body) });
+        store.set({ id, data: await parseData({ id, data: rest }), digest: generateDigest(item), rendered: ptHtml(body) });
       }
     },
   };
 }
 
 const IMG = 'asset->url';
+const BLOCK_IMG = '{ "url": asset->url, alt, hotspot, crop, "dims": asset->metadata.dimensions }';
 const SEO = `"seo": seo{ title, description, "image": image.${IMG}, noindex }`;
 const seo = z.object({ title: z.string().optional(), description: z.string().optional(), image: z.string().optional(), noindex: z.boolean().optional() }).default({});
 
@@ -139,17 +108,39 @@ export const collections = {
       seo,
     }),
   }),
+  // Page-builder pages: "home" is the homepage, everything else is served at /<slug>/.
+  // Block images come back as { url, alt, hotspot } so components can honour the editor's focal point.
+  pages: defineCollection({
+    loader: sanity(`*[_type == "page"]{
+      "id": select(_id == "home" => "home", slug.current), title, ${SEO},
+      sections[]{
+        ...,
+        "image": image${BLOCK_IMG},
+        slides[]{ ..., "image": image${BLOCK_IMG}, "tour": tour->{ "id": slug.current, title, days } },
+        rows[]{ ..., "image": image${BLOCK_IMG} },
+        logos[]{ ..., "image": image{ "url": asset->url, alt } },
+        "tours": tours[]->slug.current
+      } }`),
+    schema: z.object({
+      title: z.string(),
+      sections: z.array(z.object({ _type: z.string(), _key: z.string() }).passthrough()).default([]),
+      seo,
+    }),
+  }),
   faqs: defineCollection({
     loader: sanity(`*[_id == "faqs"]{ "id": _id, items[]{ q, a } }`),
     schema: z.object({ items: z.array(z.object({ q: z.string(), a: z.string() })).default([]) }),
   }),
   reviews: defineCollection({
-    loader: sanity(`*[_id == "reviews"]{ "id": _id, sample, platforms[]{ name, rating, count, url }, items[]{ name, place, trip, source, rating, text } }`),
+    loader: sanity(`*[_id == "reviews"]{ "id": _id, sample, platforms[]{ name, rating, count, url }, items[]{ name, place, trip, source, rating, text, "photo": photo${BLOCK_IMG} } }`),
     schema: z.object({
       sample: z.boolean().default(true),
       platforms: z.array(z.object({ name: z.string(), rating: z.number(), count: z.number(), url: z.string() })).default([]),
       items: z
-        .array(z.object({ name: z.string(), place: z.string(), trip: z.string().optional(), source: z.string().optional(), rating: z.number(), text: z.string() }))
+        .array(z.object({
+          name: z.string(), place: z.string(), trip: z.string().optional(), source: z.string().optional(), rating: z.number(), text: z.string(),
+          photo: z.object({ url: z.string(), hotspot: z.object({ x: z.number(), y: z.number() }).passthrough().optional() }).passthrough().optional(),
+        }))
         .default([]),
     }),
   }),

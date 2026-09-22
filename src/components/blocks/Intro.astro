@@ -1,0 +1,44 @@
+---
+import { img, srcset, focal, type BlockImage } from '../../config';
+import { ptParagraphs } from '../../pt';
+interface Props { heading: string; text?: any[]; points?: { _key: string; title: string; text?: string }[]; image?: BlockImage; quote?: string; grey?: boolean }
+const { heading, text, points = [], image, quote, grey = false } = Astro.props;
+const paras = ptParagraphs(text);
+const alone = !points.length && !image?.url;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    <div class:list={['sh sh--split', { 'sh--alone': alone }]} data-reveal>
+      <h2>{heading}</h2>
+      {paras.length === 1 ? <p set:html={paras[0]} /> : paras.length > 1 && <div class="sh__body">{paras.map((p) => <p set:html={p} />)}</div>}
+    </div>
+    {points.length > 0 && (
+      <ul class="items items--3" data-reveal="stagger">
+        {points.map((p) => <li class="item"><h3>{p.title}</h3>{p.text && <p>{p.text}</p>}</li>)}
+      </ul>
+    )}
+    {image?.url && (
+      <div class="mission" data-reveal>
+        <img src={img(image.url, 900)} srcset={srcset(image.url, [480, 800, 1200])} sizes="(min-width:1024px) 45vw, 100vw"
+          alt={image.alt ?? ''} width="900" height="700" loading="lazy" decoding="async" style={`object-position:${focal(image.hotspot)}`} />
+        {quote && <figure><blockquote class="t-quote">“{quote}”</blockquote></figure>}
+      </div>
+    )}
+  </div>
+</section>
+<style>
+  .sh--alone { margin-bottom: 0; }
+  .sh :global(:is(b, strong)) { color: var(--ink); }
+  .sh__body { display: grid; gap: 16px; margin-top: 16px; }
+  .sh__body p { max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
+  @media (min-width: 1024px) { .sh__body { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; } }
+
+  .items--3:has(+ .mission) { margin-bottom: 64px; }
+  .mission { display: grid; gap: 28px; align-items: center; }
+  .mission img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
+  .mission blockquote { margin: 0; text-wrap: balance; }
+  .mission figure { margin: 0; }
+  @media (min-width: 1024px) {
+    .mission { grid-template-columns: 5fr 6fr; gap: 80px; }
+  }
+</style>

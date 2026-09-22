@@ -1,0 +1,26 @@
+---
+import { img, type BlockImage } from '../../config';
+interface Props { label?: string; logos?: { _key: string; name: string; image?: BlockImage }[] }
+const { label, logos = [] } = Astro.props;
+---
+<section class="partners">
+  <div class="container partners__in">
+    {label && <p class="t-meta">{label}</p>}
+    <ul>
+      {logos.filter((l) => l.image?.url).map((l) => <li><img src={img(l.image!.url, 402)} alt={l.name} title={l.name} width="201" height="140" loading="lazy" /></li>)}
+    </ul>
+  </div>
+</section>
+<style>
+  /* Partners */
+  .partners { padding-block: 48px 64px; border-top: 1px solid var(--border); }
+  .partners__in { display: grid; gap: 20px; }
+  .partners ul { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; gap: 16px; list-style: none; margin: 0; padding: 0; }
+  .partners img { width: auto; height: 36px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
+  @media (hover: hover) { .partners li:hover img { filter: none; opacity: 1; } }
+  @media (min-width: 1024px) {
+    .partners__in { grid-template-columns: 220px 1fr; gap: 48px; align-items: center; }
+    .partners ul { display: flex; justify-content: space-between; }
+    .partners img { height: 44px; }
+  }
+</style>

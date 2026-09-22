@@ -34,12 +34,23 @@ export const ldJson = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c')
 export function img(src: string, w = 1200) {
   const url = src.startsWith('photo-') ? `https://images.unsplash.com/${src}` : src;
   if (url.includes('images.unsplash.com')) return `${url.split('?')[0]}?auto=format&fit=crop&q=80&w=${w}`;
-  if (url.includes('cdn.sanity.io')) return `${url.split('?')[0]}?auto=format&q=80&w=${w}`;
+  if (url.includes('cdn.sanity.io')) {
+    const [base, query = ''] = url.split('?');
+    const rect = new URLSearchParams(query).get('rect'); // an editor's crop, kept through resizing
+    return `${base}?${rect ? `rect=${rect}&` : ''}auto=format&q=80&w=${w}`;
+  }
   return url;
 }
 export function srcset(src: string, widths = [480, 800, 1200, 1800, 2400]) {
   return /unsplash|cdn\.sanity\.io/.test(img(src)) ? widths.map((w) => `${img(src, w)} ${w}w`).join(', ') : undefined;
 }
+
+/** An image from a page-builder block; `hotspot` is the focal point the editor dragged in Sanity. */
+export type BlockImage = { url: string; alt?: string; hotspot?: { x: number; y: number } };
+/** First photo on a page-builder page (banner or slideshow) — the share-image fallback. */
+export const coverImage = (sections: Array<Record<string, any>>) => sections[0]?.image?.url ?? sections[0]?.slides?.[0]?.image?.url;
+/** Focal point → CSS object-position, so cover-cropped images keep the subject in frame. */
+export const focal = (h?: { x: number; y: number }) => (h ? `${Math.round(h.x * 100)}% ${Math.round(h.y * 100)}%` : '50% 50%');
 
 /** Per-page SEO overrides edited in the Sanity "SEO" tab; each falls back to the page's own title/excerpt/image. */
 export type Seo = { title?: string; description?: string; image?: string; noindex?: boolean };

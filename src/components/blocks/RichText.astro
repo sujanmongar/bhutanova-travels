@@ -1,0 +1,12 @@
+---
+import { ptHtml } from '../../pt';
+import type GithubSlugger from 'github-slugger';
+interface Props { heading?: string; body?: any[]; grey?: boolean; slugger?: GithubSlugger }
+const { heading, body, grey = false, slugger } = Astro.props;
+---
+<section class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    {heading && <div class="sh" data-reveal><h2>{heading}</h2></div>}
+    <div class="prose" set:html={ptHtml(body, slugger).html} />
+  </div>
+</section>
