@@ -150,6 +150,8 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
     view-transition-name: site-header;
   }
+  /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
+  .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
     background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff;
   }

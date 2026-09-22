@@ -86,7 +86,8 @@ export const reviews = defineType({
               type: 'image',
               options: {hotspot: true},
               description:
-                'A photo of the guest on their trip — only with their permission. The first review shows it large; the others as a small portrait. Drag the focal point onto their face. Without a photo, the tour’s own picture is shown.',
+                'A photo of the guest on their trip — only with their permission. The review in the middle of the slider shows it large. Drag the focal point onto the person. Without a photo, the tour’s own picture is shown.',
+              fields: [defineField({name: 'alt', title: 'Describe the photo', type: 'string', description: 'What the photo shows, e.g. "Two hikers on the trail to Tiger’s Nest".'})],
             }),
           ],
           preview: {select: {title: 'name', subtitle: 'text', media: 'photo'}},

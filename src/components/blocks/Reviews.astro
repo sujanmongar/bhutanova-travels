@@ -9,9 +9,9 @@ const tours = await getCollection('tours');
 type Review = (typeof reviews.items)[number];
 // The guest's own photo when there is one; otherwise the photo of the tour they took — never a stand-in face.
 const pic = (r: Review) => {
-  if (r.photo) return { url: r.photo.url, pos: focal(r.photo.hotspot), guest: true };
+  if (r.photo) return { url: r.photo.url, pos: focal(r.photo.hotspot), alt: (r.photo.alt as string | undefined) ?? '' };
   const tour = tours.find((t) => t.data.title === r.trip);
-  return tour && { url: tour.data.image, pos: '50% 50%', guest: false };
+  return tour && { url: tour.data.image, pos: '50% 50%', alt: '' };
 };
 // While Reviews → "sample" is ticked, badges link out without figures: placeholder ratings never sit next to a real
 // platform's logo. Untick it once the rating and count are the real ones.
@@ -47,25 +47,22 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
       )}
     </div>
 
-    <ul class="rv__track" data-loop data-focus="0.28" data-reveal aria-label="Guest reviews">
+    <ul class="rv__track" data-loop data-focus="0.24" data-reveal aria-label="Guest reviews">
       {reviews.items.map((r) => {
         const p = pic(r);
         return (
           <li>
-            <figure class="rv-card">
+            <figure class="rvc">
               {p && (
-                <div class="rv-card__photo">
-                  <img src={img(p.url, 800)} srcset={srcset(p.url, [400, 800, 1200])} sizes="(min-width:768px) 400px, 80vw"
-                    alt={p.guest ? `${r.name} in Bhutan` : ''} width="800" height="1000" loading="lazy" decoding="async" style={`object-position:${p.pos}`} />
-                  {!p.guest && r.trip && <span class="rv__tag">{r.trip}</span>}
-                </div>
+                <img src={img(p.url, 900)} srcset={srcset(p.url, [480, 900, 1300])} sizes="(min-width:1200px) 420px, (min-width:768px) 380px, 80vw"
+                  alt={p.alt} width="900" height="1200" loading="lazy" decoding="async" style={`object-position:${p.pos}`} />
               )}
-              <div class="rv-card__body">
-                <span class="rate rv-card__rate" style={`--fill:${r.rating * 20}%`} role="img" aria-label={`Rated ${r.rating} out of 5`}></span>
+              <div class="rvc__body">
+                <span class="rate rvc__rate" style={`--fill:${r.rating * 20}%`} role="img" aria-label={`Rated ${r.rating} out of 5`}></span>
                 <blockquote>“{r.text}”</blockquote>
                 <figcaption>
                   <b>{r.name}</b>
-                  <span class="t-meta">{r.place}{r.trip && <> · {r.trip}</>}</span>
+                  <span>{r.place}{r.trip && <> · {r.trip}</>}</span>
                 </figcaption>
               </div>
             </figure>
@@ -118,31 +115,35 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   /* Slider: full-width row, the centred review is the prominent one; neighbours step back towards it */
   .rv-sec { overflow-x: clip; }
   .rv__track {
-    position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: min(78vw, 320px); gap: 12px;
+    position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: min(80vw, 330px); gap: 14px;
     list-style: none; margin: -16px calc(50% - 50vw); padding: 16px 0;
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
   }
   .rv__track::-webkit-scrollbar { display: none; }
   .rv__track > li {
     scroll-snap-align: center;
-    transform: translateX(var(--t, 0px)) scale(calc(1 - var(--k, 0) * var(--d, 0))); transform-origin: var(--o, 50%) 35%; opacity: calc(1 - .5 * var(--d, 0));
+    transform: translateX(var(--t, 0px)) scale(calc(1 - var(--k, 0) * var(--d, 0))); transform-origin: var(--o, 50%) 50%; opacity: calc(1 - .45 * var(--d, 0));
   }
   /* No card box: a big photo, and the words underneath on the page itself */
-  .rv-card { display: flex; flex-direction: column; height: 100%; margin: 0; }
-  /* Fixed 4:3 frame: the photo is positioned inside it, so a portrait image can't stretch the card (and the row) */
-  .rv-card__photo { position: relative; flex: none; aspect-ratio: 4 / 5; border-radius: var(--r-xl); overflow: hidden; background: var(--s-50); }
-  .rv-card__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .rv-card__photo:has(.rv__tag)::after { content: ''; position: absolute; inset: 60% 0 0; background: linear-gradient(transparent, rgb(12 25 37 / .6)); }
-  .rv__tag { position: absolute; z-index: 1; left: 18px; bottom: 14px; color: rgb(255 255 255 / .92); font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; }
-  .rv-card__body { display: flex; flex-direction: column; gap: 10px; flex: 1; padding: 20px 4px 0; }
-  .rv-card blockquote { flex: 1; margin: 0; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--text); text-wrap: pretty; }
-  .rv-card figcaption { display: grid; gap: 2px; }
-  .rv-card figcaption b { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--ink); }
+  /* Each review is one photo: stars, words and name sit on a dark fade at the bottom of the image */
+  .rvc {
+    position: relative; isolation: isolate; display: flex; flex-direction: column; justify-content: flex-end; margin: 0;
+    aspect-ratio: 3 / 4; border-radius: var(--r-xl); overflow: hidden; background: var(--s-800); color: #fff; -webkit-font-smoothing: antialiased;
+  }
+  .rvc > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+  .rvc::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 28%, rgb(12 25 37 / .5) 52%, rgb(12 25 37 / .92)); }
+  .rvc__body { display: grid; gap: 12px; padding: 24px 22px 26px; }
+  .rvc__rate { --on: #ffc24a; --off: rgb(255 255 255 / .3); }
+  .rvc blockquote { margin: 0; font-family: var(--ff-display); font-style: italic; font-size: 1.1875rem; line-height: 1.45; color: #fff; text-wrap: pretty; }
+  .rvc figcaption { display: grid; gap: 2px; }
+  .rvc figcaption b { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; }
+  .rvc figcaption span { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); color: rgb(255 255 255 / .74); }
+  @media (min-width: 1200px) { .rvc__body { padding: 30px 28px 32px; } .rvc blockquote { font-size: 1.3125rem; } }
 
   .rv__nav { justify-content: center; margin-top: 24px; }
   .rv__play::before { content: ''; width: 8px; height: 10px; border-inline: 2px solid; }
   .rv__play[aria-pressed='true']::before { width: 9px; border: 0; background: currentColor; clip-path: polygon(0 0, 100% 50%, 0 100%); }
   @media (prefers-reduced-motion: reduce) { .rv__play { display: none; } }
-  @media (min-width: 768px) { .rv__track { grid-auto-columns: 360px; gap: 16px; } }
-  @media (min-width: 1200px) { .rv__track { grid-auto-columns: 400px; gap: 20px; } }
+  @media (min-width: 768px) { .rv__track { grid-auto-columns: 380px; gap: 18px; } }
+  @media (min-width: 1200px) { .rv__track { grid-auto-columns: 420px; gap: 22px; } }
 </style>
