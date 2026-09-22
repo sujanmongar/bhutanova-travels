@@ -2,8 +2,9 @@
 // The real cards are in the HTML (for search engines and no-JS); copies are added on each side so the loop never
 // runs out. Copies stay clickable but are hidden from screen readers and the Tab key.
 // Markup: <ul data-loop [data-focus]> in a <section> that has [data-prev], [data-next] and [data-play] buttons.
-// data-focus: cards get --d (0 at the centre → 1 one card away) and --o (the side facing the centre) so CSS can
-// make the centred card the prominent one.
+// data-focus="0.28": the centred card is the prominent one. Cards get --d (0 at the centre → 1 one card away),
+// --o (the side facing the centre) and --t (a pull towards the centre so gaps stay even once side cards shrink by
+// the given fraction); the track gets --k (that fraction) for the CSS scale.
 const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const ease = (x: number) => (x < 0.5 ? 4 * x * x * x : 1 - (-2 * x + 2) ** 3 / 2);
 
@@ -30,15 +31,23 @@ export function loopRail(track: HTMLElement) {
   const jump = (left: number) => track.scrollTo({ left, behavior: 'instant' });
 
   const focus = track.hasAttribute('data-focus');
+  const shrink = parseFloat(track.dataset.focus || '0') || 0;
+  if (focus) track.style.setProperty('--k', String(shrink));
   let queued = false;
   const emphasise = () => {
     queued = false;
-    const mid = track.scrollLeft + track.clientWidth / 2, s = step();
-    for (const li of items) {
-      const c = li.offsetLeft + li.offsetWidth / 2;
-      li.style.setProperty('--d', Math.min(1, Math.abs(c - mid) / s).toFixed(3));
-      li.style.setProperty('--o', c < mid ? '100%' : '0%');
+    const mid = track.scrollLeft + track.clientWidth / 2, s = step(), w = real[0].offsetWidth;
+    const cards = items.map((li) => { const c = li.offsetLeft + li.offsetWidth / 2; return { li, c, d: Math.min(1, Math.abs(c - mid) / s) }; });
+    for (const side of [-1, 1]) {
+      let pull = 0; // width already given up by the cards between this one and the centre
+      for (const x of cards.filter((x) => Math.sign(x.c - mid) === side).sort((a, b) => Math.abs(a.c - mid) - Math.abs(b.c - mid))) {
+        x.li.style.setProperty('--d', x.d.toFixed(3));
+        x.li.style.setProperty('--o', side < 0 ? '100%' : '0%');
+        x.li.style.setProperty('--t', `${(-side * pull).toFixed(1)}px`);
+        pull += w * shrink * x.d;
+      }
     }
+    for (const x of cards.filter((x) => x.c === mid)) { x.li.style.setProperty('--d', '0'); x.li.style.setProperty('--t', '0px'); }
   };
   const refocus = () => { if (focus && !queued) { queued = true; requestAnimationFrame(emphasise); } };
 
