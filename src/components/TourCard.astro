@@ -30,7 +30,7 @@ const included = ([
   </div>
   <h3 class="tc__title"><a href={`/tours/${tour.id}/`}>{t.title}</a></h3>
   <p class="tc__dur"><Icon name="ph_clock" />{t.nights} nights · {t.days} days</p>
-  <p class="tc__price"><span>From</span> <b class="num">${t.price.toLocaleString('en-US')}<span class="sr-only"> US dollars</span></b> <abbr title="per person">pp</abbr></p>
+  <p class="tc__price"><span class="sr-only">From </span><b class="num">${t.price.toLocaleString('en-US')}<span class="sr-only"> US dollars</span></b> <abbr title="per person">pp</abbr></p>
 </article>
 <style>
   .tc { position: relative; display: flex; flex-direction: column; height: 100%; }
@@ -46,9 +46,7 @@ const included = ([
   .tc__title { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 500; font-variant-numeric: lining-nums; }
   .tc__dur { display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
   .tc__dur :global(.icon) { font-size: 16px; color: var(--ink); }
-  /* "From" sits on its own line above the price */
   .tc__price { margin-top: auto; padding-top: 14px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); color: var(--text-3); }
-  .tc__price > span { display: block; margin-bottom: 2px; }
   .tc__price b { font-size: 1.25rem; line-height: 1.2; letter-spacing: 0; font-weight: 600; color: var(--ink); }
   .tc__price abbr { text-decoration: none; }
   @media (hover: hover) {
