@@ -30,11 +30,16 @@ export const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
  *  which would let CMS-edited text (FAQ answers, titles) break out of the tag and inject a script. */
 export const ldJson = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
-/** Unsplash IDs ("photo-…") or full URLs → responsive src. */
+/** Unsplash IDs ("photo-…"), Sanity CDN URLs or other URLs → responsive src. Both CDNs resize on the fly. */
 export function img(src: string, w = 1200) {
   const url = src.startsWith('photo-') ? `https://images.unsplash.com/${src}` : src;
-  return url.includes('images.unsplash.com') ? `${url.split('?')[0]}?auto=format&fit=crop&q=80&w=${w}` : url;
+  if (url.includes('images.unsplash.com')) return `${url.split('?')[0]}?auto=format&fit=crop&q=80&w=${w}`;
+  if (url.includes('cdn.sanity.io')) return `${url.split('?')[0]}?auto=format&q=80&w=${w}`;
+  return url;
 }
 export function srcset(src: string, widths = [480, 800, 1200, 1800, 2400]) {
-  return img(src).includes('unsplash') ? widths.map((w) => `${img(src, w)} ${w}w`).join(', ') : undefined;
+  return /unsplash|cdn\.sanity\.io/.test(img(src)) ? widths.map((w) => `${img(src, w)} ${w}w`).join(', ') : undefined;
 }
+
+/** Per-page SEO overrides edited in the Sanity "SEO" tab; each falls back to the page's own title/excerpt/image. */
+export type Seo = { title?: string; description?: string; image?: string; noindex?: boolean };

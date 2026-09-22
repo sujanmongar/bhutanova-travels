@@ -1,15 +1,15 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
 import Arrows from '../components/Arrows.astro';
 import TourCard from '../components/TourCard.astro';
 import Faq from '../components/Faq.astro';
 import CtaBanner from '../components/CtaBanner.astro';
-import reviews from '../data/reviews.json';
 import { SITE, img, srcset } from '../config';
 
 const tours = await getCollection('tours');
+const reviews = (await getEntry('reviews', 'reviews'))!.data;
 const featured = tours.filter((t) => t.data.featured).concat(tours.filter((t) => !t.data.featured)).slice(0, 6);
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const count = (id: string) => tours.filter((t) => t.data.category.id === id).length;

@@ -32,7 +32,7 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' ${[...hashes].join(' ')}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' https://images.unsplash.com data:",
+  "img-src 'self' https://images.unsplash.com https://cdn.sanity.io data:",
   "font-src 'self'",
   "connect-src 'self'",
   "frame-src https://www.google.com",

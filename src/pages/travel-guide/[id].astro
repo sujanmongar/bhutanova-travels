@@ -11,7 +11,7 @@ const { guide, guides } = Astro.props;
 const { Content, headings } = await render(guide);
 const toc = headings.filter((h) => h.depth === 2);
 ---
-<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed">
+<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
   <Content />
   <Fragment slot="aside">
     <div class="widget-sticky">

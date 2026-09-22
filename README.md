@@ -1,6 +1,6 @@
 # Bhutanova Travels
 
-Bhutan tour operator website — Astro (static) + Sveltia CMS, hosted on Cloudflare Pages.
+Bhutan tour operator website — Astro (static) + Sanity CMS, hosted on Cloudflare Pages.
 
 ## Stack
 
@@ -8,8 +8,7 @@ Bhutan tour operator website — Astro (static) + Sveltia CMS, hosted on Cloudfl
 |---|---|---|
 | Framework | [Astro](https://astro.build) (static output) | Pure HTML, near-zero JS → top Core Web Vitals and SEO |
 | Styling | Plain CSS + design tokens (`src/styles/global.css`) | Tokens come straight from the Figma design guidelines |
-| Content | Markdown/JSON in `src/content` and `src/data` | Versioned in git, no database |
-| CMS | [Sveltia CMS](https://github.com/sveltia/sveltia-cms) at `/admin/` | Free, git-based, edits commit to GitHub |
+| Content + CMS | [Sanity](https://www.sanity.io) (project `234ghw8x`, dataset `production`) | Structured content, live SEO preview, free plan covers this site many times over |
 | Hosting | Cloudflare Pages (connected to GitHub) | Free, global CDN, auto-deploy on every push |
 
 ## Develop
@@ -25,25 +24,33 @@ npm run build    # outputs dist/
 ```
 src/config.ts            site name, phone, email, social links, form endpoint
 src/styles/global.css    colours, responsive type scale (mobile / tablet / desktop)
-src/content/tours/       tour packages (one .md per tour)
-src/content/categories/  tour themes (Cultural, Festival, Trekking…)
-src/content/blog/        blog posts
-src/content/guides/      Travel Guide articles (visa, SDF, weather, packing…)
-src/data/*.json          FAQs, news ticker, reviews
-public/admin/config.yml  CMS fields
+src/content.config.ts    loads tours, categories, blog, guides, FAQs, reviews from Sanity at build time
+studio/                  the Sanity Studio (editor app): schemas in studio/schemaTypes/
 ```
 
-Images: any field accepts an Unsplash id (`photo-…`), a full image URL, or an upload (`/images/uploads/…`).
+## CMS — Sanity Studio
 
-## CMS (`/admin/`)
+Editors log in at **https://bhutanova.sanity.studio** (only people invited to the project can sign in).
+Each page type has a **Content** tab and an **SEO** tab (meta title, meta description with live character
+counts and a Google preview, share image, hide-from-search). Anything left empty in SEO falls back to the
+page's own title, excerpt and image.
 
-Content editors log in at `https://<site>/admin/`. Every save is a git commit → Cloudflare rebuilds in ~1 minute.
+The dataset is public-read (published content only — drafts stay private), so the site build needs no
+API token. Publishing triggers a rebuild through a Sanity webhook → GitHub Actions (see below).
 
-**Quick login (no setup):** choose *Sign in with Token* and paste a GitHub fine-grained personal access token with *Contents: read & write* on this repo.
+Change the editor itself (fields, menu):
 
-**"Sign in with GitHub" button (for non-technical editors):** deploy the free
-[sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) Cloudflare Worker, create a GitHub OAuth app pointing to it,
-then uncomment `base_url` in `public/admin/config.yml`.
+```bash
+cd studio
+npm install
+npm run dev      # http://localhost:3333
+npm run deploy   # publishes to bhutanova.sanity.studio
+```
+
+**Rebuild on publish:** Sanity → Manage → API → Webhooks calls
+`POST https://api.github.com/repos/sujanmongar/bhutanova-travels/actions/workflows/deploy.yml/dispatches`
+with body `{"ref": "main"}` and an `Authorization: Bearer <token>` header, where the token is a GitHub
+fine-grained token limited to this repo with **Actions: Read and write** only (it can start a deploy, not change code).
 
 ## Forms
 

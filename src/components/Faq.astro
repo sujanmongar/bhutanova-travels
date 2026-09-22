@@ -1,7 +1,7 @@
 ---
-import faqs from '../data/faqs.json';
+import { getEntry } from 'astro:content';
 import { ldJson } from '../config';
-const { items = faqs.items, open = 0 } = Astro.props;
+const { items = (await getEntry('faqs', 'faqs'))?.data.items ?? [], open = 0 } = Astro.props;
 const split = Astro.slots.has('default');
 const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f: { q: string; a: string }) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
 ---

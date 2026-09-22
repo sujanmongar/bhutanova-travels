@@ -1,9 +1,9 @@
 ---
 import Base from './Base.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
-import { img, srcset } from '../config';
-interface Props { title: string; description: string; image: string; date: Date; kicker: string; back: [string, string]; author?: string; updatedLabel?: string }
-const { title, description, image, date, kicker, back, author = 'Bhutanova Travels', updatedLabel = 'Published' } = Astro.props;
+import { img, srcset, type Seo } from '../config';
+interface Props { title: string; description: string; image: string; date: Date; kicker: string; back: [string, string]; author?: string; updatedLabel?: string; seo?: Seo }
+const { title, description, image, date, kicker, back, author = 'Bhutanova Travels', updatedLabel = 'Published', seo } = Astro.props;
 const hasAside = Astro.slots.has('aside');
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const schema = {
@@ -14,7 +14,7 @@ const schema = {
 };
 const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
-<Base title={title} description={description} image={image} type="article" published={date} schema={schema}>
+<Base title={title} description={description} image={image} type="article" published={date} schema={schema} seo={seo}>
   <div class="progress" aria-hidden="true"></div>
   <div class:list={['container', 'post', { 'post--aside': hasAside }]}>
     <article class="post__main">

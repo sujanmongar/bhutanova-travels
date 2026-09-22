@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 }
 const { cat, tours } = Astro.props;
 ---
-<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image}>
+<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo}>
   <section class="banner">
     <img src={img(cat.data.image, 1600)} srcset={srcset(cat.data.image)} sizes="100vw" alt="" width="1600" height="560" fetchpriority="high" />
     <div>

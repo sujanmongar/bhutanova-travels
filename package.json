@@ -12,7 +12,9 @@
     "@astrojs/sitemap": "^3.7.4",
     "@fontsource-variable/newsreader": "^5.3.0",
     "@fontsource-variable/schibsted-grotesk": "^5.3.0",
-    "astro": "^7.3.3"
+    "@portabletext/to-html": "^6.0.0",
+    "astro": "^7.3.3",
+    "github-slugger": "^2.0.0"
   },
   "engines": {
     "node": ">=22.12"

@@ -26,7 +26,7 @@ const share = [
 ];
 const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 ---
-<Article title={post.data.title} description={post.data.excerpt} image={post.data.image} date={post.data.date} author={post.data.author} kicker={post.data.tags[0] ?? 'Article'} back={['/blog/', 'Blog']}>
+<Article title={post.data.title} description={post.data.excerpt} image={post.data.image} date={post.data.date} author={post.data.author} kicker={post.data.tags[0] ?? 'Article'} back={['/blog/', 'Blog']} seo={post.data.seo}>
   <Content />
 
   <Fragment slot="aside">
