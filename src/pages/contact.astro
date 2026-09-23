@@ -3,7 +3,6 @@ import Base from '../layouts/Base.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import Icon from '../components/Icon.astro';
 import Form from '../components/Form.astro';
-import Faq from '../components/Faq.astro';
 import { SITE, img, srcset, wa } from '../config';
 const hero = 'photo-1662547150045-7a8d3a9ad0b2';
 const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
@@ -15,10 +14,10 @@ const info = [
   ['headphones', 'Office hours', 'Mon–Sat, 9am–6pm (BTT, GMT+6)', ''],
 ];
 ---
-<Base title="Contact Us" description="Plan your Bhutan trip with Bhutanova Travels. Call, email or send an enquiry — we reply within 24 hours." image={hero}>
+<Base title="Contact Us & Plan a Trip" description="Contact Bhutanova Travels to plan a Bhutan trip: WhatsApp, email, phone or the enquiry form. A planner in Thimphu replies within 24 hours." image={hero}>
   <section class="banner">
     <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Paro valley" width="1600" height="700" fetchpriority="high" />
-    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us</h1><p class="banner__line">We reply within 24 hours, usually much sooner on WhatsApp.</p></div>
+    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us to plan a trip</h1><p class="banner__line">“Plan a trip” anywhere on this site brings you here. WhatsApp, email, phone or the form — they all reach the same planner in Thimphu, and we reply within 24 hours.</p></div>
   </section>
 
   <section class="section">
@@ -60,7 +59,13 @@ const info = [
   </section>
 
   <section class="section">
-    <div class="container"><Faq><div class="sh" data-reveal><h2>Questions, answered</h2><p>Quick answers before you write to us.</p></div></Faq></div>
+    <div class="container">
+      <div class="sh" data-reveal>
+        <h2>Questions before you write?</h2>
+        <p>Visas, the nightly fee, altitude, what a trip costs — thirty answers in our travel FAQs, or just ask us directly above.</p>
+      </div>
+      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>
+    </div>
   </section>
 </Base>
 <style>

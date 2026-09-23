@@ -3,7 +3,7 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BlogCard from '../../components/BlogCard.astro';
-import Faq from '../../components/Faq.astro';
+import Icon from '../../components/Icon.astro';
 import { img, srcset } from '../../config';
 import { slug } from '../../utils';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
@@ -31,9 +31,11 @@ const hero = 'photo-1532918235359-7671f525386d';
 
   <section class="section section--grey">
     <div class="container">
-      <Faq>
-        <div class="sh" data-reveal><h2>Quick answers</h2><p>The questions travelers ask us most before booking.</p></div>
-      </Faq>
+      <div class="sh" data-reveal>
+        <h2>Still have a question?</h2>
+        <p>Thirty of the questions guests ask us most, answered in one place — visas, money, altitude, food, wifi and the rest.</p>
+      </div>
+      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>
     </div>
   </section>
 </Base>

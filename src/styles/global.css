@@ -1,9 +1,9 @@
-/* One variable file (wght 400–900). Italic file only downloads if a page actually uses <em>. */
-@import '@fontsource-variable/schibsted-grotesk';
-@import '@fontsource-variable/schibsted-grotesk/wght-italic.css';
-/* Editorial serif for headlines only (opsz axis: one file, sized correctly from meta caption to hero). */
-@import '@fontsource-variable/newsreader/opsz.css';
-@import '@fontsource-variable/newsreader/opsz-italic.css';
+/* One variable file per family. Italic files only download if a page actually uses <em> or a pull quote. */
+@import '@fontsource-variable/hanken-grotesk';
+@import '@fontsource-variable/hanken-grotesk/wght-italic.css';
+/* Besley (a Clarendon revival) for headlines only — it keeps its weight as white text over a photo. */
+@import '@fontsource-variable/besley';
+@import '@fontsource-variable/besley/wght-italic.css';
 
 /* ---------- Tokens ---------- */
 :root {
@@ -55,11 +55,11 @@
      Base text is 18px at every width. Steps: meta 14 · small 16 · body/title 18 · lead 19–20 · h3 20–24 · …
      Rules: card/list text uses small (below its title); lead only for intros under a big heading; quote a step below h2;
      labels use title (sans), not the serif. Values below are MOBILE; tablet and desktop override further down. */
-  --ff: 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --ff-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
+  --ff: 'Hanken Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ff-serif: 'Besley Variable', Georgia, 'Times New Roman', serif;
   --ff-display: var(--ff-serif);
-  --fs-display: 2.5rem;   --lh-display: 1.08;  --ls-display: -0.005em;
-  --fs-h1: 2rem;          --lh-h1: 1.12;       --ls-h1: -0.005em;
+  --fs-display: 2.5rem;   --lh-display: 1.08;  --ls-display: -0.015em;
+  --fs-h1: 2rem;          --lh-h1: 1.12;       --ls-h1: -0.012em;
   --fs-h2: 1.625rem;      --lh-h2: 1.2;        --ls-h2: 0;
   --fs-h3: 1.25rem;       --lh-h3: 1.32;       --ls-h3: 0;
   --fs-title: 1.125rem;   --lh-title: 1.4;     --ls-title: -0.005em;
@@ -80,9 +80,9 @@
 @media (min-width: 768px) {
   :root {
     --gutter: 40px; --section: 80px; --stack: 40px; --header-h: 80px;
-    --fs-display: 3.25rem;  --lh-display: 1.06;
-    --fs-h1: 2.5rem;        --lh-h1: 1.1;
-    --fs-h2: 1.875rem;      --lh-h2: 1.18;
+    --fs-display: 3.25rem;  --lh-display: 1.06;  --ls-display: -0.018em;
+    --fs-h1: 2.5rem;        --lh-h1: 1.1;        --ls-h1: -0.015em;
+    --fs-h2: 1.875rem;      --lh-h2: 1.18;       --ls-h2: -0.008em;
     --fs-h3: 1.375rem;      --lh-h3: 1.3;
     --lh-title: 1.35;
     --fs-quote: 1.5rem;     --lh-quote: 1.38;
@@ -93,9 +93,9 @@
 @media (min-width: 1200px) {
   :root {
     --gutter: 24px; --section: 104px; --stack: 48px;
-    --fs-display: 4rem;     --lh-display: 1.04;  --ls-display: -0.01em;
-    --fs-h1: 3rem;          --lh-h1: 1.08;       --ls-h1: -0.008em;
-    --fs-h2: 2.25rem;       --lh-h2: 1.15;       --ls-h2: -0.005em;
+    --fs-display: 4rem;     --lh-display: 1.04;  --ls-display: -0.022em;
+    --fs-h1: 3rem;          --lh-h1: 1.08;       --ls-h1: -0.018em;
+    --fs-h2: 2.25rem;       --lh-h2: 1.15;       --ls-h2: -0.012em;
     --fs-h3: 1.5rem;        --lh-h3: 1.28;       --ls-h3: 0;
     --fs-quote: 1.625rem;   --lh-quote: 1.35;    --ls-quote: 0;
   }
