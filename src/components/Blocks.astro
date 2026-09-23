@@ -1,7 +1,7 @@
 ---
 // Renders a page-builder page: one component per Sanity block type, in the editor's order.
 // Sections are direct children of <main> so the shared spacing and transparent-header rules still apply.
-import HeroSlides from './blocks/HeroSlides.astro';
+import Hero from './blocks/Hero.astro';
 import PageBanner from './blocks/PageBanner.astro';
 import Intro from './blocks/Intro.astro';
 import Reasons from './blocks/Reasons.astro';
@@ -20,13 +20,13 @@ import { focal } from '../config';
 
 interface Props { sections: Array<Record<string, any>>; title: string }
 const { sections, title } = Astro.props;
-// One H1 per page: banners and slideshows carry it; otherwise add a hidden one so search engines still get it.
-const hasH1 = ['pageBanner', 'heroSlides'].includes(sections[0]?._type);
+// One H1 per page: banners and the hero carry it; otherwise add a hidden one so search engines still get it.
+const hasH1 = ['pageBanner', 'hero'].includes(sections[0]?._type);
 // Heading ids from every Text block share one counter (and skip ids the layout already uses), so anchors stay unique.
 const slugger = new GithubSlugger();
-['main', 'drawer', 'plan', 'whatsapp', 'hero-track', 'rail-quotes'].forEach((id) => slugger.slug(id));
+['main', 'drawer', 'plan', 'whatsapp', 'rail-quotes'].forEach((id) => slugger.slug(id));
 
-const blocks: Record<string, any> = { heroSlides: HeroSlides, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, faqList: FaqBlock, partners: Partners };
+const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, faqList: FaqBlock, partners: Partners };
 // The two older components take slightly different prop names.
 const cta = (b: any) => ({ title: b.heading, text: b.text ?? '', cta: b.buttonLabel, href: b.buttonLink, image: b.image?.url, position: focal(b.image?.hotspot) });
 const whatsapp = (b: any) => ({ title: b.heading, ...(b.text && { text: b.text }), about: b.topic, id: 'whatsapp' });

@@ -66,53 +66,22 @@ const preview = (name: string, extra: Record<string, string> = {}) => ({
 })
 
 // ---------- Blocks ----------
-const heroSlides = defineType({
-  name: 'heroSlides',
-  title: 'Photo slideshow',
+// One photo, one headline, two buttons — no slideshow. A carousel here meant most visitors never saw slides
+// 2 onward; this is what a first-time visitor actually reads in the second they decide whether to stay.
+const hero = defineType({
+  name: 'hero',
+  title: 'Hero (photo + headline)',
   type: 'object',
-  icon: ImagesIcon,
-  description: 'Full-screen photos, each with a headline and a button to a tour. Top of the page only.',
+  icon: ImageIcon,
+  description: 'One full-screen photo with the page’s main heading. Top of the page only.',
   fields: [
-    defineField({
-      name: 'heading',
-      title: 'Main heading for Google (not shown)',
-      type: 'string',
-      initialValue: 'Bhutan tours planned by locals',
-      description: 'The page’s H1: read by search engines and screen readers, hidden on screen.',
-      validation: (r) => r.required(),
-    }),
-    defineField({
-      name: 'slides',
-      title: 'Slides',
-      type: 'array',
-      validation: (r) => r.required().min(1).max(8),
-      of: [
-        defineArrayMember({
-          type: 'object',
-          name: 'slide',
-          fields: [
-            photo(),
-            defineField({name: 'title', title: 'Headline', type: 'string', validation: (r) => [r.required(), r.max(40).warning('Keep headlines short — under 40 characters reads best over a photo.')]}),
-            defineField({name: 'text', title: 'Short line', type: 'string', validation: (r) => r.max(90).warning('One short sentence works best.')}),
-            defineField({name: 'place', title: 'Photo caption', type: 'string', description: 'Small text under the slides, e.g. "Punakha · western Bhutan".'}),
-            defineField({name: 'tour', title: 'Button opens this tour', type: 'reference', to: [{type: 'tour'}], validation: (r) => r.required()}),
-            defineField({
-              name: 'tripWord',
-              title: 'Button wording',
-              type: 'string',
-              initialValue: 'trip',
-              description: 'The button reads “See the 7-day trip” — days come from the tour; this word replaces “trip”, e.g. “trek” or “festival trip”.',
-            }),
-          ],
-          preview: {select: {title: 'title', subtitle: 'place', media: 'image'}},
-        }),
-      ],
-    }),
+    defineField({name: 'heading', title: 'Headline (H1)', type: 'string', validation: (r) => [r.required(), r.max(60).warning('Shorter headlines look better over a photo.')]}),
+    defineField({name: 'text', title: 'Short line', type: 'string', validation: (r) => r.max(120).warning('One short sentence works best.')}),
+    photo(),
+    defineField({name: 'primaryLabel', title: 'Main button text', type: 'string', initialValue: 'Explore tours', description: 'Opens the tours page.', validation: (r) => r.required()}),
+    defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Enquire', description: 'Opens the contact page.', validation: (r) => r.required()}),
   ],
-  preview: {
-    select: {slides: 'slides', media: 'slides.0.image'},
-    prepare: ({slides, media}) => ({title: 'Photo slideshow', subtitle: `${slides?.length ?? 0} slides`, media}),
-  },
+  preview: {select: {title: 'heading', subtitle: 'text', media: 'image'}},
 })
 
 const pageBanner = defineType({
@@ -327,11 +296,11 @@ const partners = defineType({
   preview: {prepare: () => ({title: 'Partner logos'})},
 })
 
-export const blockTypes = [heroSlides, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, faqList, ctaBanner, whatsapp, partners]
+export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, faqList, ctaBanner, whatsapp, partners]
 
 // ---------- Page ----------
-const TOP = ['heroSlides', 'pageBanner']
-const TOP_NAME: Record<string, string> = {heroSlides: 'photo slideshow', pageBanner: 'page banner'}
+const TOP = ['hero', 'pageBanner']
+const TOP_NAME: Record<string, string> = {hero: 'hero', pageBanner: 'page banner'}
 const ONCE: Record<string, string> = {faqList: 'FAQs section', reviewList: 'Reviews section', ctaBanner: 'Call to action', whatsapp: 'WhatsApp card'}
 // URLs already used by the site's own pages.
 const RESERVED = ['home', 'index', 'tours', 'blog', 'travel-guide', 'contact', 'privacy', '404', 'admin', 'images', 'sitemap-index', 'sitemap-0', 'robots']
@@ -386,7 +355,7 @@ export const page = defineType({
         insertMenu: {
           filter: true,
           groups: [
-            {name: 'top', title: 'Top of page', of: ['heroSlides', 'pageBanner']},
+            {name: 'top', title: 'Top of page', of: ['hero', 'pageBanner']},
             {name: 'text', title: 'Text & photos', of: ['intro', 'reasons', 'storyRows', 'richText']},
             {name: 'lists', title: 'Tours, blog & reviews', of: ['tourRail', 'categoryTiles', 'latestPosts', 'reviewList', 'faqList']},
             {name: 'contact', title: 'Contact & trust', of: ['ctaBanner', 'whatsapp', 'partners']},
@@ -397,7 +366,7 @@ export const page = defineType({
       validation: (r) => [
         r.custom((blocks) => {
           const types = ((blocks ?? []) as {_type: string}[]).map((b) => b._type)
-          if (types.includes('heroSlides') && types.includes('pageBanner')) return 'Use a photo slideshow or a page banner at the top — not both.'
+          if (types.includes('hero') && types.includes('pageBanner')) return 'Use a hero or a page banner at the top — not both.'
           for (const [t, name] of Object.entries(ONCE)) if (types.filter((x) => x === t).length > 1) return `Only one ${name} per page.`
           for (const t of TOP) {
             const n = types.filter((x) => x === t).length

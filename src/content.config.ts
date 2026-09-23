@@ -117,7 +117,6 @@ export const collections = {
       sections[]{
         ...,
         "image": image${BLOCK_IMG},
-        slides[]{ ..., "image": image${BLOCK_IMG}, "tour": tour->{ "id": slug.current, title, days, "category": category->slug.current } },
         rows[]{ ..., "image": image${BLOCK_IMG} },
         logos[]{ ..., "image": image{ "url": asset->url, alt } },
         "tours": tours[]->slug.current
