@@ -3,14 +3,16 @@ import Icon from './Icon.astro';
 import { SITE } from '../config';
 const { class: cls = '' } = Astro.props;
 const names = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X', whatsapp: 'WhatsApp' } as const;
+// A bare network home page (https://facebook.com/) is a placeholder, not a profile — skip it until the real URL is in.
+const links = Object.entries(SITE.social).filter(([, href]) => new URL(href).pathname.length > 1);
 ---
 <ul class:list={['social', cls]}>
-  {Object.entries(SITE.social).map(([k, href]) => (
+  {links.map(([k, href]) => (
     <li><a href={href} target="_blank" rel="noopener" aria-label={names[k as keyof typeof names]}><Icon name={`social_${k}`} /></a></li>
   ))}
 </ul>
 <style>
-  .social { display: flex; gap: 2px; list-style: none; margin: 0 -10px; padding: 0; }
-  .social a { display: block; padding: 12px; font-size: 20px; color: rgb(255 255 255 / .82); transition: color var(--dur-1); }
+  .social { display: flex; gap: 0; list-style: none; margin: 0 calc(var(--space-3) * -1); padding: 0; }
+  .social a { display: block; padding: var(--space-3); font-size: 20px; color: rgb(255 255 255 / .82); transition: color var(--dur-1); }
   .social a:hover { color: #fff; }
 </style>

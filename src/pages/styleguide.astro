@@ -1,0 +1,210 @@
+---
+// The design system on one page, drawn with the site's own CSS — every value in the tables is read live from
+// the tokens, so this page can't drift from what the site actually uses. Not linked anywhere; noindex.
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { img, srcset } from '../config';
+const roles = [
+  ['t-h1', 'H1', 'Hero headline and page titles', 'Bhutan tour packages'],
+  ['t-h2', 'H2', 'Scale default (section titles use the H3 size)', 'Why travellers trust us'],
+  ['t-h3', 'H3 / Section title', 'Every section <h2>, sub-sections', 'Getting to Paro'],
+  ['t-h4', 'H4', 'Rare', 'Before you go'],
+  ['t-card', 'Card title', 'Tour, blog, category and reason cards (h5 phones, h6 desktop)', 'Bhutan Cultural Extravaganza'],
+  ['t-title', 'H6 / Item title', 'FAQs, widgets, footer', 'Licensed and local'],
+  ['t-quote', 'Quote', 'Review quotes', '“Every day was paced exactly right.”'],
+  ['t-body', 'Body', 'Reading text and every description (18px)', 'Private cultural journeys, treks and festival trips, planned by a licensed, Thimphu-based team.'],
+  ['t-caption', 'Caption', 'Small print, secondary text (16px)', 'Prices are per person, based on two people sharing.'],
+  ['t-label', 'Label', 'Nav, breadcrumbs, dates, tags, checklists (500)', 'Plan and book · 19 Sept 2026'],
+  ['t-button', 'Button', 'Button text (600); button styles keep their variants', 'Explore tours'],
+  ['t-link', 'Link', 'Text CTAs — same text style as buttons', 'Learn more'],
+  ['t-price', 'Price', 'Tour page price (sans, never serif); cards use body bold', 'USD 1,690'],
+];
+const scale = [[1, 4], [2, 8], [3, 12], [4, 16], [6, 24], [8, 32], [10, 40], [12, 48], [16, 64], [20, 80], [24, 96], [32, 128]];
+const semantic = [
+  ['--gutter', 'Page edge'],
+  ['--stack', 'Section title → its content'],
+  ['--section', 'Between sections'],
+  ['--card-pad', 'Card padding'],
+  ['--grid-gap', 'Gap between cards in a grid'],
+];
+// [group, note, contrast measured against, tokens as [var, use]]
+const colours: Array<[string, string, string, Array<[string, string?]>]> = [
+  ['Orange', 'Fills, icons, rules and dots. Never small text in --p-500; orange text is --p-700.', '--white',
+    [['--p-50'], ['--p-100'], ['--p-500', 'Brand'], ['--p-600', 'Icons'], ['--p-700', 'Orange text'], ['--p-800', 'Orange text hover']]],
+  ['Navy', 'The brand dark: primary buttons, footer, dark panels.', '--white', [['--s-50'], ['--s-300'], ['--s-500', 'Brand'], ['--s-800']]],
+  ['Text', 'Colour is separate from type: .muted and .subtle step text down.', '--white',
+    [['--ink', 'Headings'], ['--text', 'Body'], ['--text-2', '.muted'], ['--text-3', '.subtle']]],
+  ['Text on dark', 'Measured against navy --s-500.', '--s-500', [['--on-dark'], ['--on-dark-2'], ['--on-dark-3']]],
+  ['Surfaces and borders', 'Sections alternate white and --surface.', '--white',
+    [['--white', 'White sections'], ['--surface', 'Grey sections'], ['--surface-2'], ['--border'], ['--border-dark'], ['--border-input', 'Form fields']]],
+  ['Status and accent', '', '--white', [['--success'], ['--warning'], ['--error'], ['--t-500']]],
+];
+const buttons = [
+  ['btn--primary', 'Primary', 'The main action', 'Explore tours'],
+  ['btn--outline', 'Outline', 'A second action next to a primary', 'Enquire'],
+  ['btn--soft', 'Soft', 'Call and WhatsApp next to a primary (menu, tour sidebar)', 'Call us'],
+  ['btn--light', 'Light', 'The main action on a dark panel or photo', 'Explore tours'],
+  ['btn--on-dark', 'On dark', 'A second action on a dark panel or photo', 'Enquire'],
+  ['btn--primary btn--sm', 'Small', 'The header’s Enquire', 'Enquire'],
+  ['btn--primary btn--lg', 'Large', 'Hero, CTA banner and enquiry actions', 'Send an enquiry'],
+];
+const iconsRegular = ['seal-check', 'path', 'receipt', 'identification-badge', 'stamp', 'headset', 'shield-check', 'clock'];
+const iconsBold = ['arrow-right', 'arrow-left', 'chevron-right', 'chevron-up', 'check', 'close', 'bars'];
+const photo = 'photo-1662547150045-7a8d3a9ad0b2';
+---
+<Base title="Style guide" noindex>
+  <section class="section">
+    <div class="container sg">
+      <h1>Style guide</h1>
+      <p class="t-body muted lede">One system for fonts, type, colour, spacing, corners, buttons and icons. Every value below is read live from the site’s CSS, so it is always current — narrow the window below 768px to see the mobile sizes.</p>
+
+      <h2>Fonts</h2>
+      <div class="fonts">
+        <div><p class="t-h3">Libre Caslon Text</p><p class="t-caption muted">Serif, weight 400 (quotes: 400 italic). Titles and headings only.</p></div>
+        <div><p class="t-link">Inter</p><p class="t-caption muted">Sans, weights 400 / 500 / 600. Body text and all UI.</p></div>
+      </div>
+
+      <h2>Typography</h2>
+      <p class="t-body muted">Typescale: 18px base on the Minor Third (1.200) — h1–h6 = 18px × 2.986 · 2.488 · 2.074 · 1.728 · 1.44 · 1.2; body 18px. Phones use the Major Second (1.125). Headings 1.15 line height and −0.022em; body 1.6. Floor 16px for UI and small text.</p>
+      <ul class="roles">
+        {roles.map(([cls, name, use, sample]) => (
+          <li>
+            <div class="roles__meta"><p class="t-label">{name}</p><p class="t-caption muted">{use}</p><p class="t-caption subtle num" data-spec={cls}></p></div>
+            <p class={cls}>{sample}</p>
+          </li>
+        ))}
+      </ul>
+
+      <h2>Colour</h2>
+      <p class="t-body muted">Navy and orange on white and a light grey. Each value and its contrast is read live from the tokens.</p>
+      {colours.map(([group, note, on, tokens]) => (
+        <div>
+          <h3 class="t-title">{group}</h3>
+          {note && <p class="t-caption muted">{note}</p>}
+          <ul class="swatches">
+            {tokens.map(([v, use]) => (
+              <li><i style={`background: var(${v})`}></i><span class="t-label">{v}</span>{use && <span class="t-caption muted">{use}</span>}<span class="t-caption subtle num" data-color={v} data-on={on}></span></li>
+            ))}
+          </ul>
+        </div>
+      ))}
+
+      <h2>Spacing</h2>
+      <p class="t-body muted">An 8-point scale. Every margin, padding and gap uses one of these steps; only 1–2px borders are exempt.</p>
+      <ul class="scale">
+        {scale.map(([n, px]) => <li><span class="t-label num">{px}</span><span class="t-caption subtle">--space-{n}</span><i style={`width: var(--space-${n})`}></i></li>)}
+      </ul>
+      <ul class="semantic">
+        {semantic.map(([v, use]) => <li><span class="t-label">{use}</span><span class="t-caption subtle num" data-var={v}></span></li>)}
+      </ul>
+
+      <h2>Corners</h2>
+      <p class="t-body muted">Cards and card images take var(--radius) with corner-shape: squircle, which browsers without it draw as ordinary round corners. Fields use var(--radius-sm); buttons are pills.</p>
+      <ul class="shapes">
+        <li><div class="shape-card" data-shape><p class="t-card">Card</p><p class="t-caption muted">Hairline border, var(--card-pad) inside.</p></div><p class="t-label">Card</p><p class="t-caption subtle num" data-radius></p></li>
+        <li><img class="shape-img" data-shape src={img(photo, 800, 533)} srcset={srcset(photo, [480, 800, 1200], 3 / 2)} sizes="(min-width: 1264px) 379px, (min-width: 768px) calc((100vw - 128px) / 3), calc(100vw - 32px)" alt="" width="800" height="533" loading="lazy" decoding="async" /><p class="t-label">Card image</p><p class="t-caption subtle num" data-radius></p></li>
+        <li><input class="input" data-shape aria-label="Sample field" placeholder="Field" /><p class="t-label">Field</p><p class="t-caption subtle num" data-radius></p></li>
+      </ul>
+
+      <h2>Buttons</h2>
+      <p class="t-body muted">Pills in the Button role, with no arrow icons inside; every variant turns orange on hover. Text links (.link-more) keep their small arrow.</p>
+      <ul class="roles">
+        {buttons.map(([cls, name, use, sample]) => (
+          <li>
+            <div class="roles__meta"><p class="t-label">{name}</p><p class="t-caption muted">{use}</p><p class="t-caption subtle">.{cls.split(' ').join(' .')}</p><p class="t-caption subtle num" data-btn></p></div>
+            <div class:list={['btn-sample', { 'btn-sample--dark': /light|on-dark/.test(cls) }]}><button type="button" class={`btn ${cls}`}>{sample}</button></div>
+          </li>
+        ))}
+        <li>
+          <div class="roles__meta"><p class="t-label">Text link</p><p class="t-caption muted">“Learn more / see all” — the one place an arrow goes</p><p class="t-caption subtle">.link-more</p></div>
+          <div class="btn-sample"><a class="link-more" href="/bhutan-tours/">See all tours<Icon name="arrow-right" /></a></div>
+        </li>
+      </ul>
+
+      <h2>Icons</h2>
+      <p class="t-body muted">Phosphor only, through &lt;Icon name&gt;, drawn in the text colour. No duotone, no orange fills, no tinted boxes behind them.</p>
+      <h3 class="t-title">Regular — feature icons</h3>
+      <ul class="icons">{iconsRegular.map((n) => <li><Icon name={n} /><span class="t-caption subtle">{n}</span></li>)}</ul>
+      <h3 class="t-title">Bold — UI glyphs (arrows, chevrons, close, menu)</h3>
+      <ul class="icons">{iconsBold.map((n) => <li><Icon name={n} /><span class="t-caption subtle">{n}</span></li>)}</ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  const px = (v: string) => Math.round(parseFloat(v) * 10) / 10;
+  // A token's computed value, read through a hidden element (custom properties aren't resolved on their own)
+  const probe = (prop: string, value: string) => {
+    const i = document.createElement('i');
+    i.style.cssText = `position:absolute;visibility:hidden;${prop}:${value}`;
+    document.body.append(i);
+    const v = getComputedStyle(i).getPropertyValue(prop);
+    i.remove();
+    return v;
+  };
+  const rgb = (v: string) => probe('color', `var(${v})`).match(/[\d.]+/g)!.slice(0, 3).map(Number);
+  const lum = (c: number[]) => {
+    const [r, g, b] = c.map((n) => ((n /= 255) <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4));
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const fill = () => {
+    document.querySelectorAll<HTMLElement>('[data-spec]').forEach((el) => {
+      const s = getComputedStyle(el.closest('li')!.querySelector(`.${el.dataset.spec}`)!);
+      const ls = s.letterSpacing === 'normal' ? 0 : px(s.letterSpacing);
+      el.textContent = `${px(s.fontSize)}px / ${px(s.lineHeight)}px · tracking ${ls}px · weight ${s.fontWeight}`;
+    });
+    document.querySelectorAll<HTMLElement>('[data-var]').forEach((el) => {
+      el.textContent = `${el.dataset.var} = ${px(probe('width', `var(${el.dataset.var})`))}px`;
+    });
+    document.querySelectorAll<HTMLElement>('[data-color]').forEach((el) => {
+      const c = rgb(el.dataset.color!);
+      const [a, b] = [lum(c), lum(rgb(el.dataset.on!))].sort((x, y) => y - x);
+      el.textContent = `#${c.map((n) => n.toString(16).padStart(2, '0')).join('')} · ${((a + 0.05) / (b + 0.05)).toFixed(1)}:1 on ${el.dataset.on}`;
+    });
+    document.querySelectorAll<HTMLElement>('[data-radius]').forEach((el) => {
+      const s = getComputedStyle(el.closest('li')!.querySelector('[data-shape]')!);
+      const shape = CSS.supports('corner-shape', 'squircle')
+        ? `corner-shape ${s.getPropertyValue('corner-top-left-shape') || s.getPropertyValue('corner-shape')}`
+        : 'round corners (this browser has no corner-shape)';
+      el.textContent = `radius ${px(s.borderTopLeftRadius)}px · ${shape}`;
+    });
+    document.querySelectorAll<HTMLElement>('[data-btn]').forEach((el) => {
+      const s = getComputedStyle(el.closest('li')!.querySelector('.btn')!);
+      el.textContent = `${px(s.height)}px high · ${px(s.paddingLeft)}px sides · ${px(s.fontSize)}px / weight ${s.fontWeight}`;
+    });
+  };
+  fill();
+  addEventListener('resize', fill);
+</script>
+
+<style>
+  .sg h2 { margin: var(--space-16) 0 var(--space-4); }
+  .lede { max-width: 60ch; margin-top: var(--space-4); }
+  .sg > p.t-body { max-width: 60ch; margin-bottom: var(--space-8); }
+  .fonts { display: grid; gap: var(--space-6); }
+  @media (min-width: 768px) { .fonts { grid-template-columns: 1fr 1fr; } }
+  .fonts > div { padding: var(--card-pad); border: 1px solid var(--border); border-radius: var(--radius); corner-shape: squircle; }
+  .sg h3 { margin: var(--space-8) 0 var(--space-2); }
+  .roles, .scale, .semantic, .swatches, .shapes, .icons { list-style: none; margin: 0; padding: 0; }
+  .roles li { display: grid; gap: var(--space-2) var(--space-8); padding-block: var(--space-6); border-top: 1px solid var(--border); }
+  @media (min-width: 768px) { .roles li { grid-template-columns: 280px 1fr; align-items: baseline; } }
+  .roles__meta { display: grid; gap: var(--space-1); }
+  .scale li { display: grid; grid-template-columns: 48px 96px 1fr; align-items: center; gap: var(--space-4); padding-block: var(--space-2); }
+  .scale i { display: block; height: var(--space-4); background: var(--p-500); border-radius: 2px; }
+  .semantic { margin-top: var(--space-8); display: grid; gap: var(--space-2); }
+  .semantic li { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-4); padding-block: var(--space-3); border-top: 1px solid var(--border); }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr)); gap: var(--space-6) var(--space-4); margin-top: var(--space-4); }
+  .swatches li { display: grid; align-content: start; }
+  .swatches i { height: var(--space-16); margin-bottom: var(--space-2); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .shapes { display: grid; gap: var(--grid-gap); }
+  @media (min-width: 768px) { .shapes { grid-template-columns: repeat(3, 1fr); } }
+  .shapes li { display: grid; align-content: start; gap: var(--space-1); }
+  .shapes [data-shape] { margin-bottom: var(--space-2); }
+  .shape-card { display: grid; gap: var(--space-2); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; }
+  .shape-img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; }
+  .btn-sample { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
+  .btn-sample--dark { padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); }
+  .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: var(--space-6) var(--space-4); }
+  .icons li { display: grid; justify-items: start; gap: var(--space-2); color: var(--ink); }
+  .icons :global(.icon) { font-size: 32px; }
+</style>

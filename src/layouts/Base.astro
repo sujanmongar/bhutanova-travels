@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
-import fontUrl from '@fontsource-variable/schibsted-grotesk/files/schibsted-grotesk-latin-wght-normal.woff2?url';
+import fontUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
+import serifUrl from '@fontsource/libre-caslon-text/files/libre-caslon-text-latin-400-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE, img, ldJson, type Seo } from '../config';
@@ -21,7 +22,7 @@ const image = seo.image || Astro.props.image || 'photo-1578556881786-851d4b79cb7
 const noindex = Astro.props.noindex || seo.noindex;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const fullTitle = seo.title || (Astro.url.pathname === '/' ? `${SITE.name} | ${SITE.tagline}` : `${title} | ${SITE.name}`);
-const ogImage = img(image, 1200);
+const ogImage = img(image, 1200, 630);
 
 const org = {
   '@context': 'https://schema.org',
@@ -35,7 +36,8 @@ const org = {
   telephone: SITE.phone,
   address: { '@type': 'PostalAddress', streetAddress: '4730 Babesa', addressLocality: 'Thimphu', addressCountry: 'BT' },
   areaServed: { '@type': 'Country', name: 'Bhutan' },
-  sameAs: Object.values(SITE.social),
+  // Real profiles only: a bare network home page (https://facebook.com/) is a placeholder
+  sameAs: Object.entries(SITE.social).filter(([k, u]) => k !== 'whatsapp' && new URL(u).pathname.length > 1).map(([, u]) => u),
 };
 const ld = [org, ...(schema ? [schema].flat() : [])];
 ---
@@ -52,6 +54,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://cdn.sanity.io" />
     <!-- Prefetch same-site pages on hover so page transitions feel instant (Chromium; others ignore) -->
@@ -64,6 +67,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
     {published && <meta property="article:published_time" content={published.toISOString()} />}
     <meta name="twitter:card" content="summary_large_image" />

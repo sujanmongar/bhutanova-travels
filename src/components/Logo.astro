@@ -1,14 +1,16 @@
 ---
 // Mark: a three-peak Himalayan ridge with snow-capped high point, drawn as one silhouette.
 // Wordmark: serif name (matches the editorial headline face) + small tracked sans line.
+// The snowcaps get an orange outline so they don't vanish into the white header. "TRAVELS" follows the text colour
+// (ink on the light header, white over photos and in the footer): orange is never small text.
 const { light = false } = Astro.props;
 ---
 <svg class="logo" viewBox="0 0 178 44" role="img" aria-label="Bhutanova Travels" style={light ? 'color:#fff' : undefined}>
   <path d="M2,34 L10,18 L17,27 L21,6 L26,23 L32,15 L40,34 Z" fill="#ffa500" />
-  <path d="M21,6 L23.6,11.5 L18.4,11.5 Z" fill="#fff" />
-  <path d="M32,15 L34.3,18.6 L29.7,18.6 Z" fill="#fff" opacity=".85" />
-  <text x="48" y="27" font-family="var(--ff-serif)" font-weight="500" font-size="20" fill="currentColor">Bhutanova</text>
-  <text x="48.5" y="38.5" font-family="var(--ff)" font-weight="600" font-size="8.5" letter-spacing="3.2" fill="#ffa500">TRAVELS</text>
+  <path d="M21,6 L23.6,11.5 L18.4,11.5 Z" fill="#fff" stroke="#ffa500" stroke-width="1" />
+  <path d="M32,15 L34.3,18.6 L29.7,18.6 Z" fill="#fff" opacity=".85" stroke="#ffa500" stroke-width="1" />
+  <text x="48" y="27" font-family="var(--ff-serif)" font-weight="400" font-size="20" fill="currentColor">Bhutanova</text>
+  <text x="48.5" y="38.5" font-family="var(--ff)" font-weight="600" font-size="8.5" letter-spacing="3.2" fill="currentColor" opacity=".7">TRAVELS</text>
 </svg>
 <style>
   .logo { width: 142px; height: auto; }

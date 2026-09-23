@@ -6,6 +6,9 @@ interface Props { heading: string; grey?: boolean }
 const { heading, grey = false } = Astro.props;
 const reviews = (await getEntry('reviews', 'reviews'))!.data;
 const tours = await getCollection('tours');
+// Editors wrap a phrase in **double asterisks** to highlight it; odd parts of the split are the highlights.
+const parts = (t: string) => t.split(/\*\*(.+?)\*\*/g);
+const plain = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '$1');
 // Real ratings only — while "sample" is ticked these are placeholder numbers, and publishing fake review
 // counts in structured data is exactly what Google's review-snippet guidelines prohibit. Untick "sample"
 // once the platform ratings are real and this turns itself on.
@@ -23,22 +26,23 @@ const ratingSchema = !reviews.sample && reviews.platforms.length > 0 && (() => {
       '@type': 'Review',
       author: { '@type': 'Person', name: r.name },
       reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
-      reviewBody: r.text,
+      reviewBody: plain(r.text),
     })),
   };
 })();
 type Review = (typeof reviews.items)[number];
 // The guest's own photo when there is one; otherwise the photo of the tour they took — never a stand-in face.
+// Shown as a small round portrait next to the name, so the CDN sends a square crop (or the editor's focal point).
 const pic = (r: Review) => {
-  if (r.photo) return { url: r.photo.url, pos: focal(r.photo.hotspot), alt: (r.photo.alt as string | undefined) ?? '' };
+  if (r.photo) return { url: r.photo.url, pos: focal(r.photo.hotspot), alt: (r.photo.alt as string | undefined) ?? '', crop: !r.photo.hotspot };
   const tour = tours.find((t) => t.data.title === r.trip);
-  return tour && { url: tour.data.image, pos: '50% 50%', alt: '' };
+  return tour && { url: tour.data.image, pos: '50% 50%', alt: '', crop: true };
 };
 // While Reviews → "sample" is ticked, badges link out without figures: placeholder ratings never sit next to a real
 // platform's logo. Untick it once the rating and count are the real ones.
 const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo_tripadvisor' };
 ---
-{reviews.items.length > 0 && (
+{(reviews.sample ? reviews.platforms : reviews.items).length > 0 && (
 <section class:list={['section', { 'section--grey': grey }]}>
   {ratingSchema && <script type="application/ld+json" set:html={ldJson(ratingSchema)} />}
   <div class="container">
@@ -51,14 +55,14 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
               <a class="badge" href={p.url} target="_blank" rel="noopener">
                 <span class="badge__logo"><Icon name={logo[p.name] ?? 'star'} label={p.name} /></span>
                 {reviews.sample ? (
-                  <span class="badge__txt"><b>Read our reviews</b><span class="badge__sub">on {p.name}</span></span>
+                  <span class="badge__txt"><b class="t-label">Read our reviews</b><span class="badge__sub t-label">on {p.name}</span></span>
                 ) : (
                   <span class="badge__txt">
                     <span class="badge__score">
-                      <b class="num">{p.rating.toFixed(1)}</b>
+                      <b class="num t-label">{p.rating.toFixed(1)}</b>
                       <span class:list={['rate', { 'rate--bubbles': p.name === 'Tripadvisor' }]} style={`--fill:${p.rating * 20}%`} aria-hidden="true"></span>
                     </span>
-                    <span class="badge__sub"><span class="num">{p.count.toLocaleString('en-US')}</span> reviews on {p.name}</span>
+                    <span class="badge__sub t-label"><span class="num">{p.count.toLocaleString('en-US')}</span> reviews on {p.name}</span>
                   </span>
                 )}
                 <Icon name="arrow-up-right" class="badge__ext" /><span class="sr-only"> (opens in a new tab)</span>
@@ -69,99 +73,65 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
       )}
     </div>
 
-    <div class="spot" data-spot data-reveal aria-roledescription="carousel" aria-label="Guest reviews">
-      <div class="spot__photos">
-        {reviews.items.map((r, i) => {
+    <!-- A wall of reviews: staggered columns, each review as long as it needs to be. Phones swipe through them.
+         Hidden while "sample" is ticked: placeholder quotes must not read as real guests. The platform links still show. -->
+    {!reviews.sample && (
+      <ul class="quotes" data-reveal="stagger">
+        {reviews.items.map((r) => {
           const p = pic(r);
-          return p && (
-            <img class:list={['spot__img', { 'is-on': !i }]} src={img(p.url, 900)} srcset={srcset(p.url, [480, 900, 1300])}
-              sizes="(min-width:1024px) 460px, 100vw" alt={p.alt} width="900" height="1125" loading={i ? 'lazy' : 'eager'} decoding="async"
-              style={`object-position:${p.pos}`} data-i={i} />
+          return (
+            <li>
+              <figure class="quote">
+                <span class="rate" style={`--fill:${r.rating * 20}%`} role="img" aria-label={`Rated ${r.rating} out of 5`}></span>
+                <blockquote>“{parts(r.text).map((t, k) => (k % 2 ? <mark>{t}</mark> : t))}”</blockquote>
+                <figcaption>
+                  {p ? <img src={img(p.url, 112, p.crop ? 112 : undefined)} srcset={p.crop ? srcset(p.url, [56, 112, 168], 1) : undefined} sizes="56px"
+                    alt="" width="56" height="56" loading="lazy" decoding="async" style={`object-position:${p.pos}`} /> : <span class="quote__init" aria-hidden="true">{r.name.slice(0, 1)}</span>}
+                  <span class="quote__who"><b class="t-label">{r.name}</b><span class="t-caption">{r.place}{r.trip && <> · {r.trip}</>}</span></span>
+                </figcaption>
+              </figure>
+            </li>
           );
         })}
-      </div>
-      <div class="spot__main">
-        <div class="spot__slides" data-live aria-live="off">
-          {reviews.items.map((r, i) => (
-            <figure class:list={['spot__slide', { 'is-on': !i }]} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${reviews.items.length}`} inert={i > 0} data-i={i}>
-              <span class="rate" style={`--fill:${r.rating * 20}%`} role="img" aria-label={`Rated ${r.rating} out of 5`}></span>
-              <blockquote class="t-quote">“{r.text}”</blockquote>
-              <figcaption><b>{r.name}</b><span>{r.place}{r.trip && <> · {r.trip}</>}</span></figcaption>
-            </figure>
+      </ul>
+    )}
+
+    {reviews.platforms.length > 0 && (
+      <div class="rv__more">
+        <p class="t-label">{reviews.sample ? 'Read our reviews on' : 'Rated by our guests on'}</p>
+        <ul>
+          {reviews.platforms.map((p) => (
+            <li>
+              <a class="rv__site t-label" href={p.url} target="_blank" rel="noopener">
+                <Icon name={logo[p.name] ?? 'star'} class="rv__logo" />
+                {!reviews.sample && <b class="num">{p.rating.toFixed(1)}</b>}
+                {p.name}<span class="sr-only"> (opens in a new tab)</span>
+                <Icon name="arrow-up-right" class="rv__ext" />
+              </a>
+            </li>
           ))}
-        </div>
-        <div class="spot__bar">
-          <ul class="spot__thumbs">
-            {reviews.items.map((r, i) => {
-              const p = pic(r);
-              return (
-                <li>
-                  <button type="button" data-to={i} aria-label={`Show ${r.name}’s review`} aria-current={i ? undefined : 'true'}>
-                    {p ? <img src={img(p.url, 200)} alt="" width="88" height="88" loading="lazy" decoding="async" style={`object-position:${p.pos}`} /> : <span>{r.name.slice(0, 1)}</span>}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+        </ul>
       </div>
-    </div>
+    )}
   </div>
 </section>
 )}
 
-<script>
-  // One review in the spotlight at a time; the photo and words cross-fade. Advances every 6s and waits while hovered,
-  // focused, off screen or in a background tab. Picking a guest (or swiping on a phone) stops it for good — with no
-  // pause button, that is the visitor's way to stop the motion (WCAG 2.2.2).
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.querySelectorAll<HTMLElement>('[data-spot]').forEach((spot) => {
-    const slides = [...spot.querySelectorAll<HTMLElement>('.spot__slide')];
-    const photos = [...spot.querySelectorAll<HTMLElement>('.spot__img')];
-    const thumbs = [...spot.querySelectorAll<HTMLButtonElement>('[data-to]')];
-    const live = spot.querySelector<HTMLElement>('[data-live]')!;
-    const n = slides.length;
-    let on = 0, playing = !still && n > 1, seen = false;
-    const show = (i: number, byUser = false) => {
-      i = (i + n) % n;
-      if (i === on) return;
-      live.setAttribute('aria-live', byUser ? 'polite' : 'off');
-      for (const list of [slides, photos]) list.forEach((el) => el.classList.toggle('is-on', Number(el.dataset.i) === i));
-      slides.forEach((el, k) => (el.inert = k !== i));
-      thumbs.forEach((b, k) => (k === i ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current')));
-      on = i;
-    };
-    const take = (i: number) => { playing = false; show(i, true); };
-    thumbs.forEach((b, k) => b.addEventListener('click', () => take(k)));
-    // Sideways swipe (touch/pen only, so selecting the quote with a mouse doesn't change it); vertical still scrolls.
-    let x0: number | null = null;
-    spot.addEventListener('pointerdown', (e) => (x0 = e.pointerType === 'mouse' ? null : e.clientX));
-    spot.addEventListener('pointerup', (e) => {
-      if (x0 !== null && Math.abs(e.clientX - x0) > 40) take(on + (e.clientX < x0 ? 1 : -1));
-      x0 = null;
-    });
-    new IntersectionObserver(([e]) => (seen = e.isIntersecting)).observe(spot);
-    setInterval(() => { if (playing && seen && !document.hidden && !spot.matches(':hover, :focus-within')) show(on + 1); }, 6000);
-  });
-</script>
-
 <style>
-  /* Header: title, with the review-site badges beside it (below it on phones) */
-  .rv__head { display: grid; gap: 20px; margin-bottom: var(--stack); }
-  .rv__badges { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  /* Header: title, with the review-site badges at the top right from 900px. Phones get compact buttons under the reviews. */
+  .rv__head { display: grid; gap: var(--space-6); margin-bottom: var(--stack); }
+  .rv__badges { display: none; flex-wrap: wrap; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
   .badge {
-    display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 10px 16px 10px 12px;
+    display: flex; align-items: center; gap: var(--space-3); min-height: 60px; padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
     border: 1px solid var(--border-dark); border-radius: var(--r-md); background: #fff; color: var(--ink);
     transition: border-color var(--dur-1), box-shadow var(--dur-2);
   }
   .badge__logo { display: grid; place-items: center; flex: none; width: 36px; height: 36px; font-size: 30px; }
   .badge__txt { display: grid; gap: 1px; }
-  .badge__txt > b, .badge__score b { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; }
-  .badge__score { display: flex; align-items: center; gap: 8px; }
-  .badge__sub { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); color: var(--text-3); }
-  .badge :global(.badge__ext) { margin-left: 6px; font-size: 11px; color: var(--text-3); }
+  .badge__score { display: flex; align-items: center; gap: var(--space-2); }
+  .badge__sub { color: var(--text-3); }
+  .badge :global(.badge__ext) { margin-left: var(--space-1); font-size: 11px; color: var(--text-3); }
   @media (hover: hover) { .badge:hover { border-color: var(--s-500); box-shadow: var(--sh-sm); } }
-  @media (min-width: 900px) { .rv__head { grid-template-columns: 1fr auto; align-items: end; } }
 
   .rate {
     --size: 14px; --on: #e8a300; --off: rgb(12 25 37 / .14);
@@ -173,34 +143,50 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   }
   .rate--bubbles { --on: #00aa6c; --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3C/svg%3E"); }
 
-  /* Spotlight: big guest photo + the review; the other guests wait as small photos underneath */
-  .spot { display: grid; gap: 28px; touch-action: pan-y; }
-  .spot__photos { position: relative; aspect-ratio: 4 / 3; border-radius: var(--r-xl); overflow: hidden; background: var(--s-50); }
-  .spot__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .7s var(--ease-out); }
-  .spot__img.is-on { opacity: 1; }
-  .spot__main { display: grid; gap: 32px; align-content: center; min-width: 0; }
-  .spot__slides { display: grid; }
-  .spot__slide { grid-area: 1 / 1; display: grid; align-content: start; gap: 20px; margin: 0; opacity: 0; visibility: hidden;
-    transition: opacity .5s var(--ease-out), visibility 0s .5s; }
-  .spot__slide.is-on { opacity: 1; visibility: visible; transition: opacity .6s var(--ease-out) .15s, visibility 0s; }
-  .spot__slide blockquote { margin: 0; text-wrap: pretty; }
-  .spot__slide figcaption { display: grid; gap: 2px; }
-  .spot__slide figcaption b { font-size: var(--fs-title); line-height: var(--lh-title); color: var(--ink); }
-  .spot__slide figcaption span { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); color: var(--text-3); }
-  .spot__bar { padding-top: 24px; border-top: 1px solid var(--border); }
-  /* One row: each guest photo is up to 72px (88px from tablet) and shares the width evenly when space runs short */
-  .spot__thumbs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 72px); gap: 8px; list-style: none; margin: 0; padding: 0; }
-  .spot__thumbs button {
-    display: grid; place-items: center; width: 100%; aspect-ratio: 1; padding: 0; border: 0; border-radius: var(--r-sm); overflow: hidden;
-    background: var(--s-50); cursor: pointer; opacity: .5; outline-offset: 3px; transition: opacity var(--dur-2), box-shadow var(--dur-2);
+
+  /* Reviews: stars, the words in the regular sans with highlighted phrases, then a small round portrait, name and trip.
+     No boxes. Phones: a sideways row. Tablet/desktop: 2 / 3 staggered columns, each review as tall as its words. */
+  .quotes {
+    display: grid; grid-auto-flow: column; grid-auto-columns: min(84%, 340px); gap: var(--space-8); list-style: none;
+    margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter);
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
   }
-  .spot__thumbs img { width: 100%; height: 100%; object-fit: cover; }
-  .spot__thumbs button[aria-current] { opacity: 1; box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--p-500); }
-  @media (hover: hover) { .spot__thumbs button:not([aria-current]):hover { opacity: .85; } }
-  @media (prefers-reduced-motion: reduce) { .spot__img, .spot__slide { transition: none; } }
-  @media (min-width: 768px) { .spot__thumbs { gap: 12px; grid-auto-columns: minmax(0, 88px); } }
-  @media (min-width: 1024px) {
-    .spot { grid-template-columns: 5fr 6fr; gap: 72px; align-items: center; }
-    .spot__photos { aspect-ratio: 4 / 5; }
+  .quotes::-webkit-scrollbar { display: none; }
+  .quotes > li { scroll-snap-align: start; }
+  .quote { display: grid; gap: var(--space-4); margin: 0; }
+  /* The words in the regular sans (not the serif italic), a step above body size: 21.6px desktop, 18px phones */
+  .quote blockquote { margin: 0; font-family: var(--ff); font-size: var(--fs-h6); line-height: var(--lh-quote); font-weight: 400; color: var(--ink); text-wrap: pretty; }
+  .quote mark { padding-inline: .12em; border-radius: var(--r-xs); background: var(--p-100); color: inherit; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .quote figcaption { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
+  .quote figcaption img, .quote__init {
+    flex: none; width: 48px; height: 48px; border-radius: var(--r-full); object-fit: cover; background: var(--s-50);
   }
+  .quote__init { display: grid; place-items: center; font-family: var(--ff-display); font-size: var(--fs-h6); color: var(--s-500); }
+  .quote__who { display: grid; gap: var(--space-1); min-width: 0; }
+  .quote__who b { color: var(--ink); }
+  .quote__who span { color: var(--text-3); }
+
+  .rv__more { display: grid; gap: var(--space-3); }
+  .quotes + .rv__more { margin-top: var(--space-8); }
+  .rv__more > p { color: var(--text-3); }
+  .rv__more ul { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
+  .rv__site {
+    display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 52px; padding: 0 var(--space-3);
+    border: 1px solid var(--border-dark); border-radius: var(--r-full); background: #fff; color: var(--ink);
+  }
+  .rv__site :global(.rv__logo) { font-size: 22px; }
+  .rv__site :global(.rv__ext) { font-size: 12px; color: var(--text-3); }
+  .rv__site:active { background: var(--surface); }
+
+  @media (min-width: 768px) {
+    .quotes { display: block; columns: 2; column-gap: var(--space-12); margin-inline: 0; padding-inline: 0; overflow: visible; }
+    .quotes > li { break-inside: avoid; padding-bottom: var(--space-12); }
+  }
+  @media (min-width: 900px) {
+    .rv__head { grid-template-columns: 1fr auto; align-items: end; }
+    .rv__badges { display: flex; }
+    .rv__more { display: none; }
+    .rv__head:has(+ .rv__more) { margin-bottom: 0; }  /* no review wall (sample) — the header ends the section */
+  }
+  @media (min-width: 1024px) { .quotes { columns: 3; column-gap: var(--space-16); } }
 </style>

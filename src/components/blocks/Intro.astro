@@ -1,31 +1,42 @@
 ---
-import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
+import Logo from '../Logo.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
 import { ptParagraphs } from '../../pt';
-interface Props { heading: string; text?: any[]; image?: BlockImage; quote?: string; grey?: boolean }
-const { heading, text, image, quote, grey = false } = Astro.props;
+interface Props { heading: string; text?: any[]; expertise?: string[]; linkLabel?: string; linkHref?: string; image?: BlockImage; quote?: string; grey?: boolean }
+const { heading, text, expertise = [], linkLabel, linkHref, image, quote, grey = false } = Astro.props;
 const paras = ptParagraphs(text);
-const alone = !image?.url;
-// The company's own tour categories, standing in for an "areas of expertise" list — real and always
-// in sync, rather than a separate editorial list that drifts from what's actually offered.
-const cats = alone ? (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order) : [];
+// No photo: text alone. Photo + quote: photo and quote below the text. Photo alone: photo beside the text.
+const layout = !image?.url ? 'alone' : quote ? 'below' : 'side';
+// The photo is a 4:3 frame (full width below 1024px, the 5fr column from 1024px), so the CDN crops it around the focal
+// point. From 1024px the side photo takes its height from the text (about 3:2), so it gets a 3:2 crop there instead.
+const sizes = '(min-width:1264px) 510px, (min-width:1024px) calc(45vw - 65px), (min-width:768px) calc(100vw - 64px), calc(100vw - 32px)';
+const crop = (ratio: number) => srcset(image!.url, [480, 800, 1200, 1600], ratio, image!.hotspot);
 ---
 <section class:list={['section', { 'section--grey': grey }]}>
-  <div class="container">
-    <div class:list={['sh', { 'sh--split': !alone, 'sh--alone': alone }]} data-reveal>
+  <div class:list={['container', { side: layout === 'side' }]}>
+    <div class:list={['sh', { 'sh--split': layout === 'below', 'sh--alone': layout === 'alone' }]} data-reveal>
       <h2>{heading}</h2>
-      {paras.length === 1 ? <p set:html={paras[0]} /> : paras.length > 1 && <div class="sh__body">{paras.map((p) => <p set:html={p} />)}</div>}
-      {cats.length > 0 && (
-        <p class="expertise t-small">{cats.map((c, i) => <>{i > 0 && ' · '}{c.data.menuTitle}</>)}</p>
+      {paras.length === 1 ? <p set:html={paras[0]} /> : paras.length > 1 && <div class="sh__body">{paras.map((p) => <p class="t-body" set:html={p} />)}</div>}
+      {expertise.length > 0 && (
+        <ul class="expertise">{expertise.map((x) => <li class="t-label"><span class="tick" aria-hidden="true"><Icon name="check" /></span>{x}</li>)}</ul>
       )}
-      {alone && <a class="link-more" href="/about/">Learn more about us<Icon name="arrow-right" /></a>}
+      {linkLabel && linkHref && <a class="link-more" href={linkHref}>{linkLabel}</a>}
     </div>
-    {image?.url && (
+    {layout === 'side' && (
+      <figure class="photo" data-reveal>
+        <picture>
+          <source media="(max-width: 1023px)" sizes={sizes} srcset={crop(4 / 3)} />
+          <img src={img(image!.url, 900, 600, image!.hotspot)} srcset={crop(3 / 2)} sizes={sizes}
+            alt={image!.alt ?? ''} width="900" height="600" loading="lazy" decoding="async" style={`object-position:${focal(image!.hotspot)}`} />
+        </picture>
+        <span class="photo__logo"><Logo /></span>
+      </figure>
+    )}
+    {layout === 'below' && (
       <div class="mission" data-reveal>
-        <img src={img(image.url, 900)} srcset={srcset(image.url, [480, 800, 1200])} sizes="(min-width:1024px) 45vw, 100vw"
-          alt={image.alt ?? ''} width="900" height="700" loading="lazy" decoding="async" style={`object-position:${focal(image.hotspot)}`} />
-        {quote && <figure><blockquote class="t-quote">“{quote}”</blockquote></figure>}
+        <img src={img(image!.url, 900, 675, image!.hotspot)} srcset={crop(4 / 3)} sizes={sizes} alt={image!.alt ?? ''} width="900" height="675" loading="lazy" decoding="async" />
+        <figure><blockquote class="t-quote">“{quote}”</blockquote></figure>
       </div>
     )}
   </div>
@@ -33,17 +44,36 @@ const cats = alone ? (await getCollection('categories')).sort((a, b) => a.data.o
 <style>
   .sh--alone { margin-bottom: 0; }
   .sh :global(:is(b, strong)) { color: var(--ink); }
-  .expertise { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-dark); max-width: 56ch; color: var(--text-3); }
-  .link-more { margin-top: 20px; }
-  .sh__body { display: grid; gap: 16px; margin-top: 16px; }
-  .sh__body p { max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
+  .expertise { display: grid; gap: var(--space-2); margin-top: var(--space-6); padding: 0; list-style: none; }
+  .expertise li { display: flex; align-items: center; gap: var(--space-3); color: var(--ink); }
+  .tick { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--p-500); color: var(--s-800); }
+  .tick :global(.icon) { font-size: 10px; }
+  .link-more { margin-top: var(--space-4); }  /* + the link's 44px tap area ≈ 24px to the text, matching the list */
+  .sh__body { display: grid; gap: var(--space-4); margin-top: var(--space-6); }
+  .sh__body p { max-width: 60ch; color: var(--text-2); }
   @media (min-width: 1024px) { .sh__body { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; } }
 
-  .mission { display: grid; gap: 28px; align-items: center; }
-  .mission img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
+  /* Photo beside the text, with the logo pinned over its corner at a slight tilt */
+  .side { display: grid; gap: var(--space-12); align-items: center; }
+  .side .sh { margin-bottom: 0; align-content: start; }
+  .side .sh__body { grid-column: auto; grid-row: auto; margin-top: var(--space-6); }
+  /* The photo takes its height from the text beside it (desktop), so it never runs taller than the content */
+  .photo { position: relative; margin: 0; aspect-ratio: 4 / 3; }
+  .photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
+  .photo__logo { position: absolute; left: var(--space-4); bottom: var(--space-4); display: block; padding: var(--space-4) var(--space-6) var(--space-3); border-radius: var(--radius); corner-shape: squircle; background: #fff; box-shadow: var(--sh-lg); rotate: -5deg; }
+  .photo__logo :global(.logo) { display: block; width: 176px; }
+  @media (min-width: 1024px) {
+    .side { grid-template-columns: 6fr 5fr; gap: var(--space-20); align-items: stretch; }
+    .photo { aspect-ratio: auto; min-height: 320px; }
+    .photo__logo { left: calc(var(--space-8) * -1); bottom: var(--space-10); padding: var(--space-6) var(--space-8) var(--space-4); }
+    .photo__logo :global(.logo) { width: 224px; }
+  }
+
+  .mission { display: grid; gap: var(--space-8); align-items: center; }
+  .mission img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   .mission blockquote { margin: 0; text-wrap: balance; }
   .mission figure { margin: 0; }
   @media (min-width: 1024px) {
-    .mission { grid-template-columns: 5fr 6fr; gap: 80px; }
+    .mission { grid-template-columns: 5fr 6fr; gap: var(--space-20); }
   }
 </style>

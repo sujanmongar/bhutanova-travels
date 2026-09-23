@@ -15,6 +15,6 @@ const { heading, text, grey = true } = Astro.props;
   </div>
 </section>
 <style>
-  .sh :global(a) { white-space: nowrap; color: var(--ink); font-weight: 600; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+  .sh :global(a) { white-space: nowrap; color: var(--ink); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
   .sh :global(a:hover) { color: var(--p-800); }
 </style>

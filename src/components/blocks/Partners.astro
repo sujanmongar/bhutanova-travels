@@ -1,26 +1,42 @@
 ---
-import { img, type BlockImage } from '../../config';
+import { type BlockImage } from '../../config';
 interface Props { label?: string; logos?: { _key: string; name: string; image?: BlockImage }[] }
 const { label, logos = [] } = Astro.props;
 ---
 <section class="partners">
   <div class="container partners__in">
-    {label && <p class="t-meta">{label}</p>}
+    {label && <p class="t-label subtle">{label}</p>}
     <ul>
-      {logos.filter((l) => l.image?.url).map((l) => <li><img src={img(l.image!.url, 402)} alt={l.name} title={l.name} width="201" height="140" loading="lazy" /></li>)}
+      {/* SVGs as they are; raster logos as lossless PNG at 3× the displayed height, so edges and small type stay sharp */}
+      {logos.filter((l) => l.image?.url).map((l) => {
+        const base = l.image!.url.split('?')[0];
+        return <li><img src={base.endsWith('.svg') ? base : `${base}?h=132&fit=max&fm=png`} alt={l.name} title={l.name} width="201" height="140" loading="lazy" decoding="async" /></li>;
+      })}
     </ul>
   </div>
 </section>
 <style>
   /* Partners */
-  .partners { padding-block: 48px 64px; border-top: 1px solid var(--border); }
-  .partners__in { display: grid; gap: 20px; }
-  .partners ul { display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; gap: 16px; list-style: none; margin: 0; padding: 0; }
-  .partners img { width: auto; height: 36px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
-  @media (hover: hover) { .partners li:hover img { filter: none; opacity: 1; } }
+  .partners { padding-block: var(--space-12) var(--space-16); border-top: 1px solid var(--border); }
+  /* Phones: centred, three logos a row, so a wide wordmark stays readable. Tablets: one centred row. Desktop: label left, logos spread. */
+  .partners__in { display: grid; gap: var(--space-6); text-align: center; }
+  .partners ul { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-6) var(--space-4); list-style: none; margin: 0; padding: 0; }
+  .partners li { flex: 0 0 calc((100% - var(--space-4) * 2) / 3); display: grid; place-items: center; }
+  /* Same height for every logo; very wide wordmarks are capped in width so they don't outweigh the emblems */
+  .partners img { width: auto; height: 36px; max-width: min(100%, 140px); object-fit: contain; }
+  /* Muted until hovered, on hover devices only: touch screens show the logos in full colour */
+  @media (hover: hover) {
+    .partners img { filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
+    .partners li:hover img { filter: none; opacity: 1; }
+  }
+  @media (min-width: 768px) {
+    .partners img { max-width: 140px; }
+    .partners ul { column-gap: var(--space-8); }
+    .partners li { flex-basis: auto; }
+  }
   @media (min-width: 1024px) {
-    .partners__in { grid-template-columns: 220px 1fr; gap: 48px; align-items: center; }
-    .partners ul { display: flex; justify-content: space-between; }
+    .partners__in { grid-template-columns: 220px 1fr; gap: var(--space-12); align-items: center; text-align: left; }
+    .partners ul { justify-content: space-between; }
     .partners img { height: 44px; }
   }
 </style>

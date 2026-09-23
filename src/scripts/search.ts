@@ -1,9 +1,13 @@
 // Shared by the header's live suggestions and the full /search/ page, so both group results the same way.
+import arrowSvg from '../icons/arrow-right.svg?raw';
+
 export type SearchItem = { t: string; k: string; u: string };
 export type Group = { key: string; label: string; items: SearchItem[] };
 
 const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Destination: 'Destinations', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
 const ORDER = Object.keys(KIND);
+
+const arrow = arrowSvg.replace('<svg', '<svg class="icon" aria-hidden="true" focusable="false"');
 
 export const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
@@ -26,7 +30,7 @@ export function suggestionsHTML(groups: Group[], q: string, perGroup = 4): strin
       .map((r) => `<li><a href="${r.u}">${escHtml(r.t)}</a></li>`)
       .join('')}</ul></li>`)
     .join('');
-  const seeAll = total > 0 ? `<a class="search__see-all" href="/search/?q=${encodeURIComponent(q)}">${total > shown ? `See all ${total} results` : 'See full results'} for “${escHtml(q)}”<span aria-hidden="true">→</span></a>` : '';
+  const seeAll = total > 0 ? `<a class="search__see-all" href="/search/?q=${encodeURIComponent(q)}">${total > shown ? `See all ${total} results` : 'See full results'} for “${escHtml(q)}”${arrow}</a>` : '';
   return rows + seeAll;
 }
 

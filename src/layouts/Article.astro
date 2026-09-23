@@ -21,13 +21,18 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
       <header class="ah">
         <Breadcrumbs items={[[back[1], back[0]], [title]]} />
         <h1>{title}</h1>
-        <p class="lede">{description}</p>
-        <p class="meta">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · <b>{author}</b></p>
+        <p class="lede t-body">{description}</p>
+        <p class="meta t-label">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · <b>{author}</b></p>
       </header>
-      <img class="cover" src={img(image, 1400)} srcset={srcset(image, [480, 800, 1200, 1600])}
-        sizes={hasAside ? '(min-width:1200px) 712px, (min-width:1024px) calc(100vw - 428px), 100vw' : '(min-width:1200px) 1120px, 100vw'}
-        alt="" width="1400" height="700" fetchpriority="high" style="view-transition-name: hero-img" />
-      <div class="prose body"><slot /></div>
+      {/* The CDN crops to the frame at each breakpoint: 16:10 phones, 2:1 from 768px, 16:9 beside the sidebar */}
+      <picture>
+        <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(image, [480, 800, 1200], 16 / 10)} />
+        {hasAside && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
+        <img class="cover" src={img(image, 1200, 600)} srcset={srcset(image, [800, 1200, 1600, 2000, 2400], 2)}
+          sizes={hasAside ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
+          alt="" width="1200" height="600" fetchpriority="high" style="view-transition-name: hero-img" />
+      </picture>
+      <div class="prose body t-body"><slot /></div>
     </article>
     {hasAside && <aside class="post__aside" aria-label="Related"><slot name="aside" /></aside>}
   </div>
@@ -36,21 +41,21 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
 <style>
   .post { padding-block: var(--stack) var(--section); }
   .ah, .body { max-width: 64ch; margin-inline: auto; }
-  .ah :global(.crumbs) { margin-bottom: 16px; }
-  .lede { margin-top: 14px; max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
-  .meta { margin: 16px 0 28px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
-  .meta b { font-weight: 600; color: var(--text-2); }
-  .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
-  .body { margin-top: 36px; font-size: var(--fs-prose); line-height: var(--lh-prose); color: var(--text); }
-  .post__aside { display: grid; gap: 40px; align-content: start; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); }
-  @media (min-width: 768px) { .cover { aspect-ratio: 2 / 1; border-radius: var(--r-xl); } }
+  .ah :global(.crumbs) { margin-bottom: var(--space-4); }
+  .lede { margin-top: var(--space-4); max-width: 60ch; color: var(--text-2); }
+  .meta { margin: var(--space-4) 0 var(--space-8); color: var(--text-3); }
+  .meta b { color: var(--text-2); }
+  .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
+  .body { margin-top: var(--space-10); color: var(--text); }
+  .post__aside { display: grid; gap: var(--space-10); align-content: start; margin-top: var(--space-16); padding-top: var(--space-10); border-top: 1px solid var(--border); }
+  @media (min-width: 768px) { .cover { aspect-ratio: 2 / 1; } }
   @media (min-width: 1024px) {
-    .post--aside { display: grid; grid-template-columns: minmax(0, 64ch) 300px; column-gap: 48px; justify-content: center; }
+    .post--aside { display: grid; grid-template-columns: minmax(0, 64ch) 300px; column-gap: var(--space-12); justify-content: center; }
     .post--aside :is(.ah, .body) { margin-inline: 0; }
     .post--aside .cover { aspect-ratio: 16 / 9; }
     .post__aside { margin-top: 0; padding-top: 0; border-top: 0; }
   }
-  @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 64ch) 336px; column-gap: 72px; } }
+  @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 64ch) 336px; column-gap: var(--space-16); } }
   /* Reading progress, CSS scroll-linked (Chrome 115+, Safari 26+) */
   .progress { display: none; }
   @keyframes grow { from { scale: 0 1; } }

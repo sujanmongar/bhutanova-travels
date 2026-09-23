@@ -1,9 +1,11 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {linkRules} from './blockContent'
+import {lines} from './documents'
 import {CheckmarkCircleIcon} from '@sanity/icons/CheckmarkCircle'
 import {CommentIcon} from '@sanity/icons/Comment'
 import {BlockContentIcon} from '@sanity/icons/BlockContent'
 import {DocumentsIcon} from '@sanity/icons/Documents'
+import {OlistIcon} from '@sanity/icons/Olist'
 import {DocumentTextIcon} from '@sanity/icons/DocumentText'
 import {EarthGlobeIcon} from '@sanity/icons/EarthGlobe'
 import {HelpCircleIcon} from '@sanity/icons/HelpCircle'
@@ -41,7 +43,9 @@ const photo = (name = 'image', title = 'Photo', required = true, alt = true) =>
     // assetRequired: removing a photo keeps its alt text, which plain required() would accept as "filled in".
     validation: required ? (r) => r.required().assetRequired() : undefined,
   })
-const points = (name: string, title: string, max: number) =>
+// Phosphor Regular (outline, one colour) so the reasons read as a family
+const ICONS = ['seal-check', 'path', 'receipt', 'identification-badge', 'stamp', 'headset', 'users-three', 'handshake', 'plant']
+const points = (name: string, title: string, max: number, withIcon = false) =>
   defineField({
     name,
     title,
@@ -54,8 +58,9 @@ const points = (name: string, title: string, max: number) =>
         fields: [
           defineField({name: 'title', title: 'Title', type: 'string', validation: (r) => r.required()}),
           defineField({name: 'text', title: 'Text', type: 'text', rows: 2}),
+          ...(withIcon ? [defineField({name: 'icon', title: 'Icon', type: 'string', options: {list: ICONS}, validation: (r: any) => r.required()})] : []),
         ],
-        preview: {select: {title: 'title', subtitle: 'text'}},
+        preview: {select: {title: 'title', subtitle: 'text', icon: 'icon'}, prepare: ({title, subtitle, icon}: any) => ({title: icon ? `${icon} — ${title}` : title, subtitle})},
       }),
     ],
   })
@@ -100,19 +105,21 @@ const pageBanner = defineType({
 
 const intro = defineType({
   name: 'intro',
-  title: 'Intro with points',
+  title: 'Intro',
   type: 'object',
   icon: TextIcon,
-  description: 'Heading and a short intro, optionally followed by up to 6 points and a photo with a quote.',
+  description: 'Heading and a short intro, with an optional checklist, link and photo. A photo on its own sits beside the text with the logo on it; a photo with a quote sits below the text.',
   fields: [
     heading(),
     defineField({name: 'text', title: 'Intro', type: 'simpleText'}),
-    points('points', 'Points', 6),
+    {...lines('expertise', 'Expertise checklist', 'A few short, concrete lines, e.g. "Licensed Bhutanese operator, not a reseller". Shown as a checklist.'), group: undefined, validation: (r: any) => r.max(4)},
+    defineField({name: 'linkLabel', title: 'Link text', type: 'string', description: 'e.g. "Learn more about us". Leave empty for no link.'}),
+    defineField({name: 'linkHref', title: 'Link', type: 'url', description: 'e.g. /about/', hidden: ({parent}) => !parent?.linkLabel, validation: (r) => linkRules(r)}),
     photo('image', 'Photo', false),
-    defineField({name: 'quote', title: 'Quote next to the photo', type: 'text', rows: 2, hidden: ({parent}) => !parent?.image?.asset}),
+    defineField({name: 'quote', title: 'Quote under the photo', type: 'text', rows: 2, description: 'Leave empty to show the photo beside the text instead.', hidden: ({parent}) => !parent?.image?.asset}),
     grey(),
   ],
-  preview: preview('Intro with points', {media: 'image'}),
+  preview: preview('Intro', {media: 'image'}),
 })
 
 const reasons = defineType({
@@ -120,8 +127,8 @@ const reasons = defineType({
   title: 'Reasons to choose us',
   type: 'object',
   icon: CheckmarkCircleIcon,
-  description: 'Four short, concrete reasons in a row.',
-  fields: [heading('Why travel with us'), points('items', 'Reasons', 8), grey(true)],
+  description: 'Short, concrete reasons in a row, each with an icon.',
+  fields: [heading('Why travel with us'), points('items', 'Reasons', 8, true), grey(true)],
   preview: preview('Reasons to choose us'),
 })
 
@@ -175,7 +182,7 @@ const tourRail = defineType({
   icon: EarthGlobeIcon,
   description: 'A scrolling row of tour cards.',
   fields: [
-    heading('Tour packages'),
+    heading('Popular tour packages'),
     defineField({name: 'text', title: 'Intro', type: 'string'}),
     defineField({
       name: 'tours',
@@ -183,7 +190,7 @@ const tourRail = defineType({
       type: 'array',
       of: [{type: 'reference', to: [{type: 'tour'}]}],
       validation: (r) => r.unique().max(12),
-      description: 'Leave empty to show six tours automatically, “Show on homepage” tours first.',
+      description: 'Pick a mix of tours, in the order they should appear. Leave empty to show six automatically, “Show on homepage” tours first.',
     }),
     grey(),
   ],
@@ -195,8 +202,8 @@ const categoryTiles = defineType({
   title: 'Tour categories',
   type: 'object',
   icon: TagIcon,
-  description: 'A self-scrolling row of tall photo cards, one per tour category, with each category’s short description.',
-  fields: [heading('Bhutan tours by travel style'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey()],
+  description: 'A scrolling row of tall photo cards, one per tour category, with each category’s short description.',
+  fields: [heading('Bhutan tours by theme'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey()],
   preview: preview('Tour categories'),
 })
 
@@ -206,7 +213,7 @@ const latestPosts = defineType({
   type: 'object',
   icon: DocumentTextIcon,
   description: 'The newest post large, plus the three before it.',
-  fields: [heading('From the blog'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey(true)],
+  fields: [heading('Travel blogs'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey(true)],
   preview: preview('Latest blog posts'),
 })
 
@@ -215,9 +222,27 @@ const reviewList = defineType({
   title: 'Reviews',
   type: 'object',
   icon: StarIcon,
-  description: 'One review in the spotlight (big guest photo + quote), the other guests as small photos to click through, and your Google and Tripadvisor badges. Reviews come from Content → Reviews.',
+  description: 'Every review as a quote card (stars, words, a small round photo, name and trip): all six on desktop, swipe on phones. Google and Tripadvisor links at the top right. Reviews come from Content → Reviews.',
   fields: [heading('What travelers say'), grey()],
   preview: preview('Reviews'),
+})
+
+const bookingSteps = defineType({
+  name: 'bookingSteps',
+  title: 'Booking steps',
+  type: 'object',
+  icon: OlistIcon,
+  description: 'How booking works: three or four short numbered steps from first message to arrival, with WhatsApp and enquiry buttons.',
+  fields: [
+    heading('How booking works'),
+    defineField({name: 'text', title: 'Intro', type: 'string'}),
+    points('steps', 'Steps', 5),
+    defineField({name: 'whatsapp', title: 'Show a WhatsApp button', type: 'boolean', initialValue: true, description: 'The fastest way to start: opens a WhatsApp chat with the planner.'}),
+    defineField({name: 'buttonLabel', title: 'Second button text', type: 'string', initialValue: 'Send an enquiry'}),
+    defineField({name: 'buttonLink', title: 'Second button link', type: 'url', initialValue: '/contact/', hidden: ({parent}) => !parent?.buttonLabel, validation: (r) => linkRules(r)}),
+    grey(),
+  ],
+  preview: preview('Booking steps'),
 })
 
 const faqList = defineType({
@@ -296,7 +321,7 @@ const partners = defineType({
   preview: {prepare: () => ({title: 'Partner logos'})},
 })
 
-export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, faqList, ctaBanner, whatsapp, partners]
+export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, bookingSteps, faqList, ctaBanner, whatsapp, partners]
 
 // ---------- Page ----------
 const TOP = ['hero', 'pageBanner']

@@ -1,5 +1,5 @@
 ---
-import { img, srcset, focal, type BlockImage } from '../../config';
+import { img, srcset, type BlockImage } from '../../config';
 import { ptParagraphs } from '../../pt';
 interface Props { rows?: { _key: string; image?: BlockImage; heading: string; text?: any[] }[]; grey?: boolean }
 const { rows = [], grey = false } = Astro.props;
@@ -8,10 +8,11 @@ const { rows = [], grey = false } = Astro.props;
   <div class="container story">
     {rows.map((r, i) => (
       <div class:list={['story__row', { 'story__row--rev': i % 2 }]} data-reveal>
-        {r.image?.url && <img src={img(r.image.url, 900)} srcset={srcset(r.image.url, [480, 800, 1200])} sizes="(min-width:1024px) 50vw, 100vw" alt={r.image.alt ?? ''} width="900" height="675" loading="lazy" decoding="async" style={`object-position:${focal(r.image.hotspot)}`} />}
+        {r.image?.url && <img src={img(r.image.url, 900, 675, r.image.hotspot)} srcset={srcset(r.image.url, [480, 800, 1200], 4 / 3, r.image.hotspot)}
+          sizes="(min-width:1200px) 552px, (min-width:768px) calc(50vw - 64px), calc(100vw - 32px)" alt={r.image.alt ?? ''} width="900" height="675" loading="lazy" decoding="async" />}
         <div>
           <h2>{r.heading}</h2>
-          {ptParagraphs(r.text).map((p) => <p set:html={p} />)}
+          {ptParagraphs(r.text).map((p) => <p class="t-body" set:html={p} />)}
         </div>
       </div>
     ))}
@@ -19,15 +20,16 @@ const { rows = [], grey = false } = Astro.props;
 </section>
 <style>
   /* Photo and text side by side, alternating sides row by row */
-  .story { display: grid; gap: 56px; }
-  .story__row { display: grid; gap: 24px; align-items: center; }
-  .story__row img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
-  .story__row p { margin-top: 14px; max-width: 52ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
+  .story { display: grid; gap: var(--space-16); }
+  .story__row { display: grid; gap: var(--space-6); align-items: center; }
+  .story__row img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
+  .story__row p { margin-top: var(--space-4); max-width: 52ch; color: var(--text-2); }
+  .story__row h2 + p { margin-top: var(--space-6); }
   .story__row :global(:is(b, strong)) { color: var(--ink); }
   @media (min-width: 768px) {
-    .story { gap: 80px; }
-    .story__row { grid-template-columns: 1fr 1fr; gap: 56px; }
+    .story { gap: var(--space-20); }
+    .story__row { grid-template-columns: 1fr 1fr; gap: var(--space-16); }
     .story__row--rev img { order: 2; }
   }
-  @media (min-width: 1200px) { .story__row { gap: 96px; } }
+  @media (min-width: 1200px) { .story__row { gap: var(--space-24); } }
 </style>

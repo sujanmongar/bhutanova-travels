@@ -18,8 +18,14 @@ function applyCrop({ url, crop, dims, hotspot, ...rest }: any) {
   return { ...rest, url: `${url}?rect=${rect}`, hotspot: hotspot && { x: clamp((hotspot.x - l) / w), y: clamp((hotspot.y - t) / h) } };
 }
 
+// Local review: under `astro dev` with a read token in .env, unpublished drafts show on localhost, so
+// content can be checked before it goes live. Builds (CI has no token, and a build is never DEV) always
+// read published content, so a draft can't reach the live site by accident.
+const TOKEN = import.meta.env.DEV ? import.meta.env.SANITY_READ_TOKEN : undefined;
+
 async function groq(query: string) {
-  const res = await fetch(`${API}?perspective=published&query=${encodeURIComponent(query)}`);
+  const res = await fetch(`${API}?perspective=${TOKEN ? 'drafts' : 'published'}&query=${encodeURIComponent(query)}`,
+    TOKEN ? { headers: { Authorization: `Bearer ${TOKEN}` } } : undefined);
   if (!res.ok) throw new Error(`Sanity query failed (${res.status}): ${await res.text()}`);
   // Sanity returns null for empty fields; dropping them lets zod defaults/optional apply.
   return JSON.parse(await res.text(), (_, v) => (v === null ? undefined : v?.url && v.dims ? applyCrop(v) : v)).result;
@@ -97,9 +103,10 @@ export const collections = {
     }),
   }),
   guides: defineCollection({
-    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, excerpt, "image": image.${IMG}, group, order, inMenu, updated, body, ${SEO} }`),
+    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, menuTitle, excerpt, "image": image.${IMG}, group, order, inMenu, updated, body, ${SEO} }`),
     schema: z.object({
       title: z.string(),
+      menuTitle: z.string().nullish(),
       excerpt: z.string(),
       image: z.string(),
       group: z.enum(['Plan & Book', 'Entry & Visa', 'Money & Costs', 'On the Ground']),

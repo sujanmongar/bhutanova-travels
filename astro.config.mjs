@@ -6,7 +6,11 @@ const PATH = { page: '/', tour: '/bhutan-tours/', category: '/bhutan-tours/', po
 const query = '*[seo.noindex == true]{ _id, _type, "slug": slug.current }';
 const res = await fetch(`https://234ghw8x.api.sanity.io/v2025-02-19/data/query/production?perspective=published&query=${encodeURIComponent(query)}`);
 if (!res.ok) throw new Error(`Sanity query failed (${res.status})`);
-const hidden = new Set((await res.json()).result.map((d) => (d._id === 'home' ? '/' : `${PATH[d._type]}${d.slug}/`)));
+const hidden = new Set([
+  ...(await res.json()).result.map((d) => (d._id === 'home' ? '/' : `${PATH[d._type]}${d.slug}/`)),
+  // Pages that set noindex in code (the integration already leaves 404 out)
+  '/search/', '/styleguide/', '/cancellation-policy/',
+]);
 
 export default defineConfig({
   site: 'https://bhutanova-travels.pages.dev',

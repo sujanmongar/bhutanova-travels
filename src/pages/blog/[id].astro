@@ -5,7 +5,7 @@ import TourCard from '../../components/TourCard.astro';
 import Arrows from '../../components/Arrows.astro';
 import Icon from '../../components/Icon.astro';
 import PlanCta from '../../components/PlanCta.astro';
-import { img } from '../../config';
+import { img, srcset } from '../../config';
 import { TOURS, tourPath } from '../../utils';
 
 export async function getStaticPaths() {
@@ -16,8 +16,9 @@ const { post, posts } = Astro.props;
 const { Content } = await render(post);
 const others = posts.filter((p) => p.id !== post.id);
 const tours = await getCollection('tours');
+// The promo card (desktop sidebar only) is left out of the rail so the same tour never shows twice.
 const promo = tours.find((t) => t.data.featured) ?? tours[0];
-const related = tours.filter((t) => t.data.featured).slice(0, 6);
+const related = tours.filter((t) => t.data.featured && t.id !== promo.id).slice(0, 6);
 const u = encodeURIComponent(new URL(Astro.url.pathname, Astro.site).href), t = encodeURIComponent(post.data.title);
 const share = [
   ['social_whatsapp', 'WhatsApp', `https://wa.me/?text=${t}%20${u}`],
@@ -32,25 +33,26 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
 
   <Fragment slot="aside">
     <section class="widget" aria-labelledby="w-share">
-      <h2 class="widget__h" id="w-share">Share this story</h2>
+      <p class="widget__h" id="w-share">Share this story</p>
       <ul class="share">{share.map(([i, n, h]) => <li><a href={h} target="_blank" rel="noopener" aria-label={`Share on ${n}`}><Icon name={i} /></a></li>)}</ul>
     </section>
     <section class="widget recent" aria-labelledby="w-recent">
-      <h2 class="widget__h" id="w-recent">Recent posts</h2>
+      <p class="widget__h" id="w-recent">Recent posts</p>
       <ul>{others.slice(0, 4).map((p) => (
         <li><a href={`/blog/${p.id}/`}>
-          <img src={img(p.data.image, 160)} alt="" width="72" height="72" loading="lazy" decoding="async" />
-          <span><h3>{p.data.title}</h3><time datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
+          <img src={img(p.data.image, 144, 144)} srcset={srcset(p.data.image, [72, 144, 216], 1)} sizes="72px" alt="" width="72" height="72" loading="lazy" decoding="async" />
+          <span><span class="t-title">{p.data.title}</span><time class="t-label" datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
         </a></li>
       ))}</ul>
     </section>
     <div class="widget-sticky">
       <a class="promo" href={tourPath(promo)}>
-        <img src={img(promo.data.image, 700)} alt="" width="336" height="420" loading="lazy" decoding="async" />
+        <img src={img(promo.data.image, 672, 840)} srcset={srcset(promo.data.image, [336, 672, 1008], 4 / 5)} sizes="(min-width:1200px) 336px, 300px"
+          alt="" width="336" height="420" loading="lazy" decoding="async" />
         <span class="promo__txt">
-          <h3>{promo.data.title}</h3>
-          <span class="num">{promo.data.days} days · From USD {promo.data.price.toLocaleString('en-US')}</span>
-          <span class="promo__cta">View tour <Icon name="arrow-right" /></span>
+          <span class="t-title">{promo.data.title}</span>
+          <span class="num t-label">{promo.data.days} days · From USD {promo.data.price.toLocaleString('en-US')}</span>
+          <span class="promo__cta t-link">View tour <Icon name="arrow-right" /></span>
         </span>
       </a>
       <PlanCta />
@@ -60,34 +62,35 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
   <section class="section section--grey" slot="after">
     <div class="container">
       <div class="sh sh--row">
-        <h2>Tours for this story</h2>
+        <h2>Tours to consider</h2>
         <div class="sh__act"><a class="link-more" href={TOURS}>All packages<Icon name="arrow-right" /></a><Arrows target="rail-related" label="tours" /></div>
       </div>
-      <div class="rail" id="rail-related">{related.map((r) => <TourCard tour={r} />)}</div>
+      <div class="rail" id="rail-related">{related.map((r) => <TourCard tour={r} rail />)}</div>
+      <a class="link-more m-only" href={TOURS}>All packages<Icon name="arrow-right" /></a>
     </div>
   </section>
 </Article>
 
 <style>
-  .share { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .share { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
   .share a { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border-dark); font-size: 18px; color: var(--ink); transition: border-color var(--dur-2), translate var(--dur-2) var(--ease-out); }
   .share a:hover { border-color: var(--border-dark); translate: 0 -2px; }
   .recent ul { list-style: none; margin: 0; padding: 0; }
-  .recent ul { display: grid; gap: 16px; }
-  .recent a { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; }
+  .recent ul { display: grid; gap: var(--space-4); }
+  .recent a { display: grid; grid-template-columns: 72px 1fr; gap: var(--space-3); align-items: center; }
   .recent img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--r-md); background: var(--s-50); }
-  .recent h3 { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: underline 2px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2); }
-  .recent a:hover h3 { text-decoration-color: var(--p-500); }
-  .recent time { display: block; margin-top: 4px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
-  .promo { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; isolation: isolate; color: #fff; }
+  .recent .t-title { display: -webkit-box; color: var(--ink); -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: underline 2px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2); }
+  .recent a:hover .t-title { text-decoration-color: var(--p-500); }
+  .recent time { display: block; margin-top: var(--space-1); color: var(--text-3); }
+  .promo { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); corner-shape: squircle; overflow: hidden; isolation: isolate; color: #fff; }
   .promo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: scale var(--dur-4) var(--ease-out); }
   .promo::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgb(12 25 37 / 0) 40%, rgb(12 25 37 / .88)); }
   .promo:hover img { scale: 1.05; }
-  .promo__txt { position: absolute; inset: auto 0 0; display: grid; gap: 6px; padding: 20px; }
-  .promo h3 { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); color: #fff; }
-  .promo__txt > .num { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--on-dark-2); }
-  .promo__cta { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; color: var(--p-100); }
-  .promo__cta :global(.icon) { transition: translate var(--dur-2); }
+  .promo__txt { position: absolute; inset: auto 0 0; display: grid; gap: var(--space-2); padding: var(--card-pad); }
+  .promo__txt > .num { color: var(--on-dark-2); }
+  .promo__cta { display: inline-flex; align-items: center; gap: var(--space-2); margin-top: var(--space-1); }
+  .promo__cta :global(.icon) { color: var(--p-500); transition: translate var(--dur-2); }
   .promo:hover .promo__cta :global(.icon) { translate: 3px 0; }
-  @media (max-width: 1023px) { .recent { display: none; } .promo { aspect-ratio: 16 / 10; } }
+  /* Below 1024px the aside follows the article as share, recent posts, enquiry box; the tour rail below does the promo's job. */
+  @media (max-width: 1023px) { .promo { display: none; } }
 </style>

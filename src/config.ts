@@ -31,18 +31,21 @@ export const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 export const ldJson = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
 /** Unsplash IDs ("photo-…"), Sanity CDN URLs or other URLs → responsive src. Both CDNs resize on the fly. */
-export function img(src: string, w = 1200) {
+/** With `h`, the CDN returns exactly the frame's shape: a centred cover crop (same as CSS object-fit: cover),
+ *  or, given `fp` (the editor's hotspot, 0–1 inside any rect crop), a crop kept around that focal point. */
+export function img(src: string, w = 1200, h?: number, fp?: { x: number; y: number }) {
   const url = src.startsWith('photo-') ? `https://images.unsplash.com/${src}` : src;
-  if (url.includes('images.unsplash.com')) return `${url.split('?')[0]}?auto=format&fit=crop&q=80&w=${w}`;
+  const focus = h && fp ? `&crop=focalpoint&fp-x=${fp.x.toFixed(3)}&fp-y=${fp.y.toFixed(3)}` : '';
+  if (url.includes('images.unsplash.com')) return `${url.split('?')[0]}?auto=format&fit=crop&q=80&w=${w}${h ? `&h=${h}` : ''}${focus}`;
   if (url.includes('cdn.sanity.io')) {
     const [base, query = ''] = url.split('?');
     const rect = new URLSearchParams(query).get('rect'); // an editor's crop, kept through resizing
-    return `${base}?${rect ? `rect=${rect}&` : ''}auto=format&q=80&w=${w}`;
+    return `${base}?${rect ? `rect=${rect}&` : ''}auto=format&q=80&w=${w}${h ? `&h=${h}&fit=crop` : ''}${focus}`;
   }
   return url;
 }
-export function srcset(src: string, widths = [480, 800, 1200, 1800, 2400]) {
-  return /unsplash|cdn\.sanity\.io/.test(img(src)) ? widths.map((w) => `${img(src, w)} ${w}w`).join(', ') : undefined;
+export function srcset(src: string, widths = [480, 800, 1200, 1800, 2400], ratio?: number, fp?: { x: number; y: number }) {
+  return /unsplash|cdn\.sanity\.io/.test(img(src)) ? widths.map((w) => `${img(src, w, ratio && Math.round(w / ratio), fp)} ${w}w`).join(', ') : undefined;
 }
 
 /** An image from a page-builder block; `hotspot` is the focal point the editor dragged in Sanity. */

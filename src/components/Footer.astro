@@ -4,10 +4,11 @@ import Logo from './Logo.astro';
 import Social from './Social.astro';
 import { SITE } from '../config';
 
+// Same order as the header menu
 const explore = [
   ['Tours', '/bhutan-tours/'],
+  ['Destinations', '/destinations/'],
   ['Travel guide', '/travel-guide/'],
-  ['About Bhutan', '/about-bhutan/'],
   ['Blog', '/blog/'],
   ['About us', '/about/'],
   ['Contact', '/contact/'],
@@ -22,36 +23,36 @@ const official = [
 ];
 const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 ---
-<footer class="footer">
+<footer class="footer t-caption">
   <div class="container footer__grid">
-    <section class="footer__about" aria-labelledby="f-about">
-      <h2 id="f-about" class="sr-only">About Us</h2>
+    <section class="footer__about" aria-label="About Bhutanova Travels">
       <a href="/" aria-label="Bhutanova Travels home"><Logo light /></a>
-      <p>A Thimphu-based tour operator crafting cultural, festival and trekking journeys across Bhutan — guided by the values of Gross National Happiness.</p>
+      <p class="t-body">A Thimphu-based tour operator crafting cultural, festival and trekking journeys across Bhutan — guided by the values of Gross National Happiness.</p>
       <Social />
     </section>
 
-    <nav aria-labelledby="f-explore">
-      <h2 id="f-explore" class="footer__h">Explore</h2>
-      <ul class="footer__links">{explore.map(([t, u]) => <li><a href={u}>{t}</a></li>)}</ul>
-    </nav>
-
-    <nav aria-labelledby="f-links">
-      <h2 id="f-links" class="footer__h">Official resources</h2>
-      <ul class="footer__links">{official.map(([t, u]) => <li><a href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
-    </nav>
-
-    <section aria-labelledby="f-contact">
-      <h2 id="f-contact" class="footer__h">Contact</h2>
+    <!-- Contact comes straight after the about block on phones; from 768px it moves back to the last column. -->
+    <section class="footer__contact-col" aria-labelledby="f-contact">
+      <p id="f-contact" class="footer__h t-title">Contact</p>
       <ul class="footer__contact">
         <li><Icon name="location-dot" /><span>{SITE.address}</span></li>
         <li><Icon name="phone" /><span><a href={tel(SITE.phone)}>{SITE.phone}</a><br /><a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></span></li>
         <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
       </ul>
     </section>
+
+    <nav aria-labelledby="f-explore">
+      <p id="f-explore" class="footer__h t-title">Explore</p>
+      <ul class="footer__links">{explore.map(([t, u]) => <li><a class="t-label" href={u}>{t}</a></li>)}</ul>
+    </nav>
+
+    <nav aria-labelledby="f-links">
+      <p id="f-links" class="footer__h t-title">Official resources</p>
+      <ul class="footer__links">{official.map(([t, u]) => <li><a class="t-label" href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
+    </nav>
   </div>
 
-  <div class="footer__bar">
+  <div class="footer__bar t-label">
     <div class="container footer__bar-in">
       <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
       <p><a href="/sitemap-index.xml">Sitemap</a><span aria-hidden="true">·</span><a href="/privacy/">Privacy</a></p>
@@ -60,38 +61,40 @@ const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 </footer>
 
 <style>
-  .footer { background: var(--s-500); color: var(--on-dark-2); font-size: var(--fs-small); line-height: var(--lh-small); }
+  .footer { background: var(--s-500); color: var(--on-dark-2); }
   .footer a { transition: color var(--dur-1), text-decoration-color var(--dur-2); }
   .footer a:hover { color: #fff; }
 
-  .footer__grid { display: grid; gap: 40px; padding-block: 56px 48px; }
-  .footer__about :global(.social) { margin-top: 4px; }
-  .footer__about { display: grid; gap: 16px; justify-items: start; align-content: start; max-width: 380px; }
+  .footer__grid { display: grid; gap: var(--space-10); padding-block: var(--space-12); }
+  .footer__about :global(.social) { margin-top: var(--space-1); }
+  .footer__about { display: grid; gap: var(--space-4); justify-items: start; align-content: start; max-width: 380px; }
   .footer__about :global(.logo) { width: 150px; }
 
-  .footer__h { color: #fff; font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 500; margin-bottom: 8px; }
+  .footer__h { color: #fff; margin-bottom: var(--space-2); }
+  /* Link rows: 8px above and below on phones (comfortable taps), 4px on desktop */
+  .footer { --row: var(--space-2); }
   .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
-  .footer__links a, .footer__contact a { display: inline-block; padding-block: 12px; text-decoration: underline 1px transparent; text-underline-offset: 4px; }
+  .footer__links a, .footer__contact a { display: inline-block; padding-block: var(--row); text-decoration: underline 1px transparent; text-underline-offset: 4px; }
   .footer__links a:hover, .footer__contact a:hover { text-decoration-color: currentColor; }
-  .footer__contact li { display: flex; gap: 12px; align-items: flex-start; }
-  .footer__contact li > span:not(:has(a)) { padding-block: 12px; }
-  .footer__contact :global(.icon) { flex: none; margin-top: calc(11px + .3em); font-size: 14px; color: var(--on-dark-3); }
+  .footer__contact li { display: flex; gap: var(--space-3); align-items: flex-start; }
+  .footer__contact li > span:not(:has(a)) { padding-block: var(--row); }
+  .footer__contact :global(.icon) { flex: none; margin-top: calc(var(--row) - 1px + .3em); font-size: 14px; color: var(--on-dark-3); }
 
 
-  .footer__bar { background: var(--s-800); font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--on-dark-3); }
-  .footer__bar-in { display: flex; flex-direction: column; gap: 0; padding-block: 8px; }
-  @media (max-width: 1199px) { .footer__bar-in { padding-bottom: 76px; } }
-  .footer__bar span { margin-inline: 8px; }
-  .footer__bar a { display: inline-block; padding-block: 12px; }
+  .footer__bar { background: var(--s-800); color: var(--on-dark-3); }
+  .footer__bar-in { display: flex; flex-direction: column; gap: 0; padding-block: var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom)); }
+  .footer__bar span { margin-inline: var(--space-2); }
+  .footer__bar a { display: inline-block; padding-block: var(--space-3); }
   .footer__bar-in p { margin: 0; }
 
   @media (min-width: 768px) {
-    .footer__grid { grid-template-columns: 1fr 1fr; column-gap: 48px; padding-block: 64px 48px; }
+    .footer__grid { grid-template-columns: 1fr 1fr; column-gap: var(--space-12); padding-block: var(--space-16) var(--space-12); }
     .footer__about { grid-column: 1 / -1; }
-    .footer__bar-in { flex-direction: row; justify-content: space-between; align-items: center; }
+      .footer__bar-in { flex-direction: row; justify-content: space-between; align-items: center; }
   }
   @media (min-width: 1024px) {
-    .footer__grid { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; column-gap: 56px; }
+    .footer { --row: var(--space-1); }
+    .footer__grid { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; column-gap: var(--space-16); }
     .footer__about { grid-column: auto; }
   }
 </style>

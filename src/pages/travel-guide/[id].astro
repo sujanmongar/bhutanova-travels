@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
 import Icon from '../../components/Icon.astro';
+import Arrows from '../../components/Arrows.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import PlanCta from '../../components/PlanCta.astro';
 export async function getStaticPaths() {
@@ -15,14 +16,20 @@ const toc = headings.filter((h) => h.depth === 2);
 const rest = guides.filter((g) => g.id !== guide.id);
 const related = [...rest.filter((g) => g.data.group === guide.data.group), ...rest.filter((g) => g.data.group !== guide.data.group)].slice(0, 3);
 ---
-<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
+<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
+  {toc.length > 1 && (
+    <details class="toc toc-m">
+      <summary class="t-label">On this page<Icon name="chevron-up" /></summary>
+      <ol>{toc.map((h) => <li><a class="t-label" href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+    </details>
+  )}
   <Content />
   <Fragment slot="aside">
     <div class="widget-sticky">
       {toc.length > 1 && (
         <nav class="widget toc" aria-labelledby="toc-h">
-          <h2 class="widget__h" id="toc-h">On this page</h2>
-          <ol>{toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+          <p class="widget__h" id="toc-h">On this page</p>
+          <ol>{toc.map((h) => <li><a class="t-label" href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
         </nav>
       )}
       <PlanCta />
@@ -32,29 +39,51 @@ const related = [...rest.filter((g) => g.data.group === guide.data.group), ...re
     <div class="container">
       <div class="sh sh--row" data-reveal>
         <h2>More travel guides</h2>
-        <div class="sh__act"><a class="link-more" href="/travel-guide/">All guides<Icon name="arrow-right" /></a></div>
+        <div class="sh__act"><a class="link-more" href="/travel-guide/">All guides<Icon name="arrow-right" /></a><Arrows target="rail-guides" label="guides" /></div>
       </div>
-      <div class="grid-3 more" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" />)}</div>
+      <div class="rail" id="rail-guides" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" />)}</div>
       <a class="link-more m-only" href="/travel-guide/">All guides<Icon name="arrow-right" /></a>
     </div>
   </section>
 </Article>
 <script>
-  // Highlight the section being read in the TOC
-  const links = new Map([...document.querySelectorAll<HTMLAnchorElement>('.toc a')].map((a) => [decodeURIComponent(a.hash.slice(1)), a]));
+  // Highlight the section being read in both copies of the TOC, and keep it in view when the sidebar list scrolls
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const idOf = (a: HTMLAnchorElement) => decodeURIComponent(a.hash.slice(1));
   const spy = new IntersectionObserver((es) => es.forEach((e) => {
     if (!e.isIntersecting) return;
-    links.forEach((a) => a.removeAttribute('aria-current'));
-    links.get(e.target.id)?.setAttribute('aria-current', 'location');
+    links.forEach((a) => {
+      if (idOf(a) !== e.target.id) return a.removeAttribute('aria-current');
+      a.setAttribute('aria-current', 'location');
+      const box = a.closest<HTMLElement>('.toc')!, r = a.getBoundingClientRect(), b = box.getBoundingClientRect();
+      if (r.top < b.top || r.bottom > b.bottom) box.scrollTop += r.top - b.top - b.height / 2;
+    });
   }), { rootMargin: '-20% 0px -70% 0px' });
-  links.forEach((_, id) => { const h = document.getElementById(id); if (h) spy.observe(h); });
+  new Set(links.map(idOf)).forEach((id) => { const h = document.getElementById(id); if (h) spy.observe(h); });
 </script>
 <style>
   .toc ol { list-style: none; margin: 0; padding: 0; }
-  .toc a { display: block; padding: 8px 0 8px 14px; border-left: 2px solid var(--border); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text-2); transition: color var(--dur-2), border-color var(--dur-2); }
+  .toc li + li { margin-top: 0; }
+  .toc a { display: block; padding: var(--space-2) 0 var(--space-2) var(--space-3); border-left: 2px solid var(--border); color: var(--text-2); text-decoration: none; transition: color var(--dur-2), border-color var(--dur-2); }
   .toc a:hover, .toc a[aria-current] { color: var(--ink); border-left-color: var(--p-500); }
   .toc a[aria-current] { font-weight: 600; }
-  @media (max-width: 1023px) { .toc { display: none; } }
-  .more { row-gap: 40px; }
-  .m-only { margin-top: 28px; }
+  /* Below 1024px the contents fold up at the top of the article instead of sitting in the sidebar */
+  .toc-m { border-block: 1px solid var(--border); }
+  .toc-m summary {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); min-height: 44px; padding-block: var(--space-2);
+    color: var(--ink); cursor: pointer; list-style: none; -webkit-tap-highlight-color: transparent;
+  }
+  .toc-m summary::-webkit-details-marker { display: none; }
+  .toc-m summary :global(.icon) { color: var(--s-500); rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
+  .toc-m[open] summary :global(.icon) { rotate: 0deg; }
+  .toc-m ol { padding-bottom: var(--space-4); }
+  @media (max-width: 1023px) { .toc:not(.toc-m) { display: none; } }
+  @media (min-width: 1024px) {
+    .toc-m { display: none; }
+    /* The sticky sidebar is never taller than the screen: the contents list gives way and scrolls, the enquiry box stays whole */
+    .widget-sticky { display: flex; flex-direction: column; max-height: calc(100dvh - var(--header-h) - var(--space-12)); }
+    .widget-sticky .toc { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+    .toc .widget__h { position: sticky; top: 0; background: var(--white); }
+    .toc a:focus-visible { outline-offset: -2px; }
+  }
 </style>

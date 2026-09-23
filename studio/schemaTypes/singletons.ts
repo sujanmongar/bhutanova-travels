@@ -79,7 +79,7 @@ export const reviews = defineType({
             defineField({name: 'trip', title: 'Tour taken', type: 'string'}),
             defineField({name: 'source', title: 'Posted on', type: 'string', options: {list: PLATFORMS}}),
             defineField({name: 'rating', title: 'Rating', type: 'number', initialValue: 5, validation: (r) => r.required().integer().min(1).max(5)}),
-            defineField({name: 'text', title: 'Review', type: 'text', rows: 4, validation: (r) => r.required()}),
+            defineField({name: 'text', title: 'Review', type: 'text', rows: 4, description: 'Wrap a short phrase in **double asterisks** to highlight it, e.g. **the best week of my year**. One or two per review.', validation: (r) => r.required()}),
             defineField({
               name: 'photo',
               title: 'Guest photo',

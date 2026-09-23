@@ -9,7 +9,7 @@ export async function getStaticPaths() {
   return (await getCollection('pages', (p) => p.id !== 'home')).map((page) => ({ params: { slug: page.id }, props: { page } }));
 }
 const { title, sections, seo } = Astro.props.page.data;
-// Share image falls back to the banner/slideshow photo when the SEO tab has none.
+// Share image falls back to the hero or banner photo when the SEO tab has none.
 ---
 <Base title={title} image={coverImage(sections)} seo={seo}>
   <Blocks sections={sections} title={title} />

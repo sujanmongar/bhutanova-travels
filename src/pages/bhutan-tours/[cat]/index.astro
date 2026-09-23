@@ -4,18 +4,24 @@ import Base from '../../../layouts/Base.astro';
 import TourCard from '../../../components/TourCard.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import { img, srcset } from '../../../config';
-import { TOURS } from '../../../utils';
+import BannerImg from '../../../components/BannerImg.astro';
+import Icon from '../../../components/Icon.astro';
+import { img } from '../../../config';
+import { TOURS, catPath } from '../../../utils';
 
 export async function getStaticPaths() {
-  const tours = await getCollection('tours');
-  return (await getCollection('categories')).map((cat) => ({ params: { cat: cat.id }, props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) } }));
+  const tours = (await getCollection('tours')).sort((a, b) => a.data.days - b.data.days);
+  const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+  return cats.map((cat) => ({
+    params: { cat: cat.id },
+    props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id), others: cats.filter((c) => c.id !== cat.id) },
+  }));
 }
-const { cat, tours } = Astro.props;
+const { cat, tours, others } = Astro.props;
 ---
 <Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo}>
   <section class="banner">
-    <img src={img(cat.data.image, 1600)} srcset={srcset(cat.data.image)} sizes="100vw" alt="" width="1600" height="560" fetchpriority="high" />
+    <BannerImg src={cat.data.image} />
     <div>
       <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle]]} light />
       <h1>{cat.data.menuTitle}</h1>
@@ -26,14 +32,37 @@ const { cat, tours } = Astro.props;
   <section class="section">
     <div class="container">
       <h2 class="sr-only">{cat.data.menuTitle} packages</h2>
-      <p class="count t-meta">{tours.length} {tours.length === 1 ? 'package' : 'packages'} · each one can be tailored to your dates</p>
-      {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
-        : <p class="t-lead">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
+      {tours.length ? (
+        <>
+          <p class="count t-label subtle">{tours.length === 1 ? '1 package, tailored to your dates' : `${tours.length} packages · each can be tailored to your dates`}</p>
+          <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
+        </>
+      ) : <p class="t-body muted">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
     </div>
   </section>
+
+  {others.length > 0 && (
+    <nav class="section section--grey cats" aria-labelledby="other-themes">
+      <div class="container">
+        <div class="sh" data-reveal><h2 id="other-themes">Other ways to see Bhutan</h2></div>
+        <ul data-reveal="stagger">
+          {others.map((c) => (
+            <li><a class="t-title" href={catPath(c.id)}><img src={img(c.data.image, 168, 126)} alt="" width="56" height="42" loading="lazy" decoding="async" /><span>{c.data.menuTitle}</span><Icon name="arrow-right" /></a></li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  )}
   <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>
 <style>
-  .count { margin-bottom: 28px; }
-  .tours { row-gap: 48px; }
+  .count { margin-bottom: var(--space-8); }
+  .tours { row-gap: var(--space-12); }
+  /* Same theme list as /bhutan-tours/ */
+  .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0 var(--space-10); list-style: none; margin: 0; padding: 0; }
+  .cats a { display: flex; align-items: center; gap: var(--space-4); min-height: 72px; padding: var(--space-3) 0; border-top: 1px solid var(--border-dark); color: var(--ink); transition: color var(--dur-1); }
+  .cats img { width: 56px; height: 42px; border-radius: var(--r-sm); object-fit: cover; background: var(--s-50); }
+  .cats span { flex: 1; }
+  .cats a :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
+  @media (hover: hover) { .cats a:hover span { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; } .cats a:hover :global(.icon) { translate: 3px 0; color: var(--ink); } }
 </style>

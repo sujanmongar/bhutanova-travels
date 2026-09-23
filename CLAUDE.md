@@ -1,0 +1,80 @@
+# Bhutanova Travels — project rules
+
+Astro static site, content in Sanity (project `234ghw8x`, dataset `production`, Studio in `studio/`).
+Live at https://bhutanova-travels.pages.dev, deployed by GitHub Actions on push and on every Sanity publish.
+
+## Design system — follow it in every task
+
+The single source of truth is `src/styles/global.css` (tokens + role classes). `/styleguide/` renders it live.
+Never invent a size, line height, letter spacing, weight or spacing value in a component.
+
+### Fonts
+- **Libre Caslon Text** (serif, 400; quotes 400 italic — the family has no 500) — titles and headings only, nothing else.
+- **Inter** (sans, 400 / 500 / 600) — everything else: body text, captions, labels, buttons, links, chips, nav, prices.
+- Serif chosen by the user (Libre Caslon Text); sans = Inter. Stacks fall back like Perplexity's
+  (`ui-serif, Georgia, Cambria` / `ui-sans-serif, system-ui, …`).
+
+### Typography — Typescale: 18px base, Minor Third (1.200) — use a role, never raw values
+The user's chosen scale (typescale.com, 18px, 1.200). Desktop ≥768px: h1–h6 = 18px × 2.986 · 2.488 · 2.074 · 1.728 · 1.44 · 1.2
+(53.7 · 44.8 · 37.3 · 31.1 · 25.9 · 21.6px). Phones: same 18px base on Major Second (1.125): 32.4 · 28.8 · 25.6 · 22.8 · 20.3 · 18px.
+h1–h6 tokens keep these default sizes — never shift them.
+Tokens are written as `calc(var(--fs-base) * ratio)` so the scale stays exact. Headings: line height 1.15, tracking −0.022em,
+serif 400. Body: 18px, line height 1.6. **Floor 16px**: UI controls and small text are 16 (the scale's 0.833 step = 15px is not used).
+Headings run in strict order h1 > … > h6. A heading element uses its own level's style — never another LEVEL's class
+(no `<h2 class="t-h1">`); `.t-card` / `.t-title` may go on any heading. Chrome titles that aren't content sections
+(footer columns, sidebar widgets, dialog titles) are styled `<p>`, not `<h2>`, so they can't break the heading order.
+
+| Role | Class | Phones | ≥768px | Use |
+|---|---|---|---|---|
+| H1 | `h1`, `.hero-title` | 32.4 | 53.7 | Hero headline and page titles |
+| H2 | `.t-h2` | 28.8 | 44.8 | Scale default — kept for reference; section titles don't use it |
+| Section title | `h2` | 25.6 | 37.3 | Every section title — an `<h2>` element rendered at the **H3** size (user's call) |
+| H3 | `h3` | 25.6 | 37.3 | Sub-sections (article h3 steps down to H4 size so it sits under the h2) |
+| H4 | `h4` | 22.8 | 31.1 | Rare |
+| Card title | `.t-card` | 20.3 (h5) | 21.6 (h6) | Tour, blog, category, reason cards; dialog titles — one step less on desktop because Libre Caslon runs large |
+| H6 / Item title | `h6` / `.t-title` | 18 | 21.6 | FAQs, widgets, footer column titles |
+| Quote | `.t-quote` | 20.3 | 25.9 | Pull quotes (serif italic). Review text on the homepage is Inter 400 at the H6 size (owner's call) |
+| **Body** | `.t-body` | **18** | **18** | Reading text and every description |
+| Caption | `.t-caption` | 16 | 16 | Small print, secondary text |
+| Label | `.t-label` | 16 | 16 | Nav, breadcrumbs, dates, tags, checklists, form labels (500) |
+| Button | `.t-button` | 16 | 16 | Button text (600). Button visuals keep their variants — only the text style is shared |
+| Link | `.t-link` | 16 | 16 | "Learn more / see all" — same text style as buttons (600) |
+| Price | `.t-price` | 20.3 | 25.9 | Tour page price box and sticky bar — sans 600, never serif. Tour cards show the price at Body size, bold, on the duration line |
+
+Uppercase variant: add `.t-caps` to a label/link (uppercase, +0.08em) — the only allowed tracking change.
+Hierarchy inside a section: title → description (Body 18) → checklists/meta (16). Step secondary text down; never enlarge the
+description. Apply a role with its class in markup; where impossible use the role's full `--fs/--lh/--ls/--fw` set together.
+Colour is separate from type: `.muted` (text-2), `.subtle` (text-3). Icon sizing is exempt.
+Icons: one library, Phosphor, as SVG files in `src/icons` via `<Icon name>` (no icon fonts, no CDN). Feature/contact/fact
+icons are **Regular** (outline, one colour, no duotone fill, no orange fill, no tinted box or circle behind them). UI glyphs
+(arrows, carets, close, menu, check, search) are **Bold**. Brand and social logos are the only exceptions.
+
+### Spacing — 8-point scale only
+Tokens `--space-1` 4 · `--space-2` 8 · `--space-3` 12 · `--space-4` 16 · `--space-6` 24 · `--space-8` 32 ·
+`--space-10` 40 · `--space-12` 48 · `--space-16` 64 · `--space-20` 80 · `--space-24` 96 · `--space-32` 128.
+Semantic (mobile / ≥768px): `--gutter` 16/32 page edge · `--stack` 32/48 section title → content ·
+`--section` 64/96 between sections · `--card-pad` 24 · `--grid-gap` 24/32.
+Every margin, padding, gap and spacing offset uses one of these. Only 1–2px borders/hairlines are exempt.
+
+### Look
+Editorial, not template: left-aligned sentence-case headings, hairline rules instead of boxed cards, photography not
+illustration.
+Sections alternate white and light grey (`.section--grey`), set per block in Sanity.
+Buttons: `.btn` variants only (primary navy, light, outline, soft, on-dark), pill, 16/600 text, **no arrow icons inside
+buttons** (text links `.link-more` keep their small arrow). Mobile first: design at 375px, then 768, then 1024/1200.
+Images: sharp but right-sized — `img(src, w, h)` / `srcset(src, widths, ratio)` make the CDN return exactly the frame
+(centred crop) for fixed-aspect frames; accurate `sizes`; lazy except the LCP image; page banners use `BannerImg`.
+Corners: every card and card image uses `--radius` (36px) + `corner-shape: squircle` (Apple-style; plain rounded
+corners where unsupported). Small things keep small radii: inputs 12, thumbnails 12, badges 16, buttons full pill. Palette navy `--s-500` #162E44 + orange `--p-500` #FFA500 (orange is for fills/icons, never small text).
+Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curated", no exclamation marks, no Title Case.
+
+## Workflow
+- **Local first.** No `git commit` / `git push` without an explicit go-ahead.
+- **Sanity content goes in as drafts** (`drafts.<id>`), never straight to the published doc — publishing triggers a live
+  rebuild. `astro dev` shows drafts (read token in `.env`, gitignored); builds read published only. Go-live order: push
+  code first, then publish the draft.
+- `npx sanity deploy` (Studio schema only) is fine whenever a schema change needs it.
+- New CMS fields get real drafted content, never left empty.
+- One homepage section at a time; don't start the next until the user says so. The homepage order is the owner's
+  (set in Sanity): hero, about, popular tours, themes, why us, blogs, how booking works, reviews, FAQ, CTA, partners.
+- Verify in the browser at 1280 and 375 before reporting; restart the dev server after CSS or content changes (it caches).

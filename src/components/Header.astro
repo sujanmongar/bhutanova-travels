@@ -6,37 +6,42 @@ import { SITE, wa, ldJson } from '../config';
 import { TOURS, DESTINATIONS, catPath, tourPath } from '../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-// Only the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
+// Exactly the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
 const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const menuGuides = allGuides.filter((g) => g.data.inMenu);
-const guides = (menuGuides.length ? menuGuides : allGuides).slice(0, 5);
+const guides = menuGuides.length ? menuGuides : allGuides.slice(0, 5);
 const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
+// What to book, where, how to plan, who we are. The drawer and the footer's Explore list follow the same order.
 const nav = [
   { href: TOURS, label: 'Tours', all: 'All tour packages', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
-  {
-    href: '/travel-guide/',
-    label: 'Travel guide',
-    all: 'All travel guides',
-    children: guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })),
-  },
   {
     href: DESTINATIONS,
     label: 'Destinations',
     all: 'All destinations',
-    children: [{ href: '/about-bhutan/', label: 'Bhutan overview' }, ...destinations.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, label: d.data.title }))],
+    children: [{ href: '/about-bhutan/', label: 'About Bhutan' }, ...destinations.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, label: d.data.title }))],
+  },
+  {
+    href: '/travel-guide/',
+    label: 'Travel guide',
+    all: 'All travel guides',
+    children: [...guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.menuTitle ?? g.data.title })), { href: '/blog/', label: 'Blog' }],
   },
   {
     href: '/about/',
     label: 'About',
     children: [
-      { href: '/blog/', label: 'Blog' },
-      { href: '/#why-us', label: 'Why us' },
+      { href: '/about/', label: 'About us' },
+      { href: '/#why-us', label: 'Why travel with us' },
+      { href: '/contact/', label: 'Contact' },
       // Cancellation policy: page exists (noindex) but still has placeholder figures — link back in once real terms land.
     ],
   },
 ];
 const path = Astro.url.pathname;
-const active = (href: string) => (href === '/' ? path === '/' : href.startsWith('/#') ? false : path.startsWith(href));
+// A section is active on its own pages and on any of its children's (About Bhutan lights up Destinations).
+const active = (item: (typeof nav)[number]) => [item, ...item.children].some((l) => !l.href.startsWith('/#') && path.startsWith(l.href));
+// Tour pages have their own booking bar, and /contact/ is where the button goes.
+const showFab = !/^\/(contact\/|bhutan-tours\/[^/]+\/[^/]+\/)/.test(path);
 const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
 
 // A small client-side search: title + type + url for everything a visitor might look for.
@@ -44,7 +49,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
 const tours = await getCollection('tours');
 const posts = await getCollection('blog');
 const searchIndex = [
-  { t: 'Discover Bhutan', k: 'Page', u: '/about-bhutan/' },
+  { t: 'About Bhutan', k: 'Page', u: '/about-bhutan/' },
   { t: 'About us', k: 'Page', u: '/about/' },
   { t: 'Contact', k: 'Page', u: '/contact/' },
   ...cats.map((c) => ({ t: c.data.menuTitle, k: 'Category', u: catPath(c.id) })),
@@ -62,22 +67,14 @@ const searchIndex = [
       <nav class="menu" aria-label="Main">
         <ul class="menu__list">
           {nav.map((item) => (
-            <li class:list={['menu__item', { 'has-sub': item.children }]}>
-              {item.children ? (
-                <>
-                  <a href={item.href} class:list={['menu__link', { 'is-active': active(item.href) }]} aria-current={path === item.href ? 'page' : undefined}>
-                    {item.label}<Icon name="chevron-up" class="chev" />
-                  </a>
-                  <ul class="sub__list">
-                    {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                    {item.all && <li><a href={item.href} class="sub__all">{item.all}<Icon name="arrow-right" /></a></li>}
-                  </ul>
-                </>
-              ) : (
-                <a href={item.href} class:list={['menu__link', { 'is-active': active(item.href) }]} aria-current={active(item.href) ? 'page' : undefined}>
-                  {item.label}
-                </a>
-              )}
+            <li class="menu__item has-sub">
+              <a href={item.href} class:list={['menu__link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children?.some((c) => c.href === item.href) ? 'page' : undefined}>
+                {item.label}<Icon name="chevron-up" class="chev" />
+              </a>
+              <ul class="sub__list">
+                {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                {item.all && <li><a href={item.href} class="sub__all t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+              </ul>
             </li>
           ))}
         </ul>
@@ -87,7 +84,7 @@ const searchIndex = [
            put and only swaps its icon, so opening/closing never moves anything else in the header. -->
       <div class="search-field" data-search-field>
         <label class="sr-only" for="search-q">Search tours, guides and articles</label>
-        <input id="search-q" class="search-field__input" type="search" placeholder="Search tours, guides, articles…" autocomplete="off" data-search-q />
+        <input id="search-q" class="search-field__input t-caption" type="search" placeholder="Search tours, guides, articles…" autocomplete="off" data-search-q />
       </div>
     </div>
 
@@ -102,7 +99,7 @@ const searchIndex = [
     </div>
 
     <div class="search-panel" data-search-panel hidden>
-      <p class="search__empty" data-search-empty hidden>No matches. Try a different word, or <a href="/contact/">ask us directly</a>.</p>
+      <p class="search__empty t-caption" data-search-empty hidden>No matches. Try a different word, or <a href="/contact/">ask us directly</a>.</p>
       <ul class="search__suggestions" data-search-results></ul>
     </div>
   </div>
@@ -110,48 +107,40 @@ const searchIndex = [
 <script type="application/json" id="search-index" set:html={ldJson(searchIndex)} />
 
 <!-- Mobile/tablet only: Enquire follows you down the page instead of living in the (now tighter) top bar. -->
-<a href="/contact/" class="btn btn--primary fab-enquire">Enquire</a>
+{showFab && <a href="/contact/" class="btn btn--primary fab-enquire">Enquire</a>}
 
 <!-- Mobile/tablet menu: native modal dialog → focus trap, Esc, inert page, backdrop for free.
      Links and CTAs sit in the lower half where the thumb rests. -->
 <dialog id="drawer" class="sheet drawer" aria-labelledby="drawer-t">
   <div class="sheet__in">
     <div class="sheet__head">
-      <p id="drawer-t" class="drawer__kicker">Menu</p>
+      <p id="drawer-t" class="drawer__kicker t-title">Menu</p>
       <button type="button" class="sheet__close" aria-label="Close menu" data-close><Icon name="close" /></button>
     </div>
     <nav aria-label="Main">
       <ul class="drawer__list">
         {nav.map((item, i) => (
           <li style={`--i:${i}`}>
-            {item.children ? (
-              <>
-                <div class="d-row">
-                  <a href={item.href} class:list={['d-link', { 'is-active': active(item.href) }]} aria-current={path === item.href ? 'page' : undefined}>{item.label}</a>
-                  <button type="button" class="d-toggle" aria-expanded={active(item.href) ? 'true' : 'false'} aria-controls={`d-sub-${i}`} data-toggle>
-                    <Icon name="chevron-up" class="chev" /><span class="sr-only">{item.label}: show all links</span>
-                  </button>
-                </div>
-                <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item.href)}>
-                  {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                  {item.all && <li class="d-sub__all"><a href={item.href}>{item.all}<Icon name="arrow-right" /></a></li>}
-                </ul>
-              </>
-            ) : (
-              <a href={item.href} class:list={['d-link', { 'is-active': active(item.href) }]} aria-current={active(item.href) ? 'page' : undefined}>
-                {item.label}
-              </a>
-            )}
+            <div class="d-row">
+              <a href={item.href} class:list={['d-link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children?.some((c) => c.href === item.href) ? 'page' : undefined}>{item.label}</a>
+              <button type="button" class="d-toggle" aria-expanded={active(item) ? 'true' : 'false'} aria-controls={`d-sub-${i}`} data-toggle>
+                <Icon name="chevron-up" class="chev" /><span class="sr-only">{item.label}: show all links</span>
+              </button>
+            </div>
+            <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item)}>
+              {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+              {item.all && <li class="d-sub__all"><a href={item.href} class="t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+            </ul>
           </li>
         ))}
       </ul>
     </nav>
     <div class="drawer__foot" style={`--i:${nav.length}`}>
-      <a class="drawer__mail" href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a>
+      <a class="drawer__mail t-caption" href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a>
       <div class="drawer__cta">
         <a class="btn btn--soft" href={tel}><Icon name="phone" />Call us</a>
         <a class="btn btn--soft" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp</a>
-        <a class="btn btn--primary btn--lg" href="/contact/">Enquire<Icon name="arrow-right" class="i-end" /></a>
+        <a class="btn btn--primary btn--lg" href="/contact/">Enquire</a>
       </div>
     </div>
   </div>
@@ -170,7 +159,7 @@ const searchIndex = [
     const t = e.target as Element;
     if (t === drawer || t.closest('[data-close], a')) drawer.close();
   });
-  addEventListener('resize', () => matchMedia('(min-width: 1200px)').matches && drawer.open && drawer.close());
+  addEventListener('resize', () => matchMedia('(min-width: 1024px)').matches && drawer.open && drawer.close());
 
   // Drawer: the chevron beside "Tours"/"Travel guide" expands its links; opening one closes the other.
   const toggles = [...drawer.querySelectorAll<HTMLButtonElement>('[data-toggle]')];
@@ -197,10 +186,18 @@ const searchIndex = [
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // The hero already has its own Enquire button — hide the floating one while any of the hero is on screen.
-  const fab = document.querySelector<HTMLAnchorElement>('.fab-enquire')!;
-  const hero = document.querySelector<HTMLElement>('.hero');
-  if (hero) new IntersectionObserver(([e]) => fab.classList.toggle('is-hidden', e.isIntersecting)).observe(hero);
+  // Floating Enquire hides while the hero (it has its own Enquire button) or the footer (same navy) is on screen.
+  // It stays hidden until this first check runs (.is-ready), so it never flashes over the hero on load.
+  const fab = document.querySelector<HTMLAnchorElement>('.fab-enquire');
+  if (fab) {
+    const over = new Set<Element>();
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => (e.isIntersecting ? over.add(e.target) : over.delete(e.target)));
+      fab.classList.toggle('is-hidden', over.size > 0);
+      fab.classList.add('is-ready');
+    });
+    document.querySelectorAll('.hero, .footer').forEach((el) => io.observe(el));
+  }
 
   // Search: a classic expand-in-place field (not a side panel) — the toggle button swaps its own icon and
   // never moves, so it always marks where to click to get back out. A small built-in index (see the JSON
@@ -244,9 +241,6 @@ const searchIndex = [
 </script>
 
 <style>
-  :global(.hide-sm) { display: none !important; }
-  @media (min-width: 768px) { :global(.hide-sm) { display: flex !important; } :global(.sm-only) { display: none !important; } }
-
   /* Bar */
   /* Glass bar. Over a hero/banner photo it starts transparent with white text, then frosts on scroll. */
   .nav {
@@ -258,14 +252,16 @@ const searchIndex = [
   /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
   .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
-    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff;
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff; --focus: #fff;
   }
+  /* White panels inside the bar keep the navy focus ring */
+  .sub__list, .search-panel { --focus: var(--s-500); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--s-800); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) :is(.burger, .icon-btn) { background: rgb(255 255 255 / .16); color: #fff; }
   @media (hover: hover) {
     :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); }
   }
-  .nav__in { position: relative; display: flex; align-items: center; gap: 8px; height: var(--header-h); }
+  .nav__in { position: relative; display: flex; align-items: center; gap: var(--space-2); height: var(--header-h); }
   .nav__logo { flex: none; transition: opacity var(--dur-2); }
   .nav__middle { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; }
   /* The menu fades out and the field fades in over the same space, instead of one instantly vanishing
@@ -273,9 +269,9 @@ const searchIndex = [
      filled the gap between them. An opacity crossfade never touches layout, so there's nothing to thrash. */
   .menu { transition: opacity var(--dur-2) var(--ease-out), visibility 0s; }
   .nav.is-searching .menu { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-2) var(--ease-out), visibility 0s var(--dur-2); }
-  .nav__cta { flex: none; display: flex; align-items: center; gap: 10px; }
+  .nav__cta { flex: none; display: flex; align-items: center; gap: var(--space-2); }
   .burger, .icon-btn {
-    display: grid; place-items: center; width: 44px; height: 44px; margin-right: -2px; border: 0; border-radius: 50%;
+    display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
     background: rgb(12 25 37 / .06); color: inherit; font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
   }
@@ -287,7 +283,7 @@ const searchIndex = [
   .nav.is-searching .nav__search :global(.i-open) { display: none; }
   .nav.is-searching .nav__search :global(.i-close) { display: block; }
   .menu { display: none; }
-  .nav__book { display: none; font-size: var(--fs-btn); padding-inline: 24px; --btn-h: 44px; }
+  .nav__book { display: none; padding-inline: var(--space-6); --btn-h: 44px; }
 
   /* Search field: sits over the same space the menu just faded out of, so opening/closing is a plain
      opacity crossfade — nothing here ever animates a layout property (width, max-width, display). */
@@ -300,8 +296,8 @@ const searchIndex = [
   .nav.is-searching .search-field { opacity: 1; pointer-events: auto; border-bottom-color: var(--border); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck).is-searching .search-field { border-bottom-color: rgb(255 255 255 / .35); }
   .search-field__input {
-    width: 100%; border: 0; background: none; color: inherit; font-family: var(--ff); font-size: var(--fs-body); line-height: var(--lh-body);
-    padding: 0 4px;
+    width: 100%; border: 0; background: none; color: inherit;
+    padding: 0 var(--space-1);
   }
   .search-field__input::placeholder { color: currentColor; opacity: .55; }
   .search-field__input:focus { outline: none; }
@@ -311,44 +307,46 @@ const searchIndex = [
   /* Results: a full-width panel under the whole bar, like a classic expanding search, not a side sheet. */
   .search-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1; background: #fff; border-top: 1px solid var(--border); box-shadow: var(--sh-lg); max-height: 70vh; overflow-y: auto; }
   .search-panel[hidden] { display: none; }
-  .search__empty { padding: 20px var(--gutter); font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
+  .search__empty { padding: var(--space-4) var(--gutter); color: var(--text-2); }
   .search__empty a { color: var(--s-500); font-weight: 600; text-decoration: underline 1px; text-underline-offset: 3px; }
-  .search__suggestions { list-style: none; margin: 0; padding: 4px calc(var(--gutter) - 4px) 8px; }
+  .search__suggestions { list-style: none; margin: 0; padding: var(--space-1) calc(var(--gutter) - var(--space-1)) var(--space-2); }
   /* :global — these rows are built with innerHTML at runtime, so Astro's per-component scoping never
      stamps them; an un-global'd selector here would silently match nothing. */
-  :global(.search__group) { padding-top: 12px; }
-  :global(.search__group-h) { padding: 0 12px 2px; font-size: var(--fs-meta); font-weight: 600; letter-spacing: var(--ls-meta); color: var(--text-3); }
+  :global(.search__group) { padding-top: var(--space-3); }
+  :global(.search__group-h) { padding: 0 var(--space-3) var(--space-1); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-3); }
   :global(.search__group ul) { list-style: none; margin: 0; padding: 0; }
   :global(.search__group a) {
-    display: block; min-height: 48px; padding: 12px; border-radius: var(--r-md);
-    font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 500; color: var(--ink); transition: background var(--dur-1);
+    display: block; min-height: 48px; padding: var(--space-3); border-radius: var(--r-md);
+    font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); color: var(--ink); transition: background var(--dur-1);
   }
   :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); }
   :global(.search__see-all) {
-    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; padding: 14px 12px;
-    border-top: 1px solid var(--border); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; color: var(--s-500);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); padding: var(--space-3);
+    border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--s-500);
   }
   :global(.search__see-all:hover) { color: var(--s-800); }
+  :global(.search__see-all .icon) { font-size: 11px; color: var(--p-700); }
 
   /* Mobile/tablet: Enquire floats over the page instead of squeezing into the bar. */
   .fab-enquire {
-    position: fixed; right: var(--gutter); bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 40;
-    font-size: var(--fs-btn); padding-inline: 24px; --btn-h: 44px; box-shadow: var(--sh-lg);
+    position: fixed; right: var(--gutter); bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); z-index: 40;
+    padding-inline: var(--space-6); --btn-h: 44px; box-shadow: var(--sh-lg);
   }
-  @media (min-width: 1200px) { .fab-enquire { display: none; } }
-  /* Hidden while the hero's own Enquire button is still on screen — no point floating a duplicate over it. */
+  @media (min-width: 1024px) { .fab-enquire { display: none; } }
+  /* Hidden over the hero and the footer (see the script). With JS on it waits for that first check. */
   .fab-enquire.is-hidden { display: none; }
+  @media (scripting: enabled) { .fab-enquire:not(.is-ready) { display: none; } }
   /* display:none (not a fade) — on mobile .menu is already hidden outright, so unlike the crossfade above
      there's nothing else animating here for this to clash with; it just frees the logo's width for the field. */
-  @media (max-width: 1199px) { .nav.is-searching .nav__logo { display: none; } }
+  @media (max-width: 1023px) { .nav.is-searching .nav__logo { display: none; } }
 
   /* Drawer (mobile/tablet) */
-  .drawer__kicker { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); }
-  .drawer__list { list-style: none; margin: 0 -12px; padding: 0; display: grid; gap: 2px; }
+  .drawer__kicker { color: var(--ink); }
+  .drawer__list { list-style: none; margin: 0 calc(var(--space-3) * -1); padding: 0; display: grid; gap: 0; }
   .d-row { display: flex; align-items: center; }
   .d-link {
-    flex: 1; display: flex; align-items: center; min-height: 60px; padding: 0 14px; border-radius: var(--r-md);
-    font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-caps); text-transform: uppercase; font-weight: 600; color: var(--ink);
+    flex: 1; display: flex; align-items: center; min-height: 60px; padding: 0 var(--space-3); border-radius: var(--r-md);
+    font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--ink); /* same as the desktop menu */
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
   .d-link:hover, .d-link:active { background: var(--surface); }
@@ -360,22 +358,22 @@ const searchIndex = [
   .d-toggle:hover, .d-toggle:active { background: var(--surface); }
   .d-toggle :global(.chev) { rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
   .d-toggle[aria-expanded='true'] :global(.chev) { rotate: 0deg; }
-  .d-sub { list-style: none; margin: 0 0 12px; padding: 0 14px; display: grid; }
+  .d-sub { list-style: none; margin: 0 0 var(--space-3); padding: 0 var(--space-3); display: grid; }
   .d-sub[hidden] { display: none; }
   .d-sub a {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 48px; padding: 10px 0;
-    font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 500; color: var(--text); transition: color var(--dur-1);
+    display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: 48px; padding: var(--space-2) 0;
+    color: var(--text); transition: color var(--dur-1);
   }
   .d-sub li + li { border-top: 1px solid var(--border); }
   .d-sub a:hover, .d-sub a:active { color: var(--ink); }
   .d-sub a[aria-current='page'] { font-weight: 600; color: var(--ink); }
-  .d-sub__all a { font-weight: 600; color: var(--s-500); }
+  .d-sub__all a { color: var(--s-500); }
   .d-sub__all :global(.icon) { font-size: 12px; color: var(--p-700); }
-  .drawer__foot { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
-  .drawer__mail { display: flex; align-items: center; gap: 10px; min-height: 44px; margin-bottom: 12px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
+  .drawer__foot { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--border); }
+  .drawer__mail { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-bottom: var(--space-3); color: var(--text-2); }
   .drawer__mail :global(.icon) { color: var(--s-300); }
-  .drawer__cta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .drawer__cta .btn { --btn-h: 52px; font-size: var(--fs-btn); }
+  .drawer__cta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+  .drawer__cta .btn { --btn-h: 52px; }
   .drawer__cta .btn--primary { grid-column: 1 / -1; --btn-h: 56px; }
   .drawer__cta :global(.icon) { font-size: 18px; }
   @keyframes d-in { from { opacity: 0; translate: 0 14px; } }
@@ -384,20 +382,20 @@ const searchIndex = [
   }
 
   /* Desktop */
-  @media (min-width: 1200px) {
+  @media (min-width: 1024px) {
     .burger, .drawer { display: none; }
     .nav__book { display: inline-flex; }
     .menu { display: block; }
-    .nav__middle { margin-right: 24px; }
-    .menu__list { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+    .nav__middle { margin-right: var(--space-6); }
+    .menu__list { display: flex; gap: var(--space-8); list-style: none; margin: 0; padding: 0; }
     .menu__item { position: relative; }
     .menu__link {
-      position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h);
-      font-size: var(--fs-meta); line-height: 1.3; letter-spacing: var(--ls-caps); text-transform: uppercase; font-weight: 500; color: inherit;
+      position: relative; display: flex; align-items: center; gap: var(--space-1); min-height: var(--header-h);
+      font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: inherit;
       transition: color var(--dur-1), opacity var(--dur-1);
     }
     .menu__link::after {
-      content: ''; position: absolute; left: 0; right: 0; bottom: 22px; height: 2px; border-radius: 2px; background: var(--p-500);
+      content: ''; position: absolute; left: 0; right: 0; bottom: var(--space-6); height: 2px; border-radius: 2px; background: var(--p-500);
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
     .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link::after { scale: 1 1; }
@@ -405,7 +403,7 @@ const searchIndex = [
     .menu :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
     .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link :global(.chev) { rotate: 0deg; }
     .sub__list {
-      display: none; position: absolute; top: calc(100% - 14px); left: -18px; min-width: 272px; margin: 0; padding: 8px; list-style: none;
+      display: none; position: absolute; top: calc(100% - var(--space-4)); left: calc(var(--space-4) * -1); min-width: 272px; margin: 0; padding: var(--space-2); list-style: none;
       background: #fff; border: 1px solid rgb(12 25 37 / .06); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     }
     .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .sub__list { display: block; --rise: -6px; animation: rise var(--dur-2) var(--ease-out); }
@@ -414,12 +412,12 @@ const searchIndex = [
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link :global(.chev) { rotate: 180deg; }
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link:not(.is-active)::after { scale: 0 1; }
     .sub__list a {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: var(--r-sm);
-      font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: background var(--dur-1), color var(--dur-1);
+      display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--r-sm);
+      color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
     .sub__list a:hover { background: var(--surface); color: var(--ink); }
     .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; background: var(--p-50); }
-    .sub__all { font-weight: 600; color: var(--s-500) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: 4px; }
+    .sub__all { color: var(--s-500) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: var(--space-1); }
     .sub__all :global(.icon) { font-size: 11px; color: var(--p-700); }
   }
 </style>

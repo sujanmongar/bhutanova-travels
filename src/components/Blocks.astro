@@ -12,11 +12,11 @@ import CategoryTiles from './blocks/CategoryTiles.astro';
 import LatestPosts from './blocks/LatestPosts.astro';
 import Reviews from './blocks/Reviews.astro';
 import FaqBlock from './blocks/FaqBlock.astro';
+import BookingSteps from './blocks/BookingSteps.astro';
 import Partners from './blocks/Partners.astro';
 import CtaBanner from './CtaBanner.astro';
 import WhatsAppCta from './WhatsAppCta.astro';
 import GithubSlugger from 'github-slugger';
-import { focal } from '../config';
 
 interface Props { sections: Array<Record<string, any>>; title: string }
 const { sections, title } = Astro.props;
@@ -26,9 +26,9 @@ const hasH1 = ['pageBanner', 'hero'].includes(sections[0]?._type);
 const slugger = new GithubSlugger();
 ['main', 'drawer', 'plan', 'whatsapp', 'rail-quotes'].forEach((id) => slugger.slug(id));
 
-const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, faqList: FaqBlock, partners: Partners };
+const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, faqList: FaqBlock, partners: Partners };
 // The two older components take slightly different prop names.
-const cta = (b: any) => ({ title: b.heading, text: b.text ?? '', cta: b.buttonLabel, href: b.buttonLink, image: b.image?.url, position: focal(b.image?.hotspot) });
+const cta = (b: any) => ({ title: b.heading, text: b.text ?? '', cta: b.buttonLabel, href: b.buttonLink, image: b.image?.url, hotspot: b.image?.hotspot });
 const whatsapp = (b: any) => ({ title: b.heading, ...(b.text && { text: b.text }), about: b.topic, id: 'whatsapp' });
 ---
 {!hasH1 && <h1 class="sr-only">{title}</h1>}

@@ -9,23 +9,25 @@ const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-
 ---
 <article class="bc">
   <div class="bc__img">
-    <img src={img(d.image, 800)} srcset={srcset(d.image, [400, 600, 800, 1200])} sizes="(min-width:1200px) 360px, (min-width:768px) 45vw, 84vw"
+    <img src={img(d.image, 800, 533)} srcset={srcset(d.image, [400, 600, 800, 1200], 3 / 2)}
+      sizes="(min-width:1200px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)"
       alt="" width="800" height="533" loading="lazy" decoding="async" />
   </div>
-  <p class="bc__meta">{meta}</p>
-  <h3><a href={href}>{d.title}</a></h3>
-  <p class="bc__ex">{d.excerpt}</p>
+  <p class="bc__meta t-label">{meta}</p>
+  <h3 class="t-card"><a href={href}>{d.title}</a></h3>
+  <p class="bc__ex t-body">{d.excerpt}</p>
 </article>
 <style>
   .bc { position: relative; display: flex; flex-direction: column; height: 100%; }
-  .bc__img { aspect-ratio: 3 / 2; margin-bottom: 16px; border-radius: var(--radius); background: var(--s-50); overflow: hidden; clip-path: inset(0 round var(--radius)); }
+  .bc__img { aspect-ratio: 3 / 2; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; }
+  @supports not (corner-shape: squircle) { .bc__img { clip-path: inset(0 round var(--radius)); } }
   .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
-  .bc__meta { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
-  .bc h3 { margin: 6px 0 8px; font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
+  .bc__meta { color: var(--text-3); }
+  .bc h3 { margin: var(--space-2) 0 var(--space-3); }
   .bc h3 a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
   .bc h3 a:focus-visible { outline: none; }
-  .bc:has(h3 a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); }
-  .bc__ex { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .bc:has(h3 a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); corner-shape: squircle; }
+  .bc__ex { color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   @media (hover: hover) {
     .bc:hover .bc__img img { scale: 1.03; }
     .bc:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; }

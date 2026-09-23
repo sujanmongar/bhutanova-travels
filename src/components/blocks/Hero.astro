@@ -4,10 +4,17 @@ interface Props { heading: string; text?: string; image?: BlockImage; primaryLab
 const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Enquire' } = Astro.props;
 ---
 <section class="hero">
-  {image?.url && <img src={img(image.url, 1600)} srcset={srcset(image.url)} sizes="100vw" alt={image.alt ?? ''} width="1600" height="900" style={`object-position:${focal(image.hotspot)}`} fetchpriority="high" decoding="async" />}
+  {/* Phones: the frame is portrait (about 9:16), so the CDN sends a portrait crop kept around the editor's focal point;
+     a landscape file drawn with cover there would be stretched about 2x. From 768px, the landscape photo. */}
+  {image?.url && (
+    <picture>
+      <source media="(max-width: 767px) and (orientation: portrait)" sizes="100vw" srcset={srcset(image.url, [480, 800, 1200, 1600], 9 / 16, image.hotspot)} />
+      <img src={img(image.url, 1600)} srcset={srcset(image.url)} sizes="100vw" alt={image.alt ?? ''} width="1600" height="900" style={`object-position:${focal(image.hotspot)}`} fetchpriority="high" decoding="async" />
+    </picture>
+  )}
   <div class="container hero__in">
     <h1 class="hero-title">{heading}</h1>
-    {text && <p class="hero__line">{text}</p>}
+    {text && <p class="hero__line t-body">{text}</p>}
     <div class="hero__cta">
       <a class="btn btn--light btn--lg" href="/bhutan-tours/">{primaryLabel}</a>
       <a class="btn btn--on-dark btn--lg" href="/contact/">{secondaryLabel}</a>
@@ -17,16 +24,16 @@ const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = '
 
 <style>
   .hero { position: relative; height: min(88svh, 760px); min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
-  .hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+  .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
   .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
-  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: 24px; padding-bottom: max(40px, env(safe-area-inset-bottom)); }
-  .hero__line { max-width: 48ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: #fff; }
-  .hero__cta { display: flex; flex-wrap: wrap; gap: 16px; }
-  @media (min-width: 768px) { .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); } .hero__in { padding-bottom: 56px; } }
-  @media (min-width: 1200px) { .hero { height: min(90svh, 820px); } .hero__in { padding-bottom: 72px; } }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: var(--space-6); padding-bottom: max(var(--space-10), env(safe-area-inset-bottom)); }
+  .hero__line { max-width: 48ch; color: #fff; }
+  .hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+  @media (min-width: 768px) { .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); } .hero__in { padding-bottom: var(--space-16); } }
+  @media (min-width: 1200px) { .hero { height: min(90svh, 820px); } .hero__in { padding-bottom: var(--space-20); } }
   @media (prefers-reduced-motion: no-preference) {
-    .hero > img { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
+    .hero img { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
     .hero-title { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
     .hero__line { --rise: 12px; animation: rise 800ms var(--ease-out) 280ms backwards; }
     .hero__cta { animation: fade 500ms var(--ease-out) 360ms backwards; }

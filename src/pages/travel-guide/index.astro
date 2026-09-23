@@ -1,27 +1,30 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import BannerImg from '../../components/BannerImg.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import Icon from '../../components/Icon.astro';
-import { img, srcset } from '../../config';
 import { slug } from '../../utils';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const groups = [...new Set(guides.map((g) => g.data.group))];
 const hero = 'photo-1532918235359-7671f525386d';
+// The FAQ guide's questions are its h3s, so the count below always matches the page.
+const faqs = guides.find((g) => g.id === 'travel-faqs');
+const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).length : 0;
 ---
-<Base title="Bhutan Travel Guide – Visa, SDF, Weather & Packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={hero}>
+<Base title="Bhutan travel guide – visa, SDF, weather & packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={hero}>
   <section class="banner">
-    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Prayer flags on a mountain pass" width="1600" height="700" fetchpriority="high" />
-    <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1></div>
+    <BannerImg src={hero} alt="Prayer flags on a mountain pass" />
+    <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1><p class="banner__line">Visas, costs, seasons and what to expect: everything to plan a trip to Bhutan.</p></div>
   </section>
 
   <nav class="jump" aria-label="Guide topics">
-    <div class="container jump__in">{groups.map((g) => <a href={`#${slug(g)}`}>{g}</a>)}</div>
+    <div class="container jump__in">{groups.map((g) => <a class="t-label" href={`#${slug(g)}`}>{g}</a>)}</div>
   </nav>
 
-  {groups.map((g) => (
-    <section class="section" id={slug(g)}>
+  {groups.map((g, i) => (
+    <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(g)}>
       <div class="container">
         <div class="sh" data-reveal><h2>{g}</h2></div>
         <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" />)}</div>
@@ -29,21 +32,35 @@ const hero = 'photo-1532918235359-7671f525386d';
     </section>
   ))}
 
-  <section class="section section--grey">
+  <section class="section">
     <div class="container">
       <div class="sh" data-reveal>
         <h2>Still have a question?</h2>
-        <p>Thirty of the questions guests ask us most, answered in one place — visas, money, altitude, food, wifi and the rest.</p>
+        <p>{asked > 0 && `The ${asked} questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest. `}If yours is not there, ask a trip planner in Thimphu. We reply within 24 hours.</p>
       </div>
-      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>
+      <div class="ask" data-reveal>
+        <a class="btn btn--primary" href="/contact/">Ask a trip planner</a>
+        {faqs && <a class="link-more" href={`/travel-guide/${faqs.id}/`}>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>}
+      </div>
     </div>
   </section>
 </Base>
 <style>
   .jump { position: sticky; top: var(--header-h); z-index: 20; background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-  .jump__in { display: flex; gap: 28px; overflow-x: auto; scrollbar-width: none; }
-  .jump a { flex: none; display: inline-flex; align-items: center; min-height: 52px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text-2); transition: color var(--dur-1); }
+  .jump__in { display: flex; gap: var(--space-6); overflow-x: auto; scrollbar-width: none; }
+  .jump a { flex: none; display: inline-flex; align-items: center; min-height: 52px; color: var(--text-2); transition: color var(--dur-1); }
   .jump a:hover { color: var(--ink); text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
-  .guides { row-gap: 40px; }
-  section[id] { scroll-margin-top: calc(var(--header-h) + 64px); }
+  .guides { row-gap: var(--space-10); }
+  /* Phones: each group is a swipe row instead of a long stack of cards */
+  @media (max-width: 767px) {
+    .guides {
+      grid-auto-flow: column; grid-auto-columns: min(84%, 340px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+      margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter); scroll-padding-inline: var(--gutter); /* room for focus rings */
+    }
+    .guides::-webkit-scrollbar { display: none; }
+    .guides > :global(*) { scroll-snap-align: start; }
+  }
+  /* html scroll-padding already clears the header; this only clears the jump bar, so a group lands right under it */
+  section[id] { scroll-margin-top: var(--space-10); }
+  .ask { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-8); }
 </style>
