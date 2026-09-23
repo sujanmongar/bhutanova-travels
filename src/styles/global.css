@@ -52,8 +52,9 @@
      h1       page titles                quote  pull quotes, featured review
      h2       section headings           lead   section intros, standfirsts
      h3       sub-sections, prose h2     body / prose / small / meta
-     Rules: lead ≤ title (descriptions never outsize titles); quote a step below h2; labels use title (sans), not the serif.
-     Values below are MOBILE; tablet and desktop override further down. */
+     Base text is 18px at every width. Steps: meta 14 · small 16 · body/title 18 · lead 19–20 · h3 20–24 · …
+     Rules: card/list text uses small (below its title); lead only for intros under a big heading; quote a step below h2;
+     labels use title (sans), not the serif. Values below are MOBILE; tablet and desktop override further down. */
   --ff: 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ff-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
   --ff-display: var(--ff-serif);
@@ -61,14 +62,14 @@
   --fs-h1: 2rem;          --lh-h1: 1.12;       --ls-h1: -0.005em;
   --fs-h2: 1.625rem;      --lh-h2: 1.2;        --ls-h2: 0;
   --fs-h3: 1.25rem;       --lh-h3: 1.32;       --ls-h3: 0;
-  --fs-title: 1.0625rem;  --lh-title: 1.4;     --ls-title: -0.005em;
+  --fs-title: 1.125rem;   --lh-title: 1.4;     --ls-title: -0.005em;
   --fs-quote: 1.3125rem;  --lh-quote: 1.42;    --ls-quote: 0;
-  --fs-lead: 1.0625rem;   --lh-lead: 1.65;
-  --fs-body: 1rem;        --lh-body: 1.7;      --ls-body: 0;
-  --fs-prose: 1.0625rem;  --lh-prose: 1.75;
-  --fs-small: 0.9375rem;  --lh-small: 1.6;
-  --fs-meta: 0.8125rem;   --lh-meta: 1.45;     --ls-meta: 0.01em;
-  --fs-btn: 0.9375rem;
+  --fs-lead: 1.1875rem;   --lh-lead: 1.55;
+  --fs-body: 1.125rem;    --lh-body: 1.65;     --ls-body: 0;
+  --fs-prose: var(--fs-body); --lh-prose: 1.7;
+  --fs-small: 1rem;       --lh-small: 1.6;
+  --fs-meta: 0.875rem;    --lh-meta: 1.45;     --ls-meta: 0.01em;
+  --fs-btn: 1rem;
   /* Aliases kept for older rules */
   --fs-hero: var(--fs-display); --lh-hero: var(--lh-display); --ls-hero: var(--ls-display); --fw-hero: 600;
   --fs-sub: var(--fs-h3); --lh-sub: var(--lh-h3); --ls-sub: var(--ls-h3);
@@ -83,11 +84,10 @@
     --fs-h1: 2.5rem;        --lh-h1: 1.1;
     --fs-h2: 1.875rem;      --lh-h2: 1.18;
     --fs-h3: 1.375rem;      --lh-h3: 1.3;
-    --fs-title: 1.125rem;   --lh-title: 1.35;
+    --lh-title: 1.35;
     --fs-quote: 1.5rem;     --lh-quote: 1.38;
-    --fs-lead: 1.0625rem;   --lh-lead: 1.6;
-    --fs-meta: 0.875rem;
-    --lh-body: 1.65;
+    --fs-lead: 1.25rem;     --lh-lead: 1.5;
+    --lh-body: 1.6;
   }
 }
 @media (min-width: 1200px) {
@@ -98,9 +98,6 @@
     --fs-h2: 2.25rem;       --lh-h2: 1.15;       --ls-h2: -0.005em;
     --fs-h3: 1.5rem;        --lh-h3: 1.28;       --ls-h3: 0;
     --fs-quote: 1.625rem;   --lh-quote: 1.35;    --ls-quote: 0;
-    --fs-lead: 1.125rem;    --lh-lead: 1.6;
-    --lh-body: 1.6;
-    --fs-prose: 1.125rem;   --lh-prose: 1.7;
   }
 }
 
@@ -194,7 +191,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 }
 .btn .i-end { font-size: .85em; transition: translate var(--dur-2) var(--ease-out); }
 .btn--sm { --btn-h: 40px; padding: 0 18px; font-size: .875rem; }
-.btn--lg { --btn-h: 56px; padding: 0 28px; font-size: 1rem; }
+.btn--lg { --btn-h: 56px; padding: 0 28px; }
 .btn--block { width: 100%; }
 @media (min-width: 1200px) { .btn { --btn-h: 46px; } .btn--sm { --btn-h: 38px; } .btn--lg { --btn-h: 52px; } }
 
@@ -240,7 +237,8 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .item h3 { margin-bottom: 8px; }
 .item p { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); max-width: 44ch; }
 .items { display: grid; gap: 28px 40px; list-style: none; margin: 0; padding: 0; }
-@media (min-width: 768px) { .items--2 { grid-template-columns: 1fr 1fr; } .items--3 { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .items--2, .items--3 { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1200px) { .items--3 { grid-template-columns: repeat(3, 1fr); } }
 
 /* ---------- Page banner (inner pages) ---------- */
 .banner {
@@ -301,7 +299,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .input:hover { border-color: var(--text-2); }
 .input:focus { outline: none; border-color: var(--s-500); box-shadow: var(--ring); }
 textarea.input { min-height: 120px; resize: vertical; }
-@media (min-width: 1200px) { .input { min-height: 46px; font-size: .9375rem; } }
+@media (min-width: 1200px) { .input { min-height: 46px; } }
 
 /* ---------- Sheet: native <dialog>; bottom sheet on phones, side sheet from 768px ---------- */
 .sheet {

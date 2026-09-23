@@ -2,6 +2,7 @@
 import { getCollection, render } from 'astro:content';
 import Article from '../../layouts/Article.astro';
 import Icon from '../../components/Icon.astro';
+import BlogCard from '../../components/BlogCard.astro';
 import PlanCta from '../../components/PlanCta.astro';
 export async function getStaticPaths() {
   const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
@@ -10,6 +11,9 @@ export async function getStaticPaths() {
 const { guide, guides } = Astro.props;
 const { Content, headings } = await render(guide);
 const toc = headings.filter((h) => h.depth === 2);
+// Three more guides to read next: the rest of this section first, then the start of the list.
+const rest = guides.filter((g) => g.id !== guide.id);
+const related = [...rest.filter((g) => g.data.group === guide.data.group), ...rest.filter((g) => g.data.group !== guide.data.group)].slice(0, 3);
 ---
 <Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel Guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
   <Content />
@@ -26,12 +30,12 @@ const toc = headings.filter((h) => h.depth === 2);
   </Fragment>
   <section class="section section--grey" slot="after">
     <div class="container">
-      <div class="sh"><h2>More travel guides</h2></div>
-      <ul class="more" data-reveal="stagger">
-        {guides.filter((g) => g.id !== guide.id).map((g) => (
-          <li><a href={`/travel-guide/${g.id}/`}><span><b>{g.data.title}</b><span>{g.data.excerpt}</span></span><Icon name="chevron-right" class="go" /></a></li>
-        ))}
-      </ul>
+      <div class="sh sh--row" data-reveal>
+        <h2>More travel guides</h2>
+        <div class="sh__act"><a class="link-more" href="/travel-guide/">All guides<Icon name="arrow-right" /></a></div>
+      </div>
+      <div class="grid-3 more" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" />)}</div>
+      <a class="link-more m-only" href="/travel-guide/">All guides<Icon name="arrow-right" /></a>
     </div>
   </section>
 </Article>
@@ -51,12 +55,6 @@ const toc = headings.filter((h) => h.depth === 2);
   .toc a:hover, .toc a[aria-current] { color: var(--ink); border-left-color: var(--p-500); }
   .toc a[aria-current] { font-weight: 600; }
   @media (max-width: 1023px) { .toc { display: none; } }
-  .more { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
-  @media (min-width: 768px) { .more { grid-template-columns: 1fr 1fr; gap: 16px; } }
-  .more a { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; height: 100%; padding: 18px 20px; background: #fff; border-radius: var(--radius); box-shadow: var(--sh-xs); transition: box-shadow var(--dur-3) var(--ease-out), translate var(--dur-3) var(--ease-out); }
-  .more a > span { display: grid; gap: 4px; }
-  .more b { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; color: var(--ink); }
-  .more a > span > span { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
-  .more :global(.go) { color: var(--s-300); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
-  @media (hover: hover) { .more a:hover { box-shadow: var(--sh-md); translate: 0 -2px; } .more a:hover :global(.go) { translate: 3px 0; color: var(--s-500); } }
+  .more { row-gap: 40px; }
+  .m-only { margin-top: 28px; }
 </style>

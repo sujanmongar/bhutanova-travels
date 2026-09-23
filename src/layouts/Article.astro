@@ -37,7 +37,7 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
   .post { padding-block: 32px var(--section); }
   .ah, .body { max-width: 760px; margin-inline: auto; }
   .ah :global(.crumbs) { margin-bottom: 16px; }
-  .lede { margin-top: 14px; max-width: 60ch; font-size: calc(var(--fs-prose) + .125rem); line-height: 1.55; color: var(--text-2); }
+  .lede { margin-top: 14px; max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
   .meta { margin: 16px 0 28px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
   .meta b { font-weight: 600; color: var(--text-2); }
   .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
