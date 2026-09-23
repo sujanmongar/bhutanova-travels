@@ -11,8 +11,9 @@ const curl = (s: string, prev = ' ') =>
 
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
-/** Portable Text → HTML. h2/h3 get ids from the same slugger Astro's markdown used, so TOC anchors stay stable. */
-export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger()) {
+/** Portable Text → HTML. h2/h3 get ids from the same slugger Astro's markdown used, so TOC anchors stay stable.
+ *  `shift` pushes those headings a level down (h2 → h3) when the block already carries its own heading. */
+export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift = 0) {
   blocks = structuredClone(blocks);
   for (const b of blocks) {
     let prev = ' ';
@@ -26,8 +27,9 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger()) {
   const heading = (depth: 2 | 3) => ({ children, value }: any) => {
     const text = value.children.map((c: any) => c.text).join('');
     const slug = slugger.slug(text);
+    const level = Math.min(6, depth + shift);
     headings.push({ depth, slug, text });
-    return `<h${depth} id="${slug}">${children}</h${depth}>`;
+    return `<h${level} id="${slug}">${children}</h${level}>`;
   };
   const html = toHTML(blocks, {
     components: {

@@ -25,6 +25,7 @@ const { cat, tours } = Astro.props;
 
   <section class="section">
     <div class="container">
+      <h2 class="sr-only">{cat.data.menuTitle} packages</h2>
       <p class="count t-meta">{tours.length} {tours.length === 1 ? 'package' : 'packages'} · each one can be tailored to your dates</p>
       {tours.length ? <div class="grid-3 tours">{tours.map((t, i) => <TourCard tour={t} eager={i < 3} />)}</div>
         : <p class="t-lead">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
