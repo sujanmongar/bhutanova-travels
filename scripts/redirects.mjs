@@ -14,11 +14,14 @@ for (const cat of readdirSync(join(DIST, 'bhutan-tours'))) {
   for (const tour of readdirSync(dir)) {
     if (!statSync(join(dir, tour)).isDirectory()) continue;
     const old = tour.replace(/^\d+-days-/, '');
-    lines.push(`/tours/${old}/  /bhutan-tours/${cat}/${tour}/  301`);
+    // Both spellings: a placeholder/static rule only matches the exact path it is written as.
+    lines.push(`/tours/${old}  /bhutan-tours/${cat}/${tour}/  301`, `/tours/${old}/  /bhutan-tours/${cat}/${tour}/  301`);
   }
 }
 lines.push(
-  '/tours/category/:cat  /bhutan-tours/:cat  301',
+  '/tours/category/:cat  /bhutan-tours/:cat/  301',
+  '/tours/category/:cat/  /bhutan-tours/:cat/  301',
+  '/tours  /bhutan-tours/  301',
   '/tours/  /bhutan-tours/  301',
   '/tours/*  /bhutan-tours/  301', // a tour that has since been renamed, moved or retired
 );
@@ -29,7 +32,7 @@ const GUIDES = {
   '/travel-guide/etiquette-health-and-safety/': '/travel-guide/cultural-etiquette/',
 };
 for (const [from, to] of Object.entries(GUIDES)) {
-  if (existsSync(join(DIST, to.replace(/^\/|\/$/g, ''), 'index.html'))) lines.push(`${from}  ${to}  301`);
+  if (existsSync(join(DIST, to.replace(/^\/|\/$/g, ''), 'index.html'))) lines.push(`${from.replace(/\/$/, '')}  ${to}  301`, `${from}  ${to}  301`);
 }
 
 const custom = 'public/_redirects';
