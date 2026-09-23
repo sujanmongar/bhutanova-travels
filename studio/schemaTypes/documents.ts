@@ -151,6 +151,7 @@ export const guide = defineType({
       validation: (r) => r.required(),
     }),
     defineField({name: 'order', title: 'Position', type: 'number', group: 'content', initialValue: 99, description: 'Lower numbers appear first.'}),
+    defineField({name: 'inMenu', title: 'Show in the menu', type: 'boolean', group: 'content', initialValue: false, description: 'The header menu shows up to six guides — tick this for the ones travellers need most.'}),
     defineField({name: 'updated', title: 'Last reviewed', type: 'date', group: 'content', description: 'Update this whenever you check the facts — visitors see it and Google favours fresh guides.', validation: (r) => r.required()}),
     defineField({name: 'body', title: 'Body', type: 'blockContent', group: 'content'}),
     seo,

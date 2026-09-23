@@ -5,10 +5,11 @@ import TourCard from '../../../components/TourCard.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import { img, srcset } from '../../../config';
+import { TOURS } from '../../../utils';
 
 export async function getStaticPaths() {
   const tours = await getCollection('tours');
-  return (await getCollection('categories')).map((cat) => ({ params: { id: cat.id }, props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) } }));
+  return (await getCollection('categories')).map((cat) => ({ params: { cat: cat.id }, props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) } }));
 }
 const { cat, tours } = Astro.props;
 ---
@@ -16,7 +17,7 @@ const { cat, tours } = Astro.props;
   <section class="banner">
     <img src={img(cat.data.image, 1600)} srcset={srcset(cat.data.image)} sizes="100vw" alt="" width="1600" height="560" fetchpriority="high" />
     <div>
-      <Breadcrumbs items={[['Tours', '/tours/'], [cat.data.menuTitle]]} light />
+      <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle]]} light />
       <h1>{cat.data.menuTitle}</h1>
       <p class="banner__line">{cat.data.excerpt}</p>
     </div>

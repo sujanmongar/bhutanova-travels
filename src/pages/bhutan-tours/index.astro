@@ -6,11 +6,12 @@ import Icon from '../../components/Icon.astro';
 import TourCard from '../../components/TourCard.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { img, srcset } from '../../config';
+import { catPath, tourPath } from '../../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const tours = await getCollection('tours');
 const hero = 'photo-1578556881786-851d4b79cb73';
-const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`/tours/${t.id}/`, Astro.site).href, name: t.data.title })) };
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(tourPath(t), Astro.site).href, name: t.data.title })) };
 ---
 <Base title="Bhutan Tour Packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
   <section class="banner">
@@ -23,7 +24,7 @@ const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListEl
       <div class="sh sh--split" data-reveal><h2>Browse by theme</h2><p>Every package includes the Sustainable Development Fee, visa, licensed guide, private vehicle and certified hotels.</p></div>
       <ul data-reveal="stagger">
         {cats.map((c) => (
-          <li><a href={`/tours/category/${c.id}/`}><img src={img(c.data.image, 200)} alt="" width="56" height="42" loading="lazy" /><span>{c.data.menuTitle}</span><Icon name="arrow-right" /></a></li>
+          <li><a href={catPath(c.id)}><img src={img(c.data.image, 200)} alt="" width="56" height="42" loading="lazy" /><span>{c.data.menuTitle}</span><Icon name="arrow-right" /></a></li>
         ))}
       </ul>
     </div>

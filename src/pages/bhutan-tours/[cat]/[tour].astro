@@ -1,13 +1,17 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
-import Base from '../../layouts/Base.astro';
-import Icon from '../../components/Icon.astro';
-import Form from '../../components/Form.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import { img, srcset, SITE, wa } from '../../config';
+import Base from '../../../layouts/Base.astro';
+import Icon from '../../../components/Icon.astro';
+import Form from '../../../components/Form.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import { img, srcset, SITE, wa } from '../../../config';
+import { TOURS, catPath } from '../../../utils';
 
 export async function getStaticPaths() {
-  return (await getCollection('tours')).map((tour) => ({ params: { id: tour.id }, props: { tour } }));
+  return (await getCollection('tours')).map((tour) => ({
+    params: { cat: tour.data.category.id, tour: `${tour.data.days}-days-${tour.id}` },
+    props: { tour },
+  }));
 }
 const { tour } = Astro.props;
 const t = tour.data;
@@ -65,7 +69,7 @@ const schema = [
 
   <div class="container layout">
     <div class="main">
-      <Breadcrumbs items={[['Tours', '/tours/'], [cat.data.menuTitle, `/tours/category/${cat.id}/`], [t.title]]} />
+      <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle, catPath(cat.id)], [t.title]]} />
       <h1>{t.title}</h1>
       <ul class="facts t-small">
         <li><Icon name="gauge" />{t.days} days · {t.nights} nights</li>

@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import Icon from './Icon.astro';
 import { img, srcset } from '../config';
+import { tourPath } from '../utils';
 interface Props { tour: CollectionEntry<'tours'>; eager?: boolean }
 const { tour, eager } = Astro.props;
 const t = tour.data;
@@ -28,7 +29,7 @@ const included = ([
       </ul>
     )}
   </div>
-  <h3 class="tc__title"><a href={`/tours/${tour.id}/`}>{t.title}</a></h3>
+  <h3 class="tc__title"><a href={tourPath(tour)}>{t.title}</a></h3>
   <p class="tc__dur"><Icon name="ph_clock" />{t.nights} nights · {t.days} days</p>
   <p class="tc__price"><span class="sr-only">From </span><b class="num">${t.price.toLocaleString('en-US')}<span class="sr-only"> US dollars</span></b> <abbr title="per person">pp</abbr></p>
 </article>

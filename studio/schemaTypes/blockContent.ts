@@ -1,6 +1,6 @@
 import {defineArrayMember, defineType} from 'sanity'
 
-// Links must be absolute (https://…), site-relative (/tours/…), mailto: or tel:. Sanity's uri() alone lets
+// Links must be absolute (https://…), site-relative (/bhutan-tours/…), mailto: or tel:. Sanity's uri() alone lets
 // "contact" or "www.site.com" through, which become broken relative links; javascript:/data: are rejected.
 export const linkRules = (r: any) => [
   r.uri({allowRelative: true, scheme: ['http', 'https', 'mailto', 'tel']}),
@@ -15,7 +15,7 @@ export const link = {
       name: 'href',
       title: 'URL',
       type: 'url',
-      description: 'Full address (https://…), a page on this site (/tours/…), mailto: or tel:.',
+      description: 'Full address (https://…), a page on this site (/bhutan-tours/…), mailto: or tel:.',
       validation: (r: any) => [r.required(), ...linkRules(r)],
     },
   ],

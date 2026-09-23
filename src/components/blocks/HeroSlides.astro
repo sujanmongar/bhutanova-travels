@@ -1,6 +1,7 @@
 ---
 import Icon from '../Icon.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
+import { tourPathOf } from '../../utils';
 interface Slide { _key: string; image?: BlockImage; place?: string; title: string; text?: string; tour?: { id: string; title: string; days: number }; tripWord?: string }
 interface Props { heading?: string; slides?: Slide[] }
 const { heading = 'Bhutan tours planned by locals', slides: all = [] } = Astro.props;
@@ -23,7 +24,7 @@ const slides = all.filter((s) => s.image?.url);
             {s.text && <p class="hero__line">{s.text}</p>}
           </div>
           {s.tour && (
-            <a class="btn btn--light btn--lg hero__cta" href={`/tours/${s.tour.id}/`}>{`See the ${s.tour.days}-day ${s.tripWord || 'trip'}`}<span class="sr-only">: {s.tour.title}</span><Icon name="arrow-right" class="i-end" /></a>
+            <a class="btn btn--light btn--lg hero__cta" href={tourPathOf(s.tour.category, s.tour.days, s.tour.id)}>{`See the ${s.tour.days}-day ${s.tripWord || 'trip'}`}<span class="sr-only">: {s.tour.title}</span><Icon name="arrow-right" class="i-end" /></a>
           )}
         </div>
       ))}

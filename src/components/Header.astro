@@ -3,11 +3,15 @@ import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import { SITE, wa } from '../config';
+import { TOURS, catPath } from '../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order).slice(0, 8);
+// Only the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
+const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
+const menuGuides = allGuides.filter((g) => g.data.inMenu);
+const guides = (menuGuides.length ? menuGuides : allGuides).slice(0, 6);
 const nav = [
-  { href: '/tours/', label: 'Tours', children: cats.map((c) => ({ href: `/tours/category/${c.id}/`, label: c.data.menuTitle })) },
+  { href: TOURS, label: 'Tours', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
   { href: '/travel-guide/', label: 'Travel guide', children: guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })) },
   { href: '/blog/', label: 'Blog' },
   { href: '/about/', label: 'About' },

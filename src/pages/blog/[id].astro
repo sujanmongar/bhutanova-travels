@@ -6,6 +6,7 @@ import Arrows from '../../components/Arrows.astro';
 import Icon from '../../components/Icon.astro';
 import PlanCta from '../../components/PlanCta.astro';
 import { img } from '../../config';
+import { TOURS, tourPath } from '../../utils';
 
 export async function getStaticPaths() {
   const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
@@ -44,7 +45,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
       ))}</ul>
     </section>
     <div class="widget-sticky">
-      <a class="promo" href={`/tours/${promo.id}/`}>
+      <a class="promo" href={tourPath(promo)}>
         <img src={img(promo.data.image, 700)} alt="" width="336" height="420" loading="lazy" decoding="async" />
         <span class="promo__txt">
           <b>{promo.data.title}</b>
@@ -60,7 +61,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
     <div class="container">
       <div class="sh sh--row">
         <h2>Tours for this story</h2>
-        <div class="sh__act"><a class="link-more" href="/tours/">All packages<Icon name="arrow-right" /></a><Arrows target="rail-related" label="tours" /></div>
+        <div class="sh__act"><a class="link-more" href={TOURS}>All packages<Icon name="arrow-right" /></a><Arrows target="rail-related" label="tours" /></div>
       </div>
       <div class="rail" id="rail-related">{related.map((r) => <TourCard tour={r} />)}</div>
     </div>

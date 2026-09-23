@@ -97,13 +97,14 @@ export const collections = {
     }),
   }),
   guides: defineCollection({
-    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, excerpt, "image": image.${IMG}, group, order, updated, body, ${SEO} }`),
+    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, excerpt, "image": image.${IMG}, group, order, inMenu, updated, body, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       excerpt: z.string(),
       image: z.string(),
       group: z.enum(['Plan & Book', 'Entry & Visa', 'Money & Costs', 'On the Ground']),
       order: z.number().default(99),
+      inMenu: z.boolean().default(false),
       updated: z.coerce.date(),
       seo,
     }),
@@ -116,7 +117,7 @@ export const collections = {
       sections[]{
         ...,
         "image": image${BLOCK_IMG},
-        slides[]{ ..., "image": image${BLOCK_IMG}, "tour": tour->{ "id": slug.current, title, days } },
+        slides[]{ ..., "image": image${BLOCK_IMG}, "tour": tour->{ "id": slug.current, title, days, "category": category->slug.current } },
         rows[]{ ..., "image": image${BLOCK_IMG} },
         logos[]{ ..., "image": image{ "url": asset->url, alt } },
         "tours": tours[]->slug.current

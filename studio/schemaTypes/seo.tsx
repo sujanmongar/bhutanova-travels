@@ -8,8 +8,8 @@ const SITE_DESC =
   'Bhutanova Travels is a Thimphu-based tour operator crafting cultural, festival, trekking and luxury tours across Bhutan, guided by the values of Gross National Happiness.'
 const PATHS: Record<string, string> = {
   page: '/',
-  tour: '/tours/',
-  category: '/tours/category/',
+  tour: '/bhutan-tours/',
+  category: '/bhutan-tours/',
   post: '/blog/',
   guide: '/travel-guide/',
 }
