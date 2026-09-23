@@ -9,10 +9,18 @@ const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b
 // Only the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
 const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const menuGuides = allGuides.filter((g) => g.data.inMenu);
-const guides = (menuGuides.length ? menuGuides : allGuides).slice(0, 6);
+const guides = (menuGuides.length ? menuGuides : allGuides).slice(0, 5);
 const nav = [
-  { href: TOURS, label: 'Tours', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
-  { href: '/travel-guide/', label: 'Travel guide', children: guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })) },
+  { href: TOURS, label: 'Tours', all: 'All tour packages', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
+  {
+    href: '/travel-guide/',
+    label: 'Travel guide',
+    all: 'All travel guides',
+    children: [
+      { href: '/about-bhutan/', label: 'About Bhutan' },
+      ...guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })),
+    ],
+  },
   { href: '/blog/', label: 'Blog' },
   { href: '/about/', label: 'About' },
   { href: '/contact/', label: 'Contact' },
@@ -36,7 +44,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
                 </a>
                 <ul class="sub__list">
                   {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                  <li><a href={item.href} class="sub__all">View all {item.label.toLowerCase()}<Icon name="arrow-right" /></a></li>
+                  <li><a href={item.href} class="sub__all">{item.all}<Icon name="arrow-right" /></a></li>
                 </ul>
               </>
             ) : (
@@ -80,7 +88,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
                 </div>
                 <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item.href)}>
                   {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                  <li class="d-sub__all"><a href={item.href}>View all {item.label.toLowerCase()}<Icon name="arrow-right" /></a></li>
+                  <li class="d-sub__all"><a href={item.href}>{item.all}<Icon name="arrow-right" /></a></li>
                 </ul>
               </>
             ) : (

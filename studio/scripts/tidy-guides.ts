@@ -13,7 +13,7 @@ const UPDATE: Record<string, {title?: string; order: number; inMenu?: boolean}> 
   'getting-to-bhutan': {title: 'Flights to Bhutan', order: 8, inMenu: true},
   'sustainable-development-fee': {title: 'Sustainable Development Fee (SDF)', order: 10, inMenu: true},
   'money-and-payments': {title: 'Bhutan Currency & Payments', order: 11},
-  'what-to-pack': {title: 'Bhutan Packing Checklist', order: 13},
+  'what-to-pack': {title: 'Bhutan Packing Checklist', order: 6},
   'mountains-and-trekking': {title: 'Mountains & Trekking in Bhutan', order: 20},
 }
 const RETIRE = ['guide-best-time-and-weather', 'guide-etiquette-health-and-safety']

@@ -32,6 +32,16 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger()) {
   const html = toHTML(blocks, {
     components: {
       block: { h2: heading(2), h3: heading(3) },
+      marks: {
+        // Links out to official sources open in a new tab, so the reader keeps their place in the guide.
+        link: ({ children, value }: any) => {
+          const href = value?.href ?? '';
+          const away = /^https?:\/\//.test(href);
+          return `<a href="${esc(href).replace(/"/g, '&quot;')}"${away ? ' target="_blank" rel="noopener"' : ''}>${children}${
+            away ? '<span class="sr-only"> (opens in a new tab)</span>' : ''
+          }</a>`;
+        },
+      },
       types: {
         table: ({ value }: any) => {
           const [head, ...rows] = value.rows ?? [];
