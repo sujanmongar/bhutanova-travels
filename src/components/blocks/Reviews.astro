@@ -1,11 +1,32 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import Icon from '../Icon.astro';
-import { img, srcset, focal } from '../../config';
+import { img, srcset, focal, ldJson, SITE } from '../../config';
 interface Props { heading: string; grey?: boolean }
 const { heading, grey = false } = Astro.props;
 const reviews = (await getEntry('reviews', 'reviews'))!.data;
 const tours = await getCollection('tours');
+// Real ratings only — while "sample" is ticked these are placeholder numbers, and publishing fake review
+// counts in structured data is exactly what Google's review-snippet guidelines prohibit. Untick "sample"
+// once the platform ratings are real and this turns itself on.
+const ratingSchema = !reviews.sample && reviews.platforms.length > 0 && (() => {
+  const totalCount = reviews.platforms.reduce((n, p) => n + p.count, 0);
+  const weighted = reviews.platforms.reduce((n, p) => n + p.rating * p.count, 0) / totalCount;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'TravelAgency',
+    '@id': new URL('/#org', Astro.site).href,
+    name: SITE.name,
+    url: Astro.site?.href,
+    aggregateRating: { '@type': 'AggregateRating', ratingValue: Math.round(weighted * 10) / 10, bestRating: 5, reviewCount: totalCount },
+    review: reviews.items.slice(0, 8).map((r) => ({
+      '@type': 'Review',
+      author: { '@type': 'Person', name: r.name },
+      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
+      reviewBody: r.text,
+    })),
+  };
+})();
 type Review = (typeof reviews.items)[number];
 // The guest's own photo when there is one; otherwise the photo of the tour they took — never a stand-in face.
 const pic = (r: Review) => {
@@ -19,6 +40,7 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
 ---
 {reviews.items.length > 0 && (
 <section class:list={['section', { 'section--grey': grey }]}>
+  {ratingSchema && <script type="application/ld+json" set:html={ldJson(ratingSchema)} />}
   <div class="container">
     <div class="rv__head" data-reveal>
       <h2>{heading}</h2>
