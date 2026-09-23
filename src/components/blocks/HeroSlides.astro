@@ -90,9 +90,9 @@ const slides = all.filter((s) => s.image?.url);
   .hero__slide { grid-area: 1 / 1; align-self: end; display: grid; justify-items: start; gap: 24px; }
   .hero__slide:not(.is-on) { opacity: 0; visibility: hidden; transition: opacity 200ms var(--ease-in), visibility 0s 200ms; }
   .hero-title { max-width: 15ch; }
-  .hero__line { max-width: 36ch; margin-top: 12px; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
+  .hero__line { max-width: 36ch; margin-top: 12px; font-size: var(--fs-lead); line-height: var(--lh-lead); color: #fff; }
   .hero__bar { display: grid; justify-items: start; gap: 4px; }
-  .hero__place { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .8); }
+  .hero__place { font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: rgb(255 255 255 / .9); }
   .hero__dots { display: flex; margin-inline: -6px; }
   .hero__dots button { display: grid; align-items: center; width: 48px; height: 44px; padding: 0 6px; border: 0; background: none; color: #fff; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .hero__dots i { height: 3px; border-radius: 2px; background: rgb(255 255 255 / .35) linear-gradient(var(--p-500), var(--p-500)) no-repeat; background-size: 0 100%; transition: background-color var(--dur-2); }

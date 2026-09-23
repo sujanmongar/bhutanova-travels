@@ -9,17 +9,18 @@
 :root {
   /* Brand. #FFA500 is for FILLS, icons, rules and dots — never small text on light (1.97:1). */
   --p-50: #fff6e6; --p-100: #ffe3b0; --p-500: #ffa500; --p-600: #e89600;
-  --p-700: #9a5c00;   /* orange TEXT on light: 5.4:1 */
-  --p-800: #7f4c00;   /* orange text hover: 7.2:1 */
+  --p-700: #8a5200;   /* orange TEXT on light: 6.4:1 */
+  --p-800: #6d4100;   /* orange text hover: 8.8:1 */
   --s-50: #e8eaec; --s-300: #637382; --s-500: #162e44; --s-800: #0c1925;
   --t-500: #01b3a7;
 
-  /* Soft navy-ink neutrals (easier on the eye than black) — contrast on white / on --surface */
-  --ink: #1a2d40;      /* headings        14.1 / 13.1 */
-  --text: #3a4b5c;     /* body             9.0 / 8.4 */
-  --text-2: #52606f;   /* intros, cards    6.4 / 6.0 */
-  --text-3: #66737f;   /* meta, captions   4.9 / 4.5 */
-  --on-dark: #fff; --on-dark-2: #b8c3ce; --on-dark-3: #93a3b3;
+  /* Navy-ink neutrals — still not black, but dark enough to read crisply.
+     Contrast on white / on --surface: */
+  --ink: #132433;      /* headings        15.8 / 14.7 */
+  --text: #2b3c4d;     /* body            11.3 / 10.5 */
+  --text-2: #41515f;   /* intros, cards    8.2 / 7.6 */
+  --text-3: #55626e;   /* meta, captions   6.3 / 5.8 */
+  --on-dark: #fff; --on-dark-2: #cfd8e0; --on-dark-3: #aebac6;
   --success: #0b7a34; --warning: #fabc07; --error: #c63733;
   --white: #fff;
   --surface: #f5f7f9; --surface-2: #ebeff3;
@@ -248,7 +249,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
 .banner > div { width: 100%; max-width: calc(var(--container) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
 .banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(12 25 37 / .15), rgb(12 25 37 / .2) 40%, rgb(12 25 37 / .72)); z-index: -1; }
-.eyebrow { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; margin-bottom: 14px; color: rgb(255 255 255 / .88); }
+.eyebrow { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; margin-bottom: 14px; color: #fff; }
 .banner h1, .hero-title {
   color: #fff; font-family: var(--ff-display); font-weight: 500; font-size: var(--fs-display); line-height: var(--lh-display);
   letter-spacing: var(--ls-display); font-variant-numeric: lining-nums; max-width: 14ch; text-wrap: balance;
@@ -262,12 +263,12 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .crumbs a { display: inline-block; padding-block: 12px; margin-block: -12px; color: var(--text-2); transition: color var(--dur-1); }
 .crumbs a:hover { color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
 .crumbs [aria-current] { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
-.crumbs--light ol { color: rgb(255 255 255 / .7); }
-.crumbs--light a { color: rgb(255 255 255 / .82); }
+.crumbs--light ol { color: rgb(255 255 255 / .82); }
+.crumbs--light a { color: rgb(255 255 255 / .94); }
 .crumbs--light a:hover { color: #fff; }
 .crumbs--light [aria-current] { color: #fff; }
 .banner .crumbs { margin-bottom: 16px; }
-.banner__line { margin-top: 14px; max-width: 46ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: rgb(255 255 255 / .88); }
+.banner__line { margin-top: 14px; max-width: 46ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: #fff; }
 
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 68ch; color: var(--text); }
