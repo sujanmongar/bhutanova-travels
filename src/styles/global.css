@@ -277,7 +277,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .eyebrow { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; margin-bottom: 14px; color: #fff; }
 .banner h1, .hero-title {
   color: #fff; font-family: var(--ff-display); font-weight: 500; font-size: var(--fs-display); line-height: var(--lh-display);
-  letter-spacing: var(--ls-display); font-variant-numeric: lining-nums; max-width: 14ch; text-wrap: balance;
+  letter-spacing: var(--ls-display); font-variant-numeric: lining-nums; max-width: 20ch; text-wrap: balance;
 }
 @media (min-width: 768px) { .banner { min-height: calc(440px + var(--header-h)); padding-bottom: 64px; } }
 @media (min-width: 1200px) { .banner { min-height: calc(520px + var(--header-h)); padding-bottom: 80px; } }
@@ -293,7 +293,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .crumbs--light a:hover { color: #fff; }
 .crumbs--light [aria-current] { color: #fff; }
 .banner .crumbs { margin-bottom: 16px; }
-.banner__line { margin-top: 14px; max-width: 46ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: #fff; }
+.banner__line { margin-top: 16px; max-width: 58ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: #fff; }
 
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 68ch; color: var(--text); }
