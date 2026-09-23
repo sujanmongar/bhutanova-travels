@@ -124,7 +124,7 @@ b, strong { font-weight: 600; }
 h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 500; font-variant-numeric: lining-nums; }
 h2, .t-h2 { font-family: var(--ff-display); font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 500; font-variant-numeric: lining-nums; }
 .t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 500; font-variant-numeric: lining-nums; }
-h3, .t-title { font-family: var(--ff); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 600; }
+h3, .t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 500; font-variant-numeric: lining-nums; }
 .t-quote { font-family: var(--ff-display); font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; font-style: italic; color: var(--ink); font-variant-numeric: lining-nums; }
 .t-lead { font-size: var(--fs-lead); line-height: var(--lh-lead); font-weight: 400; color: var(--text-2); }
 .t-body { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 400; }
@@ -333,7 +333,7 @@ textarea.input { min-height: 120px; resize: vertical; }
 .widget { display: grid; gap: 16px; }
 .widget__h {
   position: relative; padding-bottom: 12px; border-bottom: 1px solid var(--border);
-  font-family: var(--ff); font-size: var(--fs-title); line-height: var(--lh-title); font-weight: 600; letter-spacing: var(--ls-title); color: var(--ink);
+  font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); font-weight: 500; letter-spacing: var(--ls-title); color: var(--ink);
 }
 .widget--cta { gap: 12px; padding: 24px; border-radius: var(--radius); background: var(--s-500); color: #fff; }
 .widget--cta .widget__h { color: #fff; border-color: rgb(255 255 255 / .16); }
