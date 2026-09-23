@@ -200,7 +200,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   .btn:hover .i-end { translate: 3px 0; }
 }
 .btn .i-end { font-size: .85em; transition: translate var(--dur-2) var(--ease-out); }
-.btn--sm { --btn-h: 40px; padding: 0 18px; font-size: .875rem; }
+.btn--sm { --btn-h: 40px; padding: 0 20px; font-size: var(--fs-meta); }
 .btn--lg { --btn-h: 56px; padding: 0 28px; }
 .btn--block { width: 100%; }
 @media (min-width: 1200px) { .btn { --btn-h: 46px; } .btn--sm { --btn-h: 38px; } .btn--lg { --btn-h: 52px; } }

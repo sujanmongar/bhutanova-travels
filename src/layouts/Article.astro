@@ -34,7 +34,7 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
   <slot name="after" />
 </Base>
 <style>
-  .post { padding-block: 32px var(--section); }
+  .post { padding-block: var(--stack) var(--section); }
   .ah, .body { max-width: 760px; margin-inline: auto; }
   .ah :global(.crumbs) { margin-bottom: 16px; }
   .lede { margin-top: 14px; max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
@@ -42,8 +42,8 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
   .meta b { font-weight: 600; color: var(--text-2); }
   .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
   .body { margin-top: 36px; font-size: var(--fs-prose); line-height: var(--lh-prose); color: var(--text); }
-  .post__aside { display: grid; gap: 36px; align-content: start; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); }
-  @media (min-width: 768px) { .post { padding-top: 48px; } .cover { aspect-ratio: 2 / 1; border-radius: var(--r-xl); } }
+  .post__aside { display: grid; gap: 40px; align-content: start; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); }
+  @media (min-width: 768px) { .cover { aspect-ratio: 2 / 1; border-radius: var(--r-xl); } }
   @media (min-width: 1024px) {
     .post--aside { display: grid; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 48px; }
     .post--aside :is(.ah, .body) { margin-inline: 0; }

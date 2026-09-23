@@ -53,7 +53,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
   .journal__list { list-style: none; margin: 0; padding: 0; }
   .journal__list li { border-top: 1px solid var(--border-dark); }
   .journal__list li:last-child { border-bottom: 1px solid var(--border-dark); }
-  .journal__list article { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; padding-block: 18px; }
+  .journal__list article { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center; padding-block: 20px; }
   .journal__list img { width: 96px; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); }
   .journal__list h3 { margin-top: 4px; }
   @media (hover: hover) {
@@ -62,7 +62,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
   }
   @media (min-width: 1024px) {
     .journal { grid-template-columns: 7fr 5fr; gap: 56px; align-items: start; }
-    .journal__list article { grid-template-columns: 128px 1fr; gap: 20px; padding-block: 22px; }
+    .journal__list article { grid-template-columns: 128px 1fr; gap: 20px; padding-block: 24px; }
     .journal__list img { width: 128px; }
   }
 </style>

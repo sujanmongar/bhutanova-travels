@@ -182,7 +182,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .burger:hover { background: rgb(12 25 37 / .1); }
   .burger:active { scale: .92; }
   .menu { display: none; }
-  .nav__book { font-size: var(--fs-btn); padding-inline: 22px; }
+  .nav__book { font-size: var(--fs-btn); padding-inline: 24px; }
   @media (max-width: 1199px) { .nav__book { --btn-h: 44px; } }
   @media (min-width: 1200px) { .nav__book { --btn-h: 44px; } }
   @media (max-width: 359px) { .nav__book { display: none; } }
@@ -258,7 +258,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link :global(.chev) { rotate: 180deg; }
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link:not(.is-active)::after { scale: 0 1; }
     .sub__list a {
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: var(--r-sm);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-radius: var(--r-sm);
       font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 500; color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
     .sub__list a:hover { background: var(--surface); color: var(--ink); }
