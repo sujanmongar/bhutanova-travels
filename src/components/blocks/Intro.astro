@@ -1,22 +1,26 @@
 ---
+import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
 import { ptParagraphs } from '../../pt';
-interface Props { heading: string; text?: any[]; points?: { _key: string; title: string; text?: string }[]; image?: BlockImage; quote?: string; grey?: boolean }
-const { heading, text, points = [], image, quote, grey = false } = Astro.props;
+interface Props { heading: string; text?: any[]; image?: BlockImage; quote?: string; grey?: boolean }
+const { heading, text, image, quote, grey = false } = Astro.props;
 const paras = ptParagraphs(text);
-const alone = !points.length && !image?.url;
+const alone = !image?.url;
+// The company's own tour categories, standing in for an "areas of expertise" list — real and always
+// in sync, rather than a separate editorial list that drifts from what's actually offered.
+const cats = alone ? (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order) : [];
 ---
 <section class:list={['section', { 'section--grey': grey }]}>
   <div class="container">
-    <div class:list={['sh sh--split', { 'sh--alone': alone }]} data-reveal>
+    <div class:list={['sh', { 'sh--split': !alone, 'sh--alone': alone }]} data-reveal>
       <h2>{heading}</h2>
       {paras.length === 1 ? <p set:html={paras[0]} /> : paras.length > 1 && <div class="sh__body">{paras.map((p) => <p set:html={p} />)}</div>}
+      {cats.length > 0 && (
+        <p class="expertise t-small">{cats.map((c, i) => <>{i > 0 && ' · '}{c.data.menuTitle}</>)}</p>
+      )}
+      {alone && <a class="link-more" href="/about/">Learn more about us<Icon name="arrow-right" /></a>}
     </div>
-    {points.length > 0 && (
-      <ul class="items items--3" data-reveal="stagger">
-        {points.map((p) => <li class="item"><h3>{p.title}</h3>{p.text && <p>{p.text}</p>}</li>)}
-      </ul>
-    )}
     {image?.url && (
       <div class="mission" data-reveal>
         <img src={img(image.url, 900)} srcset={srcset(image.url, [480, 800, 1200])} sizes="(min-width:1024px) 45vw, 100vw"
@@ -29,11 +33,12 @@ const alone = !points.length && !image?.url;
 <style>
   .sh--alone { margin-bottom: 0; }
   .sh :global(:is(b, strong)) { color: var(--ink); }
+  .expertise { margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-dark); max-width: 56ch; color: var(--text-3); }
+  .link-more { margin-top: 20px; }
   .sh__body { display: grid; gap: 16px; margin-top: 16px; }
   .sh__body p { max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
   @media (min-width: 1024px) { .sh__body { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; } }
 
-  .items--3:has(+ .mission) { margin-bottom: 64px; }
   .mission { display: grid; gap: 28px; align-items: center; }
   .mission img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius); background: var(--s-50); }
   .mission blockquote { margin: 0; text-wrap: balance; }
