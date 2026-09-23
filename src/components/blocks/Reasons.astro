@@ -2,7 +2,7 @@
 interface Props { heading: string; items?: { _key: string; title: string; text?: string }[]; grey?: boolean }
 const { heading, items = [], grey = true } = Astro.props;
 ---
-<section class:list={['section', { 'section--grey': grey }]}>
+<section id="why-us" class:list={['section', { 'section--grey': grey }]}>
   <div class="container">
     <div class="sh" data-reveal><h2>{heading}</h2></div>
     <ul class="why" data-reveal="stagger">

@@ -1,0 +1,73 @@
+---
+// A real results page for the header's search field — pressing Enter (or a phone's "search"/"go" key)
+// lands here instead of stopping at the short suggestion list. Rendered client-side against the same
+// build-time index the header already embeds (astro:content isn't available in the browser, so the
+// filtering has to happen there, not here) — this page is just the shell plus the script that fills it.
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+---
+<Base title="Search" noindex>
+  <section class="section">
+    <div class="container narrow">
+      <Breadcrumbs items={[['Search']]} />
+      <h1>Search</h1>
+      <label class="sr-only" for="page-search-q">Search tours, guides and articles</label>
+      <input id="page-search-q" class="input page-search__q" type="search" placeholder="Search tours, guides, articles…" autocomplete="off" />
+      <p class="page-search__status" data-status aria-live="polite"></p>
+      <ul class="page-search__results" data-results></ul>
+    </div>
+  </section>
+</Base>
+
+<script>
+  import { matches, groupByKind, resultsHTML } from '../scripts/search';
+
+  const input = document.getElementById('page-search-q') as HTMLInputElement;
+  const status = document.querySelector<HTMLElement>('[data-status]')!;
+  const list = document.querySelector<HTMLUListElement>('[data-results]')!;
+  const index: { t: string; k: string; u: string }[] = JSON.parse(document.getElementById('search-index')!.textContent!);
+
+  const run = (q: string, focus = false) => {
+    const found = matches(index, q);
+    list.innerHTML = resultsHTML(groupByKind(found));
+    status.textContent = q.trim() ? `${found.length} result${found.length === 1 ? '' : 's'} for “${q.trim()}”` : 'Type something to search.';
+    document.title = q.trim() ? `“${q.trim()}” — Search — Bhutanova Travels` : 'Search — Bhutanova Travels';
+    if (focus) input.focus();
+  };
+
+  const q = new URL(location.href).searchParams.get('q') ?? '';
+  input.value = q;
+  run(q, !q);
+
+  let debounce: ReturnType<typeof setTimeout>;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      const next = input.value.trim();
+      history.replaceState(null, '', next ? `?q=${encodeURIComponent(next)}` : location.pathname);
+      run(input.value);
+    }, 150);
+  });
+</script>
+
+<style>
+  .narrow { max-width: 760px; }
+  h1 { margin-bottom: var(--stack); }
+  .page-search__q { margin-bottom: 4px; }
+  .page-search__status { margin: 16px 0 4px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
+  .page-search__results { list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 32px; }
+  /* :global — built with innerHTML at runtime; see the header's own search styles for why this needs it. */
+  :global(.results__group h2) {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 4px; font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5);
+  }
+  :global(.results__group .num) {
+    display: inline-grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border-radius: var(--r-full);
+    background: var(--surface); font-family: var(--ff); font-size: var(--fs-meta); font-weight: 600; color: var(--text-3);
+  }
+  :global(.results__group ul) { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
+  :global(.results__group a) {
+    display: flex; align-items: center; min-height: 56px; padding: 14px 4px; border-bottom: 1px solid var(--border);
+    font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 500; color: var(--ink); transition: color var(--dur-1);
+  }
+  :global(.results__group a:hover) { color: var(--s-500); }
+</style>

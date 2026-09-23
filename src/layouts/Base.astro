@@ -80,6 +80,17 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <script>
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
+      // A link to #section only lands correctly if the browser's one-time initial scroll happens after
+      // everything above the target has finished loading; images and reveal animations shift things after
+      // that, so a deep link (nav "Why us", a guide's table of contents) can land short. Once the page has
+      // settled, nudge it back onto the target — instantly, so it doesn't visibly re-scroll.
+      if (location.hash) {
+        const jump = () => document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' });
+        // This script is a deferred module — by the time it runs, `load` has often already fired,
+        // so a plain addEventListener would silently miss it.
+        document.readyState === 'complete' ? jump() : addEventListener('load', jump, { once: true });
+      }
+
       // Carousel arrows for any [data-rail] (native scroll-snap does the easing)
       document.querySelectorAll<HTMLElement>('[data-rail]').forEach((rail) => {
         const box = document.getElementById(rail.dataset.rail!);

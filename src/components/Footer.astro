@@ -80,6 +80,7 @@ const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 
   .footer__bar { background: var(--s-800); font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--on-dark-3); }
   .footer__bar-in { display: flex; flex-direction: column; gap: 0; padding-block: 8px; }
+  @media (max-width: 1199px) { .footer__bar-in { padding-bottom: 76px; } }
   .footer__bar span { margin-inline: 8px; }
   .footer__bar a { display: inline-block; padding-block: 12px; }
   .footer__bar-in p { margin: 0; }
