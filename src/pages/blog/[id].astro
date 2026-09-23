@@ -76,7 +76,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
   .recent ul { display: grid; gap: 16px; }
   .recent a { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: center; }
   .recent img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--r-md); background: var(--s-50); }
-  .recent h3 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: underline 2px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2); }
+  .recent h3 { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: underline 2px transparent; text-underline-offset: 3px; transition: text-decoration-color var(--dur-2); }
   .recent a:hover h3 { text-decoration-color: var(--p-500); }
   .recent time { display: block; margin-top: 4px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
   .promo { position: relative; display: block; aspect-ratio: 4 / 5; border-radius: var(--radius); overflow: hidden; isolation: isolate; color: #fff; }

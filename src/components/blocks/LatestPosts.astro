@@ -20,7 +20,7 @@ const short = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month
       <article class="journal__lead">
         <div class="journal__img"><img src={img(lead.data.image, 1000)} srcset={srcset(lead.data.image, [480, 800, 1200])} sizes="(min-width:1024px) 55vw, 100vw" alt="" width="1000" height="667" loading="lazy" decoding="async" /></div>
         <p class="t-meta">{lead.data.tags[0]} · {short(lead.data.date)}</p>
-        <h3 class="t-h3"><a href={`/blog/${lead.id}/`}>{lead.data.title}</a></h3>
+        <h3 class="t-card"><a href={`/blog/${lead.id}/`}>{lead.data.title}</a></h3>
         <p class="journal__ex t-small">{lead.data.excerpt}</p>
       </article>
       <ul class="journal__list">

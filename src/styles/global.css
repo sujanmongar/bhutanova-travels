@@ -48,64 +48,75 @@
   --section: 64px; --stack: 32px;
   --header-h: 64px;
 
-  /* ---------- Type system: 10 roles, 3 weights (400 / 500 / 600) ----------
-     display  hero + page banners        title  card, item, FAQ, widget, day titles
-     h1       page titles                quote  pull quotes, featured review
-     h2       section headings           lead   section intros, standfirsts
-     h3       sub-sections, prose h2     body / prose / small / meta
-     Base text is 18px at every width. Steps: meta 14 · small 16 · body/title 18 · lead 19–20 · h3 20–24 · …
-     Rules: card/list text uses small (below its title); lead only for intros under a big heading; quote a step below h2;
-     every heading level is the serif, body and UI are the grotesque.
+  /* ---------- Type system ----------
+     A 1.2 (minor third) modular scale from an 18px base, so every level steps down visibly:
+       desktop  64 · 54 · 45 · 37 · 31 · 26 · 22 · 18 · 15
+                display h1   h2   h3   h4   h5   h6  body small
+     The ratio eases off as the screen narrows (1.125 on phones, ~1.16 on tablets) so a hero headline
+     still fits: phones 40 · 36 · 32 · 28 · 25 · 23 · 20, tablets 52 · 44 · 38 · 32 · 28 · 24 · 21.
 
-     Line height falls as type grows (1.7 for a long read down to 1.04 for the hero) and tracking follows the same
-     curve in reverse: negative only where the serif is large, 0 through the middle, positive for 14px and smaller
-     and for anything uppercase. Values below are MOBILE; tablet and desktop override further down. */
+     h1–h6 are the document ladder. Components take the steps they need by name rather than by level:
+       card   card, panel and price titles (the h5 step)
+       title  item, FAQ, widget, footer, day and list titles (the h6 step)
+       quote  pull quotes (the h5 step, serif italic)
+       lead   section intros and standfirsts
+     Line height falls as type grows (1.7 for a long read down to 1.04 at the hero) and tracking follows the
+     same curve in reverse. Values below are MOBILE; tablet and desktop override further down. */
   --ff: 'Schibsted Grotesk Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --ff-serif: 'Newsreader Variable', Georgia, 'Times New Roman', serif;
   --ff-display: var(--ff-serif);
-  --fs-display: 2.5rem;   --lh-display: 1.08;  --ls-display: -0.008em;
-  --fs-h1: 2rem;          --lh-h1: 1.12;       --ls-h1: -0.006em;
-  --fs-h2: 1.625rem;      --lh-h2: 1.2;        --ls-h2: -0.003em;
-  --fs-h3: 1.25rem;       --lh-h3: 1.32;       --ls-h3: 0;
-  --fs-title: 1.125rem;   --lh-title: 1.4;     --ls-title: 0;
-  --fs-quote: 1.3125rem;  --lh-quote: 1.42;    --ls-quote: 0;
-  --fs-lead: 1.1875rem;   --lh-lead: 1.55;     --ls-lead: 0;
-  --fs-body: 1.125rem;    --lh-body: 1.65;     --ls-body: 0;
+  --fs-display: 2.5rem;    --lh-display: 1.08; --ls-display: -0.012em;   /* 40 */
+  --fs-h1: 2.25rem;        --lh-h1: 1.12;      --ls-h1: -0.01em;         /* 36 */
+  --fs-h2: 2rem;           --lh-h2: 1.16;      --ls-h2: -0.008em;        /* 32 */
+  --fs-h3: 1.75rem;        --lh-h3: 1.22;      --ls-h3: -0.006em;        /* 28 */
+  --fs-h4: 1.5625rem;      --lh-h4: 1.28;      --ls-h4: -0.004em;        /* 25 */
+  --fs-h5: 1.4375rem;      --lh-h5: 1.32;      --ls-h5: -0.003em;        /* 23 */
+  --fs-h6: 1.25rem;        --lh-h6: 1.38;      --ls-h6: -0.002em;        /* 20 */
+  --fs-card: var(--fs-h5); --lh-card: var(--lh-h5); --ls-card: var(--ls-h5);
+  --fs-title: var(--fs-h6); --lh-title: var(--lh-h6); --ls-title: var(--ls-h6);
+  --fs-quote: var(--fs-h5); --lh-quote: 1.42;  --ls-quote: 0;
+  --fs-lead: 1.1875rem;   --lh-lead: 1.55;     --ls-lead: 0;             /* 19 */
+  --fs-body: 1.125rem;    --lh-body: 1.65;     --ls-body: 0;             /* 18 */
   --fs-prose: var(--fs-body); --lh-prose: 1.7; --ls-prose: 0;
-  --fs-small: 1rem;       --lh-small: 1.6;     --ls-small: 0;
-  --fs-meta: 0.875rem;    --lh-meta: 1.45;     --ls-meta: 0.01em;
+  --fs-small: 0.9375rem;  --lh-small: 1.6;     --ls-small: 0;            /* 15 */
+  --fs-meta: 0.875rem;    --lh-meta: 1.45;     --ls-meta: 0.01em;        /* 14 — the one UI step off the scale */
   --fs-btn: 1rem;         --lh-btn: 1.2;       --ls-btn: 0.005em;
   --lh-ui: 1.4;           /* labels, toggles and inline CTA links — controls, not reading text */
   --lh-input: var(--lh-ui);
   --ls-caps: 0.08em;      /* uppercase never runs at the same tracking as sentence case */
   /* Aliases kept for older rules */
   --fs-hero: var(--fs-display); --lh-hero: var(--lh-display); --ls-hero: var(--ls-display); --fw-hero: 600;
-  --fs-sub: var(--fs-h3); --lh-sub: var(--lh-h3); --ls-sub: var(--ls-h3);
+  --fs-sub: var(--fs-h4); --lh-sub: var(--lh-h4); --ls-sub: var(--ls-h4);
   --fs-sm: var(--fs-small); --lh-sm: var(--lh-small); --ls-sm: 0;
   --fs-xs: var(--fs-meta); --lh-xs: var(--lh-meta); --ls-xs: var(--ls-meta);
-  --fs-price: var(--fs-title); --fs-price-lg: var(--fs-h3);
+  --fs-price: var(--fs-title); --fs-price-lg: var(--fs-card);
 }
 @media (min-width: 768px) {
   :root {
     --gutter: 40px; --section: 80px; --stack: 40px; --header-h: 80px;
-    --fs-display: 3.25rem;  --lh-display: 1.06;  --ls-display: -0.012em;
-    --fs-h1: 2.5rem;        --lh-h1: 1.1;        --ls-h1: -0.009em;
-    --fs-h2: 1.875rem;      --lh-h2: 1.18;       --ls-h2: -0.005em;
-    --fs-h3: 1.375rem;      --lh-h3: 1.3;
-    --lh-title: 1.35;
-    --fs-quote: 1.5rem;     --lh-quote: 1.38;
-    --fs-lead: 1.25rem;     --lh-lead: 1.5;
+    --fs-display: 3.25rem;  --lh-display: 1.06; --ls-display: -0.016em;  /* 52 */
+    --fs-h1: 2.75rem;       --lh-h1: 1.1;        --ls-h1: -0.014em;       /* 44 */
+    --fs-h2: 2.375rem;      --lh-h2: 1.14;       --ls-h2: -0.011em;       /* 38 */
+    --fs-h3: 2rem;          --lh-h3: 1.2;        --ls-h3: -0.008em;       /* 32 */
+    --fs-h4: 1.75rem;       --lh-h4: 1.26;       --ls-h4: -0.006em;       /* 28 */
+    --fs-h5: 1.5rem;        --lh-h5: 1.3;        --ls-h5: -0.004em;       /* 24 */
+    --fs-h6: 1.3125rem;     --lh-h6: 1.36;       --ls-h6: -0.003em;       /* 21 */
+    --lh-quote: 1.38;
+    --fs-lead: 1.25rem;     --lh-lead: 1.5;                               /* 20 */
     --lh-body: 1.6;
   }
 }
 @media (min-width: 1200px) {
   :root {
     --gutter: 24px; --section: 104px; --stack: 48px;
-    --fs-display: 4rem;     --lh-display: 1.04;  --ls-display: -0.016em;
-    --fs-h1: 3rem;          --lh-h1: 1.08;       --ls-h1: -0.012em;
-    --fs-h2: 2.25rem;       --lh-h2: 1.15;       --ls-h2: -0.007em;
-    --fs-h3: 1.5rem;        --lh-h3: 1.28;       --ls-h3: 0;
-    --fs-quote: 1.625rem;   --lh-quote: 1.35;    --ls-quote: 0;
+    --fs-display: 4rem;     --lh-display: 1.04; --ls-display: -0.02em;    /* 64 */
+    --fs-h1: 3.375rem;      --lh-h1: 1.08;       --ls-h1: -0.018em;       /* 54 */
+    --fs-h2: 2.8125rem;     --lh-h2: 1.12;       --ls-h2: -0.014em;       /* 45 */
+    --fs-h3: 2.3125rem;     --lh-h3: 1.18;       --ls-h3: -0.011em;       /* 37 */
+    --fs-h4: 1.9375rem;     --lh-h4: 1.24;       --ls-h4: -0.008em;       /* 31 */
+    --fs-h5: 1.625rem;      --lh-h5: 1.3;        --ls-h5: -0.005em;       /* 26 */
+    --fs-h6: 1.375rem;      --lh-h6: 1.35;       --ls-h6: -0.003em;       /* 22 */
+    --lh-quote: 1.35;
   }
 }
 
@@ -132,8 +143,13 @@ b, strong { font-weight: 600; }
 .t-display { font-family: var(--ff-display); font-size: var(--fs-display); line-height: var(--lh-display); letter-spacing: var(--ls-display); font-weight: 500; font-variant-numeric: lining-nums; }
 h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 500; font-variant-numeric: lining-nums; }
 h2, .t-h2 { font-family: var(--ff-display); font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 500; font-variant-numeric: lining-nums; }
-.t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 500; font-variant-numeric: lining-nums; }
-h3, h4, h5, h6, .t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 500; font-variant-numeric: lining-nums; }
+h3, .t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 500; font-variant-numeric: lining-nums; }
+h4, .t-h4 { font-family: var(--ff-display); font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); font-weight: 500; font-variant-numeric: lining-nums; }
+h5, .t-h5 { font-family: var(--ff-display); font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); font-weight: 500; font-variant-numeric: lining-nums; }
+h6, .t-h6 { font-family: var(--ff-display); font-size: var(--fs-h6); line-height: var(--lh-h6); letter-spacing: var(--ls-h6); font-weight: 500; font-variant-numeric: lining-nums; }
+/* Component titles sit on the same scale, but by name: a card title stays a card title at any heading level. */
+.t-card { font-family: var(--ff-display); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); font-weight: 500; font-variant-numeric: lining-nums; }
+.t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 500; font-variant-numeric: lining-nums; }
 .t-quote { font-family: var(--ff-display); font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; font-style: italic; color: var(--ink); font-variant-numeric: lining-nums; }
 .t-lead { font-size: var(--fs-lead); line-height: var(--lh-lead); letter-spacing: var(--ls-lead); font-weight: 400; color: var(--text-2); }
 .t-body { font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: 400; }
@@ -244,7 +260,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 
 /* ---------- Feature items: hairline rule + inline icon (no boxed cards) ---------- */
 .item { padding-top: 22px; border-top: 1px solid var(--border-dark); }
-.item h3 { margin-bottom: 8px; }
+.item h3 { margin-bottom: 8px; font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); }
 .item p { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); max-width: 44ch; }
 .items { display: grid; gap: 28px 40px; list-style: none; margin: 0; padding: 0; }
 @media (min-width: 768px) { .items--2, .items--3 { grid-template-columns: 1fr 1fr; } }
@@ -282,8 +298,8 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 68ch; color: var(--text); }
 .prose > * + * { margin-top: 1.1em; }
-.prose h2 { font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); margin-top: 2em; }
-.prose h3 { font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); margin-top: 1.6em; }
+.prose h2 { font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); margin-top: 2em; }
+.prose h3 { font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); margin-top: 1.6em; }
 .prose :is(h2, h3) + * { margin-top: .6em; }
 .prose a { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
 .prose a:hover { color: var(--p-800); text-decoration-color: currentColor; text-decoration-thickness: 2px; }

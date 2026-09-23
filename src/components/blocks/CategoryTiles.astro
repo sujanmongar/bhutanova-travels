@@ -20,7 +20,7 @@ const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b
             <img src={img(c.data.image, 700)} srcset={srcset(c.data.image, [400, 700, 1000])} sizes="(min-width:1200px) 300px, (min-width:768px) 280px, 74vw"
               alt="" width="600" height="800" loading="lazy" decoding="async" />
             <div class="cat__txt">
-              <h3 class="t-h3"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
+              <h3 class="t-card"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
               <p>{c.data.excerpt}</p>
             </div>
           </article>

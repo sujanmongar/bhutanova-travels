@@ -34,7 +34,7 @@ const info = [
         </ul>
       </div>
       <Form subject="Website enquiry" class="form">
-        <h2 class="t-h3">Send us a message</h2>
+        <h2 class="t-card">Send us a message</h2>
         <div class="field"><label for="c-name">Full name *</label><input class="input" id="c-name" name="name" autocomplete="name" required /></div>
         <div class="row">
           <div class="field"><label for="c-email">Email *</label><input class="input" id="c-email" name="email" type="email" autocomplete="email" required /></div>
@@ -75,7 +75,7 @@ const info = [
   @media (min-width: 768px) and (max-width: 1199px) { .info { grid-template-columns: 1fr 1fr; } }
   .info li { display: flex; gap: 14px; padding: 20px 0; border-top: 1px solid var(--border-dark); }
   .info li > :global(.icon) { font-size: 16px; margin-top: 4px; color: var(--p-600); }
-  .info h3 { margin: 0 0 4px; }
+  .info h3 { margin: 0 0 4px; font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); }
   .info a, .info p { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); word-break: break-word; }
   .info a:hover { color: var(--p-700); }
   .contact :global(.form) { display: grid; gap: 16px; padding: 24px 20px; border: 1px solid var(--border-dark); border-radius: var(--radius); background: #fff; }
