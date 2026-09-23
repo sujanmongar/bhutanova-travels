@@ -109,6 +109,22 @@ export const collections = {
       seo,
     }),
   }),
+  destinations: defineCollection({
+    loader: sanity(`*[_type == "destination"]{
+      "id": slug.current, title, excerpt, "image": image.${IMG}, body, highlights, bestTime, gettingThere, order,
+      "tours": tours[]->slug.current, ${SEO} }`),
+    schema: z.object({
+      title: z.string(),
+      excerpt: z.string(),
+      image: z.string(),
+      highlights: z.array(z.string()).default([]),
+      bestTime: z.string().optional(),
+      gettingThere: z.string().optional(),
+      order: z.number().default(99),
+      tours: z.array(z.string()).default([]),
+      seo,
+    }),
+  }),
   // Page-builder pages: "home" is the homepage, everything else is served at /<slug>/.
   // Block images come back as { url, alt, hotspot } so components can honour the editor's focal point.
   pages: defineCollection({

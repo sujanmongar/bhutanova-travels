@@ -1,0 +1,79 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import TourCard from '../../components/TourCard.astro';
+import PlanCta from '../../components/PlanCta.astro';
+import WhatsAppCta from '../../components/WhatsAppCta.astro';
+import { img, srcset } from '../../config';
+import { DESTINATIONS } from '../../utils';
+
+export async function getStaticPaths() {
+  const destinations = await getCollection('destinations');
+  const tours = await getCollection('tours');
+  return destinations.map((d) => ({ params: { id: d.id }, props: { d, tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined) } }));
+}
+const { d, tours } = Astro.props;
+const { Content } = await render(d);
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const schema = {
+  '@context': 'https://schema.org', '@type': 'TouristDestination', name: d.data.title, description: d.data.excerpt, url,
+  image: img(d.data.image, 1200),
+  includesAttraction: d.data.highlights.map((h) => ({ '@type': 'TouristAttraction', name: h })),
+};
+---
+<Base title={`${d.data.title} Travel Guide`} description={d.data.excerpt} image={d.data.image} schema={schema} seo={d.data.seo}>
+  <section class="banner">
+    <img src={img(d.data.image, 1600)} srcset={srcset(d.data.image)} sizes="100vw" alt="" width="1600" height="700" fetchpriority="high" />
+    <div><Breadcrumbs items={[['Destinations', DESTINATIONS], [d.data.title]]} light /><h1>{d.data.title}</h1><p class="banner__line">{d.data.excerpt}</p></div>
+  </section>
+
+  <div class="container layout">
+    <div class="main">
+      {(d.data.bestTime || d.data.gettingThere) && (
+        <ul class="facts t-small">
+          {d.data.bestTime && <li><Icon name="ph_clock" />Best time: {d.data.bestTime}</li>}
+          {d.data.gettingThere && <li><Icon name="location-dot" />{d.data.gettingThere}</li>}
+        </ul>
+      )}
+
+      <div class="prose"><Content /></div>
+
+      {d.data.highlights.length > 0 && (
+        <section class="block">
+          <h2>Highlights</h2>
+          <ul class="bullets">{d.data.highlights.map((h) => <li><Icon name="check" />{h}</li>)}</ul>
+        </section>
+      )}
+    </div>
+    <aside class="side"><PlanCta /></aside>
+  </div>
+
+  {tours.length > 0 && (
+    <section class="section section--grey">
+      <div class="container">
+        <div class="sh"><h2>Tours that visit {d.data.title}</h2></div>
+        <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
+      </div>
+    </section>
+  )}
+  <WhatsAppCta about={`visiting ${d.data.title}`} />
+</Base>
+<style>
+  .layout { display: grid; gap: 40px; padding-block: var(--stack) var(--section); }
+  .layout > * { min-width: 0; }
+  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: 64px; } }
+  .facts { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; margin: 0 0 28px; padding: 0; }
+  .facts li { display: inline-flex; align-items: center; gap: 8px; }
+  .facts :global(.icon) { font-size: 14px; color: var(--text-3); }
+  .block { margin-top: 40px; }
+  .block h2 { margin-bottom: 20px; font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); }
+  .bullets { display: grid; gap: 12px; list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: 32px; } }
+  .bullets li { display: flex; gap: 12px; }
+  .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * 1rem - 12px) / 2); font-size: 12px; color: var(--s-500); }
+  .side { display: grid; gap: 16px; align-content: start; }
+  @media (min-width: 1200px) { .side { position: sticky; top: calc(var(--header-h) + 24px); align-self: start; } }
+  .tours { row-gap: 48px; }
+</style>

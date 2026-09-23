@@ -3,13 +3,14 @@ import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import { SITE, wa, ldJson } from '../config';
-import { TOURS, catPath, tourPath } from '../utils';
+import { TOURS, DESTINATIONS, catPath, tourPath } from '../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 // Only the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
 const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const menuGuides = allGuides.filter((g) => g.data.inMenu);
 const guides = (menuGuides.length ? menuGuides : allGuides).slice(0, 5);
+const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
 const nav = [
   { href: TOURS, label: 'Tours', all: 'All tour packages', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
   {
@@ -18,8 +19,12 @@ const nav = [
     all: 'All travel guides',
     children: guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.title })),
   },
-  // A standalone item, not nested under Travel guide — it's about the destination, not trip planning.
-  { href: '/about-bhutan/', label: 'Discover Bhutan' },
+  {
+    href: DESTINATIONS,
+    label: 'Destinations',
+    all: 'All destinations',
+    children: [{ href: '/about-bhutan/', label: 'Bhutan overview' }, ...destinations.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, label: d.data.title }))],
+  },
   {
     href: '/about/',
     label: 'About',
@@ -44,6 +49,7 @@ const searchIndex = [
   { t: 'Contact', k: 'Page', u: '/contact/' },
   ...cats.map((c) => ({ t: c.data.menuTitle, k: 'Category', u: catPath(c.id) })),
   ...tours.map((t) => ({ t: t.data.title, k: 'Tour', u: tourPath(t) })),
+  ...destinations.map((d) => ({ t: d.data.title, k: 'Destination', u: `${DESTINATIONS}${d.id}/` })),
   ...allGuides.map((g) => ({ t: g.data.title, k: 'Guide', u: `/travel-guide/${g.id}/` })),
   ...posts.map((p) => ({ t: p.data.title, k: 'Article', u: `/blog/${p.id}/` })),
 ];
@@ -191,6 +197,11 @@ const searchIndex = [
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
+  // The hero already has its own Enquire button — hide the floating one while any of the hero is on screen.
+  const fab = document.querySelector<HTMLAnchorElement>('.fab-enquire')!;
+  const hero = document.querySelector<HTMLElement>('.hero');
+  if (hero) new IntersectionObserver(([e]) => fab.classList.toggle('is-hidden', e.isIntersecting)).observe(hero);
+
   // Search: a classic expand-in-place field (not a side panel) — the toggle button swaps its own icon and
   // never moves, so it always marks where to click to get back out. A small built-in index (see the JSON
   // script above), grouped by kind as you type; nothing fetched at runtime. Enter (or a phone's own
@@ -325,6 +336,8 @@ const searchIndex = [
     font-size: var(--fs-btn); padding-inline: 24px; --btn-h: 44px; box-shadow: var(--sh-lg);
   }
   @media (min-width: 1200px) { .fab-enquire { display: none; } }
+  /* Hidden while the hero's own Enquire button is still on screen — no point floating a duplicate over it. */
+  .fab-enquire.is-hidden { display: none; }
   /* display:none (not a fade) — on mobile .menu is already hidden outright, so unlike the crossfade above
      there's nothing else animating here for this to clash with; it just frees the logo's width for the field. */
   @media (max-width: 1199px) { .nav.is-searching .nav__logo { display: none; } }

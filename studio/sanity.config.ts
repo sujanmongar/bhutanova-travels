@@ -30,6 +30,7 @@ export default defineConfig({
             S.divider(),
             S.documentTypeListItem('tour').title('Tours'),
             S.documentTypeListItem('category').title('Tour categories'),
+            S.documentTypeListItem('destination').title('Destinations'),
             S.divider(),
             S.documentTypeListItem('post').title('Blog posts'),
             S.documentTypeListItem('guide').title('Travel guides'),

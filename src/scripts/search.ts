@@ -2,7 +2,7 @@
 export type SearchItem = { t: string; k: string; u: string };
 export type Group = { key: string; label: string; items: SearchItem[] };
 
-const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
+const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Destination: 'Destinations', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
 const ORDER = Object.keys(KIND);
 
 export const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');

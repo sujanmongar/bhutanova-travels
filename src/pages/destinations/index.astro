@@ -1,0 +1,50 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon.astro';
+import { img, srcset } from '../../config';
+import { DESTINATIONS } from '../../utils';
+
+const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
+const hero = 'photo-1578556881786-851d4b79cb73';
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: destinations.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`${DESTINATIONS}${d.id}/`, Astro.site).href, name: d.data.title })) };
+---
+<Base title="Bhutan Destinations" description="Where to go in Bhutan — Paro, Thimphu, Punakha, Phobjikha and Bumthang, with what to see, when to visit and which tours go there." image={hero} schema={list}>
+  <section class="banner">
+    <img src={img(hero, 1600)} srcset={srcset(hero)} sizes="100vw" alt="Tiger's Nest monastery in Paro" width="1600" height="700" fetchpriority="high" />
+    <div><Breadcrumbs items={[['Destinations']]} light /><h1>Where to go in Bhutan</h1><p class="banner__line">Every region can be combined into one private trip — see which of our tours visit each place.</p></div>
+  </section>
+
+  <section class="section section--flush">
+    <div class="container">
+      <div class="sh"><h2 class="sr-only">All destinations</h2></div>
+      <ul class="dest" data-reveal="stagger">
+        {destinations.map((d) => (
+          <li>
+            <a href={`${DESTINATIONS}${d.id}/`}>
+              <img src={img(d.data.image, 600)} srcset={srcset(d.data.image, [400, 600, 900])} sizes="(min-width:768px) 33vw, 100vw" alt="" width="600" height="440" loading="lazy" />
+              <div class="dest__body">
+                <h3>{d.data.title}<Icon name="arrow-right" /></h3>
+                <p>{d.data.excerpt}</p>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</Base>
+<style>
+  .dest { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 32px; list-style: none; margin: 0; padding: 0; }
+  .dest a { display: block; color: inherit; }
+  .dest img { width: 100%; aspect-ratio: 15 / 11; object-fit: cover; border-radius: var(--r-lg); background: var(--s-50); transition: scale var(--dur-3) var(--ease-out); }
+  .dest__body { padding-top: 16px; }
+  .dest h3 { display: flex; align-items: center; gap: 8px; font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
+  .dest h3 :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
+  .dest p { margin-top: 6px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--text-2); }
+  @media (hover: hover) {
+    .dest a:hover img { scale: 1.03; }
+    .dest a:hover h3 :global(.icon) { translate: 3px 0; color: var(--ink); }
+  }
+</style>

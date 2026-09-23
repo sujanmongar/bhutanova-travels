@@ -3,6 +3,7 @@ export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').r
 // Tours sit under their category, with the trip length in the slug:
 // /bhutan-tours/cultural-tours/8-days-bhutan-cultural-extravaganza/
 export const TOURS = '/bhutan-tours/';
+export const DESTINATIONS = '/destinations/';
 export const catPath = (id: string) => `${TOURS}${id}/`;
 export const tourPath = (t: { id: string; data: { days: number; category: { id: string } } }) =>
   `${catPath(t.data.category.id)}${t.data.days}-days-${t.id}/`;

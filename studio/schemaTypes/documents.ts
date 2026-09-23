@@ -2,6 +2,7 @@ import {defineArrayMember, defineField, defineType} from 'sanity'
 import {BookIcon} from '@sanity/icons/Book'
 import {DocumentTextIcon} from '@sanity/icons/DocumentText'
 import {EarthGlobeIcon} from '@sanity/icons/EarthGlobe'
+import {PinIcon} from '@sanity/icons/Pin'
 import {TagIcon} from '@sanity/icons/Tag'
 
 // The slug is the page URL. Changing it on a published page breaks existing links and rankings.
@@ -129,6 +130,36 @@ export const post = defineType({
   ],
   orderings: [{title: 'Newest first', name: 'dateDesc', by: [{field: 'date', direction: 'desc'}]}],
   preview: {select: {title: 'title', subtitle: 'date', media: 'image'}},
+})
+
+export const destination = defineType({
+  name: 'destination',
+  title: 'Destination',
+  type: 'document',
+  icon: PinIcon,
+  groups,
+  fields: [
+    defineField({name: 'title', title: 'Name', type: 'string', group: 'content', description: 'e.g. "Paro".', validation: (r) => r.required()}),
+    {...slug, group: 'content'},
+    defineField({name: 'excerpt', title: 'Short description', type: 'text', rows: 2, group: 'content', validation: (r) => r.required()}),
+    image('image', 'Cover photo'),
+    defineField({name: 'body', title: 'Overview', type: 'blockContent', group: 'content', validation: (r) => r.required()}),
+    lines('highlights', 'Highlights', 'One per line, e.g. "Tiger\'s Nest Monastery".'),
+    defineField({name: 'bestTime', title: 'Best time to visit', type: 'string', group: 'content'}),
+    defineField({name: 'gettingThere', title: 'Getting there', type: 'string', group: 'content', description: 'e.g. "45 minutes by road from Paro International Airport".'}),
+    defineField({
+      name: 'tours',
+      title: 'Tours that visit here',
+      type: 'array',
+      group: 'content',
+      of: [{type: 'reference', to: [{type: 'tour'}]}],
+      validation: (r) => r.unique(),
+    }),
+    defineField({name: 'order', title: 'Menu position', type: 'number', group: 'content', initialValue: 99, description: 'Lower numbers appear first.'}),
+    seo,
+  ],
+  orderings: [{title: 'Menu position', name: 'order', by: [{field: 'order', direction: 'asc'}]}],
+  preview: {select: {title: 'title', subtitle: 'excerpt', media: 'image'}},
 })
 
 export const guide = defineType({
