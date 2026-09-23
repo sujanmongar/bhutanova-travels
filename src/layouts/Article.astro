@@ -35,7 +35,7 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
 </Base>
 <style>
   .post { padding-block: var(--stack) var(--section); }
-  .ah, .body { max-width: 760px; margin-inline: auto; }
+  .ah, .body { max-width: 64ch; margin-inline: auto; }
   .ah :global(.crumbs) { margin-bottom: 16px; }
   .lede { margin-top: 14px; max-width: 60ch; font-size: var(--fs-lead); line-height: var(--lh-lead); color: var(--text-2); }
   .meta { margin: 16px 0 28px; font-size: var(--fs-meta); line-height: var(--lh-meta); letter-spacing: var(--ls-meta); font-weight: 500; color: var(--text-3); }
@@ -45,12 +45,12 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
   .post__aside { display: grid; gap: 40px; align-content: start; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--border); }
   @media (min-width: 768px) { .cover { aspect-ratio: 2 / 1; border-radius: var(--r-xl); } }
   @media (min-width: 1024px) {
-    .post--aside { display: grid; grid-template-columns: minmax(0, 1fr) 300px; column-gap: 48px; }
+    .post--aside { display: grid; grid-template-columns: minmax(0, 64ch) 300px; column-gap: 48px; justify-content: center; }
     .post--aside :is(.ah, .body) { margin-inline: 0; }
     .post--aside .cover { aspect-ratio: 16 / 9; }
     .post__aside { margin-top: 0; padding-top: 0; border-top: 0; }
   }
-  @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 1fr) 336px; column-gap: 72px; } }
+  @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 64ch) 336px; column-gap: 72px; } }
   /* Reading progress, CSS scroll-linked (Chrome 115+, Safari 26+) */
   .progress { display: none; }
   @keyframes grow { from { scale: 0 1; } }
