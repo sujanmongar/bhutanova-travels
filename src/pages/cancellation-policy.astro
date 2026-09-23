@@ -1,0 +1,51 @@
+---
+// Draft — see the note in the body. The deposit/refund figures are placeholders; replace them with
+// your real terms before this page goes live (Studio has no field for this yet, so it's hardcoded here).
+import Base from '../layouts/Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import { SITE } from '../config';
+---
+<Base title="Cancellation Policy" description="Bhutanova Travels' deposit, balance and cancellation terms for booking a Bhutan tour." noindex>
+  <section class="section">
+    <div class="container">
+      <Breadcrumbs items={[['Cancellation policy']]} />
+      <div class="prose">
+        <h1>Cancellation policy</h1>
+        <p>These are the terms for a private tour booked directly with us. They cover the deposit, the balance, and what happens if your dates change or your trip is cancelled — by you or by us.</p>
+
+        <blockquote>Draft: the figures below (in <strong>[brackets]</strong>) are placeholders. Give us your real deposit percentage, notice periods and refund tiers and we'll drop them straight in — until then this page should stay unpublished (<code>noindex</code> is already on).</blockquote>
+
+        <h2>Deposit and balance</h2>
+        <ul>
+          <li>A deposit of <strong>[25%]</strong> of the tour price secures your booking, your hotels and your guide.</li>
+          <li>The balance is due <strong>[30 days]</strong> before arrival.</li>
+          <li>Bookings made within <strong>[30 days]</strong> of departure are paid in full at the time of booking.</li>
+        </ul>
+
+        <h2>If you cancel</h2>
+        <table>
+          <thead><tr><th>Notice before arrival</th><th>Refund of tour price</th></tr></thead>
+          <tbody>
+            <tr><td>More than <strong>[45 days]</strong></td><td>Deposit refunded, less any costs already paid to hotels or airlines</td></tr>
+            <tr><td><strong>[30–45 days]</strong></td><td><strong>[50%]</strong> refunded</td></tr>
+            <tr><td><strong>[15–29 days]</strong></td><td><strong>[25%]</strong> refunded</td></tr>
+            <tr><td>Under <strong>[15 days]</strong>, or no-show</td><td>No refund</td></tr>
+          </tbody>
+        </table>
+        <p>Two government fees sit outside our own terms and are handled directly by the Department of Immigration: the <a href="/travel-guide/sustainable-development-fee/">Sustainable Development Fee</a> is refunded for any nights you do not use if you cancel or shorten your trip before arrival, and the USD 40 visa fee is not refundable once paid.</p>
+
+        <h2>Changing your dates</h2>
+        <p>Moving your trip to new dates is usually easier than cancelling — we treat a date change as a rebooking rather than a cancellation wherever your new dates and hotels allow it. <strong>[Confirm any fee for date changes here.]</strong></p>
+
+        <h2>If we cancel</h2>
+        <p>On the rare occasion we have to cancel or materially change a confirmed trip — for example a government policy change, a natural event, or a safety concern — you'll get a full refund or the option to rebook, whichever you'd prefer.</p>
+
+        <h2>Travel insurance</h2>
+        <p>We strongly recommend <a href="/travel-guide/travel-insurance/">travel insurance</a> that covers trip cancellation, so an unexpected illness, injury or flight disruption on your side is covered even where our own cancellation terms would not refund it.</p>
+
+        <h2>Questions</h2>
+        <p>If any of this doesn't fit your situation, just ask — email <a href={`mailto:${SITE.email}`}>{SITE.email}</a> or use the <a href="/contact/">enquiry form</a>.</p>
+      </div>
+    </div>
+  </section>
+</Base>
