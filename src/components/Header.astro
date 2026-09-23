@@ -193,7 +193,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
   .d-row { display: flex; align-items: center; }
   .d-link {
     flex: 1; display: flex; align-items: center; min-height: 60px; padding: 0 14px; border-radius: var(--r-md);
-    font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--ink);
+    font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-caps); text-transform: uppercase; font-weight: 600; color: var(--ink);
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
   .d-link:hover, .d-link:active { background: var(--surface); }
@@ -237,7 +237,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
     .menu__item { position: relative; }
     .menu__link {
       position: relative; display: flex; align-items: center; gap: 6px; min-height: var(--header-h);
-      font-size: .875rem; line-height: 1.3; letter-spacing: .08em; text-transform: uppercase; font-weight: 500; color: inherit;
+      font-size: var(--fs-meta); line-height: 1.3; letter-spacing: var(--ls-caps); text-transform: uppercase; font-weight: 500; color: inherit;
       transition: color var(--dur-1), opacity var(--dur-1);
     }
     .menu__link::after {
