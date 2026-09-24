@@ -18,10 +18,8 @@ const hero = 'photo-1585904194096-15ef66ccd234';
     <div class="container">
       <h2 class="sr-only">All stories</h2>
       <div class="topics" role="toolbar" aria-label="Filter posts by topic" data-filter>
-        <button class="t-label" type="button" aria-pressed="true" data-topic="">All <span class="num">{posts.length}</span></button>
-        {tags.map((t) => (
-          <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t} <span class="num">{posts.filter((p) => p.data.tags.includes(t)).length}</span></button>
-        ))}
+        <button class="t-label" type="button" aria-pressed="true" data-topic="">All stories</button>
+        {tags.map((t) => <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t}</button>)}
       </div>
       <p class="sr-only" aria-live="polite" data-status></p>
       <ul class="grid-3 posts" data-reveal="stagger">
@@ -43,29 +41,42 @@ const hero = 'photo-1585904194096-15ef66ccd234';
     items.forEach((li) => {
       const on = !topic || li.dataset.tags!.split(' ').includes(topic);
       li.hidden = !on;
-      if (on) { shown++; if (!still) li.animate?.([{ opacity: 0, translate: '0 12px' }, { opacity: 1, translate: '0 0' }], { duration: 400, easing: 'cubic-bezier(.22,1,.36,1)' }); }
+      if (on) { shown++; if (!still) li.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' }); }
     });
     const url = new URL(location.href);
     topic ? url.searchParams.set('topic', topic) : url.searchParams.delete('topic');
     history.replaceState(null, '', url);
     if (announce) status.textContent = `${shown} ${shown === 1 ? 'post' : 'posts'} shown`;
   };
-  buttons.forEach((b) => b.addEventListener('click', () => apply(b.dataset.topic!)));
+  // Changing topic while the tabs are stuck to the top: bring the start of the list back up under them
+  const list = document.querySelector<HTMLElement>('.posts')!;
+  buttons.forEach((b) => b.addEventListener('click', () => {
+    apply(b.dataset.topic!);
+    const gap = list.getBoundingClientRect().top - bar.getBoundingClientRect().bottom;
+    if (gap < 0) scrollBy({ top: gap - 40, behavior: still ? 'auto' : 'smooth' });
+  }));
   const initial = new URL(location.href).searchParams.get('topic');
   if (initial && buttons.some((b) => b.dataset.topic === initial)) apply(initial, false);
 </script>
 <style>
-  .topics { display: flex; gap: var(--space-2); overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1) var(--space-10); padding: 2px var(--gutter); }
-  .topics::-webkit-scrollbar { display: none; }
-  .topics button {
-    flex: none; display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; padding: 0 var(--space-4); border: 1px solid var(--border-dark); border-radius: var(--r-full);
-    background: #fff; color: var(--text); cursor: pointer;
-    transition: background-color var(--dur-1), border-color var(--dur-1), color var(--dur-1);
+  /* Topic tabs: the same text tabs as the tour page (the chosen one in ink with an orange underline) */
+  /* Sticks under the site header while the list scrolls, frosted like the tour page tabs */
+  .topics {
+    position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
+    margin: 0 calc(var(--gutter) * -1) var(--space-10); padding: 0 var(--gutter); border-bottom: 1px solid var(--border);
+    background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
   }
-  .topics .num { color: var(--text-3); }
-  .topics button[aria-pressed='true'] { background: var(--s-500); border-color: var(--s-500); color: #fff; }
-  .topics button[aria-pressed='true'] .num { color: var(--on-dark-2); }
-  @media (hover: hover) { .topics button[aria-pressed='false']:hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); } .topics button[aria-pressed='false']:hover .num { color: var(--s-800); } }
+  .topics::-webkit-scrollbar { display: none; }
+  .topics button { position: relative; flex: none; padding: var(--space-4) var(--space-3); border: 0; background: none; color: var(--text-2); cursor: pointer; transition: color var(--dur-1); }
+  .topics button:first-child { padding-left: 0; }
+  .topics button:focus-visible { outline-offset: -2px; }  /* the scrolling bar would clip an outside ring */
+  .topics button::after { content: ''; position: absolute; inset: auto var(--space-3) -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
+  .topics button:first-child::after { left: 0; }
+  .topics button[aria-pressed='true'] { color: var(--ink); }
+  .topics button[aria-pressed='true']::after { scale: 1 1; }
+  @media (hover: hover) { .topics button:hover { color: var(--ink); } }
+  @media (max-width: 767px) { .topics { mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); } }
+  @media (min-width: 768px) { .topics { margin-inline: 0; padding: 0; } }
   @media (scripting: none) { .topics { display: none; } }
   .posts { row-gap: var(--space-10); }
   .posts > li[hidden] { display: none; }

@@ -1,6 +1,5 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import Icon from './Icon.astro';
 import { img, srcset } from '../config';
 import { tourPath } from '../utils';
 interface Props { tour: CollectionEntry<'tours'>; eager?: boolean; rail?: boolean }
@@ -13,31 +12,14 @@ const sizes = rail
   ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)'
   : '(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)';
 const t = tour.data;
-
-// What's included, read from the tour's own inclusions so the icons never disagree with the tour page.
-const has = (re: RegExp) => t.inclusions.some((x) => re.test(x));
-const included = ([
-  ['identification-card', 'Bhutan visa', /visa/i],
-  ['compass', 'Licensed guide', /guide/i],
-  ['bed', 'Hotels', /hotel|lodge|accommodation|homestay|room/i],
-  ['tent', 'Camping gear', /camping|tent/i],
-  ['fork-knife', 'All meals', /meal/i],
-  ['car', 'Private transport', /vehicle|transport/i],
-  ['ticket', 'Entry fees', /entry fee|monument/i],
-] as const).filter(([, , re]) => has(re)).slice(0, 6);
 ---
 <article class="tc">
   <div class="tc__img">
     <img src={img(t.image, 800, 600)} srcset={srcset(t.image, [400, 600, 800, 1000, 1200], 4 / 3)} sizes={sizes}
       alt="" width="800" height="600" loading={eager ? 'eager' : 'lazy'} decoding="async" />
-    {included.length > 0 && (
-      <ul class="tc__inc" aria-label="Included">
-        {included.map(([icon, label]) => <li><Icon name={`ph_${icon}`} label={label} /></li>)}
-      </ul>
-    )}
   </div>
   <h3 class="tc__title t-card"><a href={tourPath(tour)}>{t.title}</a></h3>
-  <p class="tc__meta t-body"><span><span class="sr-only">From </span><b class="num">${t.price.toLocaleString('en-US')}<span class="sr-only"> US dollars</span></b> <abbr title="per person">pp</abbr></span><span aria-hidden="true">·</span><span class="tc__dur"><Icon name="clock" />{t.nights} Nights / {t.days} Days</span></p>
+  <p class="tc__meta t-body">{t.days} days · from <b class="num">${t.price.toLocaleString('en-US')}</b> per person</p>
 </article>
 <style>
   .tc { position: relative; display: flex; flex-direction: column; height: 100%; }
@@ -45,21 +27,14 @@ const included = ([
   @media (min-width: 768px) { .tc__img { aspect-ratio: auto; height: 270px; } }
   @supports not (corner-shape: squircle) { .tc__img { clip-path: inset(0 round var(--radius)); } }
   .tc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
-  .tc__img::after { content: ''; position: absolute; inset: 55% 0 0; background: linear-gradient(transparent, rgb(12 25 37 / .55)); pointer-events: none; }
-  .tc__inc { position: absolute; z-index: 1; left: 0; right: 0; bottom: var(--space-3); display: flex; justify-content: center; gap: var(--space-3); list-style: none; margin: 0; padding: 0; color: #fff; font-size: 20px; }
-  .tc__inc li { display: grid; }
   .tc h3 a::after { content: ''; position: absolute; inset: 0; z-index: 2; }
   .tc h3 a:focus-visible { outline: none; }
   .tc:has(h3 a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); corner-shape: squircle; }
-  /* Price · duration on one line at body size, price bold; sits at the bottom so it lines up across a row of cards. */
-  .tc__meta { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); font-family: var(--ff); margin-top: auto; padding-top: var(--space-3); color: var(--text-2); }
-  .tc__meta > span { white-space: nowrap; }  /* on the narrowest phones the duration drops to its own line instead of breaking */
-  .tc__dur { display: inline-flex; align-items: center; gap: var(--space-2); }
-  .tc__meta :global(.icon) { font-size: 20px; color: var(--ink); }
+  /* "8 days · from $1,690 per person" at body size, price bold; sits at the bottom so it lines up across a row of cards. */
+  .tc__meta { margin-top: auto; padding-top: var(--space-2); color: var(--text-2); }
   .tc__meta b { font-weight: 600; color: var(--ink); }
-  .tc__meta abbr { text-decoration: none; }
   @media (hover: hover) {
-    .tc:hover .tc__img img { scale: 1.04; }
+    .tc:hover .tc__img img { scale: 1.02; }
     .tc:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
   }
 </style>

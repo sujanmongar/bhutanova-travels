@@ -1,8 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
+import Arrows from '../Arrows.astro';
 import TourCard from '../TourCard.astro';
-interface Props { _key: string; heading: string; text?: string; tours?: string[]; grey?: boolean }
-const { _key, heading, text, tours: picked = [], grey = false } = Astro.props;
+// more: the "All tours" link (off on the tours page itself).
+interface Props { _key: string; heading: string; text?: string; tours?: string[]; grey?: boolean; more?: boolean }
+const { _key, heading, text, tours: picked = [], grey = false, more = true } = Astro.props;
 const all = await getCollection('tours');
 // Editor's picks in their order; otherwise featured tours first, six in total.
 const tours = picked.length
@@ -12,10 +15,15 @@ const rail = `rail-${_key}`;
 ---
 <section class:list={['section', { 'section--grey': grey }]}>
   <div class="container">
-    <div class="sh" data-reveal>
+    <div class="sh sh--row" data-reveal>
       <h2>{heading}</h2>
       {text && <p>{text}</p>}
+      <div class="sh__act">
+        {more && <a class="link-more" href="/bhutan-tours/">All tours<Icon name="arrow-right" /></a>}
+        <Arrows target={rail} label="tours" />
+      </div>
     </div>
     <div class="rail" id={rail} data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
+    {more && <a class="link-more m-only" href="/bhutan-tours/">All tours<Icon name="arrow-right" /></a>}
   </div>
 </section>

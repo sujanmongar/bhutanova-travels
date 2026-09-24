@@ -30,7 +30,7 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
         {hasAside && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
         <img class="cover" src={img(image, 1200, 600)} srcset={srcset(image, [800, 1200, 1600, 2000, 2400], 2)}
           sizes={hasAside ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
-          alt="" width="1200" height="600" fetchpriority="high" style="view-transition-name: hero-img" />
+          alt="" width="1200" height="600" fetchpriority="high" />
       </picture>
       <div class="prose body t-body"><slot /></div>
     </article>
@@ -56,12 +56,12 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
     .post__aside { margin-top: 0; padding-top: 0; border-top: 0; }
   }
   @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 64ch) 336px; column-gap: var(--space-16); } }
-  /* Reading progress, CSS scroll-linked (Chrome 115+, Safari 26+) */
+  /* Reading progress: a 2px line under the header that fills as you read (CSS scroll-linked, Chrome 115+, Safari 26+) */
   .progress { display: none; }
   @keyframes grow { from { scale: 0 1; } }
   @supports (animation-timeline: scroll()) {
     @media (prefers-reduced-motion: no-preference) {
-      .progress { display: block; position: fixed; inset: 0 0 auto; z-index: 60; height: 3px; background: var(--p-500); transform-origin: 0 50%; animation-name: grow; animation-timing-function: linear; animation-fill-mode: both; animation-timeline: scroll(root); }
+      .progress { display: block; position: fixed; inset: 0 0 auto; z-index: 60; height: 2px; background: var(--p-500); transform-origin: 0 50%; animation: grow linear both; animation-timeline: scroll(root); }
     }
   }
 </style>

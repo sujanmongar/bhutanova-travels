@@ -1,14 +1,11 @@
 ---
-// Team: the office team as cards, then guides and drivers as a swipeable row of portraits with a Guides / Drivers switch.
-// Sample profiles (placeholder ticked in Sanity) show everywhere, with a one-line note that they're placeholders; the
-// note goes away by itself once no sample profiles are left.
+// Team: office team, guides and drivers, each group as the same photo cards (the first eight, then "Show all").
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
 import { img, srcset, focal } from '../../config';
 interface Props { heading: string; text?: string; grey?: boolean }
 const { heading, text, grey = false } = Astro.props;
 const people = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
-const samples = people.some((m) => m.data.placeholder);
 // One card for everyone, grouped: office team, then guides, then drivers. A long group shows its first 8 and a button
 // reveals the rest, so dozens of guides never turn the page into a wall.
 const LIMIT = 8;
@@ -24,7 +21,6 @@ const detail = (m: (typeof people)[number]) =>
     <div class="sh" data-reveal>
       <h2>{heading}</h2>
       {text && <p>{text}</p>}
-      {samples && <p class="note t-caption subtle">Photos and names are placeholders while we add our own team.</p>}
     </div>
 
     {groups.map((g) => (
@@ -62,8 +58,6 @@ const detail = (m: (typeof people)[number]) =>
 </script>
 
 <style>
-  /* The section-intro rule sets paragraphs to body size; the note stays small print */
-  .sh .note { margin-top: var(--space-3); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); }
   .group + .group { margin-top: var(--space-16); }
   /* Group titles sit a step above the names: sub-section size (22.8 phones / 25.9 desktop) over card-size names */
   .group__h { margin-bottom: var(--space-6); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
@@ -71,9 +65,11 @@ const detail = (m: (typeof people)[number]) =>
   .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
   @media (min-width: 768px) { .people { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (min-width: 1024px) { .people { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
-  .people li { display: grid; align-content: start; gap: var(--space-3); }
+  /* Photo → 16px → name → 4px → role and detail, set close together so each card reads as one caption */
+  .people li { display: grid; align-content: start; }
+  .people li .t-card { margin-bottom: var(--space-1); }
   .people li[hidden] { display: none; }
-  .people__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; margin-bottom: var(--space-3); border-radius: var(--radius); corner-shape: squircle; overflow: hidden; background: var(--surface-2); color: var(--text-2); font-size: 48px; }
+  .people__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; overflow: hidden; background: var(--surface-2); color: var(--text-2); font-size: 48px; }
   .people__ph img { width: 100%; height: 100%; object-fit: cover; }
   .group__more { margin-top: var(--space-8); }
 </style>

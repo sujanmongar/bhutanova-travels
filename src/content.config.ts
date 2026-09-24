@@ -67,7 +67,7 @@ export const collections = {
   tours: defineCollection({
     loader: sanity(`*[_type == "tour"]{
       "id": slug.current, title, "category": category->slug.current, nights, days, route, price, priceNotes, summary,
-      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights, groupSize, guideLanguages, maxAltitude, bestSeason,
+      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights,
       itinerary[]{ title, body, overnight, "image": image.${IMG},
         "places": (places[]->{ _type, title, excerpt, "slug": slug.current, "dest": destination->slug.current, "page": coalesce(page, false),
           "image": coalesce(image.${IMG}, destination->image.${IMG}) })[defined(slug)] },
@@ -84,10 +84,6 @@ export const collections = {
       image: z.string(),
       gallery: z.array(z.string()).default([]),
       highlights: z.array(z.string()).default([]),
-      groupSize: z.string().optional(),
-      guideLanguages: z.string().optional(),
-      maxAltitude: z.string().optional(),
-      bestSeason: z.string().optional(),
       itinerary: z
         .array(z.object({
           title: z.string(), image: z.string().optional(), body: z.string(), overnight: z.string().optional(),
@@ -169,9 +165,9 @@ export const collections = {
       seo,
     }),
   }),
-  // Team members for the About page. Sample profiles (placeholder ticked) show with a placeholder note.
+  // Team members for the About page.
   team: defineCollection({
-    loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order, "placeholder": coalesce(placeholder, false) }`),
+    loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order }`),
     schema: z.object({
       name: z.string(),
       group: z.enum(['office', 'guide', 'driver']),
@@ -181,7 +177,6 @@ export const collections = {
       languages: z.string().optional(),
       years: z.number().optional(),
       order: z.number().default(99),
-      placeholder: z.boolean(),
     }),
   }),
   // Page-builder pages: "home" is the homepage, everything else is served at /<slug>/.
@@ -194,7 +189,8 @@ export const collections = {
         "image": image${BLOCK_IMG},
         rows[]{ ..., "image": image${BLOCK_IMG} },
         logos[]{ ..., "image": image{ "url": asset->url, alt } },
-        "tours": tours[]->slug.current
+        "tours": tours[]->slug.current,
+        "person": person->{ name, role, "photo": photo${BLOCK_IMG} }
       } }`),
     schema: z.object({
       title: z.string(),

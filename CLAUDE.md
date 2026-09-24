@@ -33,14 +33,14 @@ Headings run in strict order h1 > … > h6. A heading element uses its own level
 | H3 | `h3` | 25.6 | 37.3 | Sub-sections (outside content columns) |
 | H4 | `h4` | 22.8 | 31.1 | Rare |
 | Card title | `.t-card` | 20.3 (h5) | 21.6 (h6) | Tour, blog, category cards; section items (why-us reasons, booking steps, FAQ questions); dialog titles |
-| H6 / Item title | `h6` / `.t-title` | 18 | 21.6 | Widgets, footer column titles |
+| H6 / Item title | `h6` / `.t-title` | 18 | 21.6 | Widgets (footer column titles are `.t-label .t-caps`) |
 | Quote | `.t-quote` | 20.3 | 25.9 | Pull quotes (serif italic). Review text on the homepage is sans 400 at the H6 size (owner's call) |
 | **Body** | `.t-body` | **18** | **18** | Reading text, every description and every checklist |
 | Caption | `.t-caption` | 16 | 16 | Small print, secondary text |
 | Label | `.t-label` | 16 | 16 | Nav, breadcrumbs, dates, tags, facts lines, form labels (500) |
 | Button | `.t-button` | 16 | 16 | Button text (600). Button visuals keep their variants — only the text style is shared |
 | Link | `.t-link` | 16 | 16 | "Learn more / see all" — same text style as buttons (600) |
-| Price | `.t-price` | 20.3 | 25.9 | Tour page price box and sticky bar — sans 600, never serif. Tour cards show the price at Body size, bold, on the duration line |
+| Price | `.t-price` | 20.3 | 25.9 | Tour page price box and sticky bar — sans 600, never serif. Tour cards: one Body line, "8 days · from $1,690 per person", price bold |
 
 Section items (why us, how booking works, FAQ, blog cards and the homepage blog list) share one order: label 16 → 8px →
 item title `.t-card` → 12px → `.t-body` in `.muted` (text-2). Icon/number → title 24px.
@@ -82,5 +82,15 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - `npx sanity deploy` (Studio schema only) is fine whenever a schema change needs it.
 - New CMS fields get real drafted content, never left empty.
 - One homepage section at a time; don't start the next until the user says so. The homepage order is the owner's
-  (set in Sanity): hero, about, popular tours, themes, why us, blogs, how booking works, reviews, FAQ, CTA, partners.
+  (set in Sanity): hero (with a proof line), founder note, popular tours, themes, reviews, blog, FAQ, plan your trip
+  (navy: steps + named planner), partners. No "why us" icon grid, no stepper rings, no photo CTA banner on the homepage.
+- Motion is quiet and quick, the same few moves everywhere (tokens in global.css): content fades in and rises 12px once
+  as it enters (`data-reveal`, cards in a row 60ms apart); banner/hero photos settle from a 3% zoom and their words fade
+  up; pages cross-fade (header stays put); card photos ease in 2% on hover; buttons press to 98%. No bounces, no big
+  zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
+  The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
+  outline → navy border); no orange hover. Everything is off for reduced motion.
+- Every page closes with the same contact section (WhatsAppCta; Sanity's Call to action and WhatsApp card blocks render
+  it too): heading + line, the trip planner picked in the homepage's Plan your trip, WhatsApp + one button, phone, email.
+  Filters are text tabs (orange underline), like the tour page tabs — no pill chips.
 - Verify in the browser at 1280 and 375 before reporting; restart the dev server after CSS or content changes (it caches).

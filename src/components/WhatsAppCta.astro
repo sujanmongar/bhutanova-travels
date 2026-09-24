@@ -1,68 +1,75 @@
 ---
+// The closing "talk to us" card on every page: the full-width version of the sidebar support card (PlanCta), navy.
+// Heading and a line on the left; on the right the trip planner (the Team member picked in the homepage's "Plan your
+// trip" section), WhatsApp, a second button, phone and email. Sanity's WhatsApp card and Call to action blocks render it.
+import { getEntry } from 'astro:content';
 import Icon from './Icon.astro';
-import { SITE, wa, tel } from '../config';
-interface Props { title?: string; text?: string; about?: string; id?: string }
+import { SITE, img, wa, tel } from '../config';
+interface Props { title?: string; text?: string; about?: string; id?: string; cta?: string; href?: string }
 const {
   title = 'Not sure which trip fits?',
   text = 'Message a planner in Thimphu on WhatsApp. We usually reply within the hour.',
   about,
   id = 'whatsapp',
+  cta = 'Send an enquiry',
+  href = '/contact/',
 } = Astro.props;
 // The chat opens with this page's link (and this section's anchor) already in the message.
 const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#${id}`, about);
+const home = await getEntry('pages', 'home');
+const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps') as any)?.person as
+  | { name: string; role: string; photo?: { url: string; hotspot?: { x: number; y: number } }}
+  | null
+  | undefined;
 ---
 <section class="section wa" id={id}>
   <div class="container">
     <div class="wa__card" data-reveal>
       <div class="wa__txt">
         <h2>{title}</h2>
-        <p class="t-body">{text}</p>
+        {text && <p class="t-body">{text}</p>}
       </div>
-      <div class="wa__act">
-        <a class="wa__num" href={chat} target="_blank" rel="noopener">
-          <span class="wa__ic" aria-hidden="true"><Icon name="social_whatsapp" /></span>
-          <span class="num">{SITE.phone}</span>
-          <span class="sr-only"> — open a WhatsApp chat (new tab)</span>
-        </a>
-        <a class="wa__link t-link" href={chat} target="_blank" rel="noopener">Chat on WhatsApp<Icon name="arrow-up-right" /></a>
-        <p class="wa__alt t-caption">Or call <a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a> · <a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
+      <div class="wa__talk">
+        {person && (
+          <div class="wa__who">
+            {person.photo && <img src={img(person.photo.url, 128, 128, person.photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
+            <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Thimphu office</span></p>
+          </div>
+        )}
+        <div class="wa__act">
+          <a class="btn btn--light" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
+          <a class="btn btn--on-dark" href={href}>{cta}</a>
+        </div>
+        <p class="wa__alt t-label"><span>Or call <a href={tel(SITE.phone)}>{SITE.phone}</a></span><span class="wa__dot" aria-hidden="true"> · </span><span><a href={`mailto:${SITE.email}`}>{SITE.email}</a></span></p>
       </div>
     </div>
   </div>
 </section>
 <style>
   .wa__card {
-    display: grid; gap: var(--space-8); padding: var(--space-8) var(--space-6); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); color: #fff;
-    -webkit-font-smoothing: antialiased; --focus: #fff;
+    display: grid; gap: var(--space-10); padding: var(--space-10) var(--space-6); border-radius: var(--radius); corner-shape: squircle;
+    background: var(--s-500); color: #fff; -webkit-font-smoothing: antialiased; --focus: #fff;
   }
-  .wa__txt h2 { color: #fff; max-width: 18ch; }
-  .wa__txt p { margin-top: var(--space-3); max-width: 40ch; color: var(--on-dark-2); }
-  .wa__act { display: grid; justify-items: start; gap: var(--space-2); }
-  .wa__num {
-    display: inline-flex; align-items: center; gap: var(--space-4); min-height: 56px;
-    font-family: var(--ff); font-size: var(--fs-price); line-height: var(--lh-price); letter-spacing: var(--ls-price); font-weight: var(--fw-price); color: #fff; white-space: nowrap;
-    transition: color var(--dur-1);
+  .wa__txt h2 { max-width: 18ch; color: #fff; }
+  .wa__txt p { margin-top: var(--space-4); max-width: 44ch; color: var(--on-dark-2); }
+  .wa__talk { display: grid; gap: var(--space-4); justify-items: start; }
+  .wa__who { display: flex; align-items: center; gap: var(--space-4); }
+  .wa__who img { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-800); }
+  .wa__who p { display: grid; gap: var(--space-1); }
+  .wa__who .t-card { color: #fff; }
+  .wa__who .t-label, .wa__alt { color: var(--on-dark-2); }
+  .wa__act { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
+  .wa__act :global(.icon) { font-size: 18px; }
+  /* 44px tap targets for the phone and email */
+  .wa__alt a { display: inline-flex; align-items: center; min-height: 44px; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 4px; }
+  @media (hover: hover) { .wa__alt a:hover { text-decoration-color: var(--p-500); } }
+  @media (max-width: 479px) {
+    .wa__act { width: 100%; } .wa__act .btn { flex: 1 1 100%; }
+    /* Phone and email on their own lines, so no line ends in a dot */
+    .wa__alt span:not(.wa__dot) { display: block; } .wa__dot { display: none; }
   }
-  .wa__ic { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; background: #25d366; color: #fff; font-size: 28px; transition: scale var(--dur-2) var(--ease-out); }
-  .wa__link {
-    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: #fff;
-    text-decoration: underline 1.5px rgb(255 255 255 / .5); text-underline-offset: 6px; transition: color var(--dur-1), text-decoration-color var(--dur-2);
-  }
-  .wa__link :global(.icon) { font-size: 12px; transition: translate var(--dur-2) var(--ease-out); }
-  .wa__alt { color: var(--on-dark-3); }
-  /* 44px tap targets; underlined on touch screens, where there is no hover to reveal them as links */
-  .wa__alt a { display: inline-flex; align-items: center; min-height: 44px; color: var(--on-dark-2); text-decoration: underline 1px currentColor; text-underline-offset: 4px; }
-  @media (hover: hover) {
-    .wa__alt a { text-decoration-color: transparent; }
-    .wa__alt a:hover { color: #fff; text-decoration-color: currentColor; }
-    .wa__num:hover { color: var(--p-500); }
-    .wa__num:hover .wa__ic { scale: 1.06; }
-    .wa__link:hover { color: #fff; text-decoration-color: #fff; }
-    .wa__link:hover :global(.icon) { translate: 2px -2px; }
-  }
-  @media (max-width: 400px) { .wa__num { font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); gap: var(--space-3); } .wa__ic { width: 44px; height: 44px; font-size: 24px; } }
   @media (min-width: 768px) { .wa__card { padding: var(--space-12); } }
   @media (min-width: 1024px) {
-    .wa__card { grid-template-columns: 1fr auto; align-items: center; gap: var(--space-16); padding: var(--space-16); }
+    .wa__card { grid-template-columns: 7fr 5fr; gap: var(--space-16); align-items: center; padding: var(--space-16); }
   }
 </style>

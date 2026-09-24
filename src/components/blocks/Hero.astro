@@ -1,7 +1,7 @@
 ---
 import { img, srcset, focal, type BlockImage } from '../../config';
-interface Props { heading: string; text?: string; image?: BlockImage; primaryLabel?: string; secondaryLabel?: string }
-const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Enquire' } = Astro.props;
+interface Props { heading: string; text?: string; image?: BlockImage; primaryLabel?: string; secondaryLabel?: string; proof?: string[] }
+const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Enquire', proof = [] } = Astro.props;
 ---
 <section class="hero">
   {/* Phones: the frame is portrait (about 9:16), so the CDN sends a portrait crop kept around the editor's focal point;
@@ -19,23 +19,27 @@ const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = '
       <a class="btn btn--light btn--lg" href="/bhutan-tours/">{primaryLabel}</a>
       <a class="btn btn--on-dark btn--lg" href="/contact/">{secondaryLabel}</a>
     </div>
+    {proof.length > 0 && <ul class="hero__proof t-label">{proof.map((p) => <li>{p}</li>)}</ul>}
   </div>
 </section>
 
 <style>
-  .hero { position: relative; height: min(88svh, 760px); min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
+  .hero { position: relative; height: min(92svh, 800px); min-height: 600px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
   .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
   .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
-  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: var(--space-6); padding-bottom: max(var(--space-10), env(safe-area-inset-bottom)); }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: var(--space-6); padding-bottom: max(var(--space-8), env(safe-area-inset-bottom)); }
   .hero__line { max-width: 48ch; color: #fff; }
   .hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-4); }
-  @media (min-width: 768px) { .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); } .hero__in { padding-bottom: var(--space-16); } }
-  @media (min-width: 1200px) { .hero { height: min(90svh, 820px); } .hero__in { padding-bottom: var(--space-20); } }
-  @media (prefers-reduced-motion: no-preference) {
-    .hero img { animation: kenburns 7s cubic-bezier(.33, 1, .68, 1) backwards; }
-    .hero-title { --rise: 18px; animation: rise 800ms var(--ease-out) 200ms backwards; }
-    .hero__line { --rise: 12px; animation: rise 800ms var(--ease-out) 280ms backwards; }
-    .hero__cta { animation: fade 500ms var(--ease-out) 360ms backwards; }
+  /* Proof line: a hairline above, the facts separated by dots */
+  .hero__proof { display: flex; flex-wrap: wrap; gap: var(--space-1) var(--space-3); margin: var(--space-2) 0 0; padding: var(--space-4) 0 0; border-top: 1px solid rgb(255 255 255 / .24); list-style: none; color: var(--on-dark-2); }
+  .hero__proof li + li::before { content: '·'; margin-right: var(--space-3); }
+  /* Phones: the first fact on its own line, the short ones under it, so no line starts with a dot */
+  @media (max-width: 767px) { .hero__proof li:first-child { flex-basis: 100%; } .hero__proof li + li:nth-child(2)::before { content: none; } }
+  @media (min-width: 768px) {
+    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
+    .hero__in { padding-bottom: var(--space-12); }
+    .hero__proof { justify-self: start; }
   }
+  @media (min-width: 1200px) { .hero { height: min(92svh, 860px); } .hero__in { padding-bottom: var(--space-16); } }
 </style>

@@ -5,19 +5,18 @@ import TourCard from '../../../components/TourCard.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import BannerImg from '../../../components/BannerImg.astro';
-import Icon from '../../../components/Icon.astro';
-import { img } from '../../../config';
-import { TOURS, catPath } from '../../../utils';
+import CategoryTiles from '../../../components/blocks/CategoryTiles.astro';
+import { TOURS } from '../../../utils';
 
 export async function getStaticPaths() {
   const tours = (await getCollection('tours')).sort((a, b) => a.data.days - b.data.days);
   const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
   return cats.map((cat) => ({
     params: { cat: cat.id },
-    props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id), others: cats.filter((c) => c.id !== cat.id) },
+    props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) },
   }));
 }
-const { cat, tours, others } = Astro.props;
+const { cat, tours } = Astro.props;
 ---
 <Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo}>
   <section class="banner">
@@ -40,27 +39,9 @@ const { cat, tours, others } = Astro.props;
     </div>
   </section>
 
-  {others.length > 0 && (
-    <nav class="section section--grey cats" aria-labelledby="other-themes">
-      <div class="container">
-        <div class="sh" data-reveal><h2 id="other-themes">Other ways to see Bhutan</h2></div>
-        <ul data-reveal="stagger">
-          {others.map((c) => (
-            <li><a class="t-title" href={catPath(c.id)}><img src={img(c.data.image, 168, 126)} alt="" width="56" height="42" loading="lazy" decoding="async" /><span>{c.data.menuTitle}</span><Icon name="arrow-right" /></a></li>
-          ))}
-        </ul>
-      </div>
-    </nav>
-  )}
+  <CategoryTiles heading="Other ways to see Bhutan" exclude={cat.id} grey />
   <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>
 <style>
   .tours { row-gap: var(--space-12); }
-  /* Same theme list as /bhutan-tours/ */
-  .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0 var(--space-10); list-style: none; margin: 0; padding: 0; }
-  .cats a { display: flex; align-items: center; gap: var(--space-4); min-height: 72px; padding: var(--space-3) 0; border-top: 1px solid var(--border-dark); color: var(--ink); transition: color var(--dur-1); }
-  .cats img { width: 56px; height: 42px; border-radius: var(--r-sm); object-fit: cover; background: var(--s-50); }
-  .cats span { flex: 1; }
-  .cats a :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
-  @media (hover: hover) { .cats a:hover span { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; } .cats a:hover :global(.icon) { translate: 3px 0; color: var(--ink); } }
 </style>

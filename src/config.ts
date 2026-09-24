@@ -8,6 +8,8 @@ export const SITE = {
   phone: '+975 77 34 44 26',
   phoneAlt: '+975 17 44 99 32',
   whatsapp: '97577344426',
+  // Department of Tourism licence, shown in the footer. Dummy until the owner sends the real number.
+  licence: '1234',
   // '#' = profile not set up yet: the icon shows but links nowhere, and it's left out of the structured data.
   social: {
     facebook: '#',

@@ -16,6 +16,7 @@ import {SplitHorizontalIcon} from '@sanity/icons/SplitHorizontal'
 import {StarIcon} from '@sanity/icons/Star'
 import {TagIcon} from '@sanity/icons/Tag'
 import {TextIcon} from '@sanity/icons/Text'
+import {UserIcon} from '@sanity/icons/User'
 import {UsersIcon} from '@sanity/icons/Users'
 
 // ---------- Shared fields ----------
@@ -85,6 +86,14 @@ const hero = defineType({
     photo(),
     defineField({name: 'primaryLabel', title: 'Main button text', type: 'string', initialValue: 'Explore tours', description: 'Opens the tours page.', validation: (r) => r.required()}),
     defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Enquire', description: 'Opens the contact page.', validation: (r) => r.required()}),
+    defineField({
+      name: 'proof',
+      title: 'Proof line',
+      type: 'array',
+      of: [{type: 'string'}],
+      validation: (r) => r.max(3),
+      description: 'Two or three short facts under the buttons, e.g. "Licensed by the Department of Tourism", "Licence no. …", "Since 2016".',
+    }),
   ],
   preview: {select: {title: 'heading', subtitle: 'text', media: 'image'}},
 })
@@ -120,6 +129,23 @@ const intro = defineType({
     grey(),
   ],
   preview: preview('Intro', {media: 'image'}),
+})
+
+const founderNote = defineType({
+  name: 'founderNote',
+  title: 'Founder note',
+  type: 'object',
+  icon: UserIcon,
+  description: 'A short note in the founder’s own words, signed with their name and role. Their portrait sits beside it (a small round photo on phones).',
+  fields: [
+    heading('A small team in Thimphu'),
+    defineField({name: 'text', title: 'Note', type: 'simpleText', description: 'Two short paragraphs in the first person.', validation: (r) => r.required()}),
+    defineField({name: 'person', title: 'Signed by', type: 'reference', to: [{type: 'teamMember'}], description: 'Name, role and portrait come from Team.', validation: (r) => r.required()}),
+    defineField({name: 'linkLabel', title: 'Link text', type: 'string', initialValue: 'More about us'}),
+    defineField({name: 'linkHref', title: 'Link', type: 'url', initialValue: '/about/', hidden: ({parent}) => !parent?.linkLabel, validation: (r) => linkRules(r)}),
+    grey(),
+  ],
+  preview: {select: {heading: 'heading', media: 'person.photo'}, prepare: ({heading, media}) => ({title: heading || 'Founder note', subtitle: 'Founder note', media})},
 })
 
 const reasons = defineType({
@@ -180,7 +206,7 @@ const tourRail = defineType({
   title: 'Tour packages',
   type: 'object',
   icon: EarthGlobeIcon,
-  description: 'A scrolling row of tour cards.',
+  description: 'A row of tour cards (swipe on phones) with an "All tours" link.',
   fields: [
     heading('Popular tour packages'),
     defineField({name: 'text', title: 'Intro', type: 'string'}),
@@ -202,7 +228,7 @@ const categoryTiles = defineType({
   title: 'Tour categories',
   type: 'object',
   icon: TagIcon,
-  description: 'A scrolling row of tall photo cards, one per tour category, with each category’s short description.',
+  description: 'A row of tall photo cards, one per tour category, with each category’s short description. Visitors swipe it or use the arrows; it never moves on its own.',
   fields: [heading('Bhutan tours by theme'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey()],
   preview: preview('Tour categories'),
 })
@@ -212,8 +238,8 @@ const latestPosts = defineType({
   title: 'Latest blog posts',
   type: 'object',
   icon: DocumentTextIcon,
-  description: 'The newest post large, plus the three before it.',
-  fields: [heading('Travel blogs'), defineField({name: 'text', title: 'Intro', type: 'string'}), grey(true)],
+  description: 'The three newest posts side by side (swipe on phones), with an "All articles" link.',
+  fields: [heading('From our blog'), grey()],
   preview: preview('Latest blog posts'),
 })
 
@@ -243,20 +269,17 @@ const team = defineType({
 
 const bookingSteps = defineType({
   name: 'bookingSteps',
-  title: 'Booking steps',
+  title: 'Plan your trip (steps + contact)',
   type: 'object',
   icon: OlistIcon,
-  description: 'How booking works: three or four short numbered steps from first message to arrival, with WhatsApp and enquiry buttons.',
+  description: 'A navy closing section: three or four numbered steps from first message to arrival, beside a contact panel with a named trip planner, WhatsApp, the enquiry form, email and phone.',
   fields: [
-    heading('How booking works'),
+    heading('Plan your trip'),
     defineField({name: 'text', title: 'Intro', type: 'string'}),
     points('steps', 'Steps', 5),
-    defineField({name: 'whatsapp', title: 'Show a WhatsApp button', type: 'boolean', initialValue: true, description: 'The fastest way to start: opens a WhatsApp chat with the planner.'}),
-    defineField({name: 'buttonLabel', title: 'Second button text', type: 'string', initialValue: 'Send an enquiry'}),
-    defineField({name: 'buttonLink', title: 'Second button link', type: 'url', initialValue: '/contact/', hidden: ({parent}) => !parent?.buttonLabel, validation: (r) => linkRules(r)}),
-    grey(),
+    defineField({name: 'person', title: 'Trip planner', type: 'reference', to: [{type: 'teamMember'}], description: 'Shown in the contact panel: “Your message comes to …”. Name, role and photo come from Team.'}),
   ],
-  preview: preview('Booking steps'),
+  preview: preview('Plan your trip'),
 })
 
 const faqList = defineType({
@@ -271,10 +294,10 @@ const faqList = defineType({
 
 const ctaBanner = defineType({
   name: 'ctaBanner',
-  title: 'Call to action (photo)',
+  title: 'Call to action',
   type: 'object',
   icon: LaunchIcon,
-  description: 'Full-width photo with a heading, a button and the WhatsApp number.',
+  description: 'The closing contact section: heading and text, with the trip planner (from the homepage’s Plan your trip section), a WhatsApp button, your button, phone and email.',
   fields: [
     heading('Your Bhutan journey starts with a conversation'),
     defineField({
@@ -286,8 +309,8 @@ const ctaBanner = defineType({
     }),
     defineField({name: 'buttonLabel', title: 'Button text', type: 'string', initialValue: 'Start planning', validation: (r) => r.required()}),
     defineField({name: 'buttonLink', title: 'Button link', type: 'url', initialValue: '/contact/', validation: (r) => [r.required(), ...linkRules(r)]}),
-    // Background only (the text sits on top), so no alt text.
-    photo('image', 'Background photo', true, false),
+    // No longer shown (the section has no photo now); kept hidden so existing pages keep their data.
+    {...photo('image', 'Background photo', false, false), hidden: true},
   ],
   preview: preview('Call to action', {media: 'image'}),
 })
@@ -297,7 +320,7 @@ const whatsapp = defineType({
   title: 'WhatsApp contact card',
   type: 'object',
   icon: CommentIcon,
-  description: 'The big WhatsApp number; the chat opens with a link to this page.',
+  description: 'The closing contact section with the trip planner and a WhatsApp button; the chat opens with a link to this page.',
   fields: [
     heading('Not sure which trip fits?'),
     defineField({name: 'text', title: 'Text', type: 'string', initialValue: 'Message a planner in Thimphu on WhatsApp. We usually reply within the hour.'}),
@@ -311,9 +334,9 @@ const partners = defineType({
   title: 'Partner logos',
   type: 'object',
   icon: UsersIcon,
-  description: 'A row of greyscale logos that turn to colour on hover. It scrolls on its own when the logos don\'t fit the width.',
+  description: 'Logos in full colour, standing still: one row beside the label on desktop, wrapped into rows on phones.',
   fields: [
-    defineField({name: 'label', title: 'Label', type: 'string', initialValue: 'Registered with and flying in partnership with'}),
+    defineField({name: 'label', title: 'Label', type: 'string', initialValue: 'Licences, memberships and airline partners'}),
     defineField({
       name: 'logos',
       title: 'Logos',
@@ -336,12 +359,12 @@ const partners = defineType({
   preview: {prepare: () => ({title: 'Partner logos'})},
 })
 
-export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, bookingSteps, team, faqList, ctaBanner, whatsapp, partners]
+export const blockTypes = [hero, pageBanner, intro, founderNote, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, bookingSteps, team, faqList, ctaBanner, whatsapp, partners]
 
 // ---------- Page ----------
 const TOP = ['hero', 'pageBanner']
 const TOP_NAME: Record<string, string> = {hero: 'hero', pageBanner: 'page banner'}
-const ONCE: Record<string, string> = {faqList: 'FAQs section', reviewList: 'Reviews section', ctaBanner: 'Call to action', whatsapp: 'WhatsApp card'}
+const ONCE: Record<string, string> = {founderNote: 'Founder note', bookingSteps: 'Plan your trip section', faqList: 'FAQs section', reviewList: 'Reviews section', ctaBanner: 'Call to action', whatsapp: 'WhatsApp card'}
 // URLs already used by the site's own pages.
 const RESERVED = ['home', 'index', 'tours', 'blog', 'travel-guide', 'contact', 'privacy', '404', 'admin', 'images', 'sitemap-index', 'sitemap-0', 'robots']
 const isHome = (id?: string) => id?.replace(/^drafts\./, '') === 'home'
@@ -396,9 +419,9 @@ export const page = defineType({
           filter: true,
           groups: [
             {name: 'top', title: 'Top of page', of: ['hero', 'pageBanner']},
-            {name: 'text', title: 'Text & photos', of: ['intro', 'reasons', 'storyRows', 'richText']},
+            {name: 'text', title: 'Text & photos', of: ['intro', 'founderNote', 'reasons', 'storyRows', 'richText', 'team']},
             {name: 'lists', title: 'Tours, blog & reviews', of: ['tourRail', 'categoryTiles', 'latestPosts', 'reviewList', 'faqList']},
-            {name: 'contact', title: 'Contact & trust', of: ['ctaBanner', 'whatsapp', 'partners']},
+            {name: 'contact', title: 'Contact & trust', of: ['bookingSteps', 'ctaBanner', 'whatsapp', 'partners']},
           ],
           views: [{name: 'grid', previewImageUrl: (type: string) => `/static/blocks/${type}.jpg`}, {name: 'list'}],
         },

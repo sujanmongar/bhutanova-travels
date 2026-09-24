@@ -21,7 +21,7 @@ const crop = (ratio: number) => srcset(image!.url, [480, 800, 1200, 1600], ratio
       {expertise.length > 0 && (
         <ul class="expertise">{expertise.map((x) => <li class="t-body"><span class="tick" aria-hidden="true"><Icon name="check" /></span>{x}</li>)}</ul>
       )}
-      {linkLabel && linkHref && <a class="link-more" href={linkHref}>{linkLabel}</a>}
+      {linkLabel && linkHref && <a class="link-more" href={linkHref}>{linkLabel}<Icon name="arrow-right" /></a>}
     </div>
     {layout === 'side' && (
       <figure class="photo" data-reveal>

@@ -1,101 +1,109 @@
 ---
+import { getCollection } from 'astro:content';
 import Icon from './Icon.astro';
 import Logo from './Logo.astro';
 import Social from './Social.astro';
-import { SITE } from '../config';
+import { SITE, tel } from '../config';
+import { TOURS, DESTINATIONS, catPath } from '../utils';
 
-// Same order as the header menu
-const explore = [
-  ['Tours', '/bhutan-tours/'],
-  ['About Bhutan', '/about-bhutan/'],
-  ['Destinations', '/destinations/'],
-  ['Travel guide', '/travel-guide/'],
-  ['About us', '/about/'],
-  ['Blog', '/blog/'],
-  ['Contact', '/contact/'],
+// Left: who we are and how to reach us. Right: four short link columns under small uppercase headings.
+// Bottom bar: copyright on the left, policies on the right.
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
+const columns: { title: string; links: [string, string][]; external?: boolean }[] = [
+  { title: 'Tours', links: [...cats.map((c): [string, string] => [c.data.menuTitle, catPath(c.id)]), ['All tours', TOURS]] },
+  {
+    title: 'Information',
+    links: [['Travel guide', '/travel-guide/'], ['Destinations', DESTINATIONS], ['Festival dates', '/travel-guide/festival-calendar/'], ['Flight schedules', '/travel-guide/flight-schedules/'], ['Travel FAQs', '/travel-guide/travel-faqs/'], ['Blog', '/blog/']],
+  },
+  { title: 'About', links: [['About us', '/about/'], ['About Bhutan', '/about-bhutan/'], ['Contact us', '/contact/']] },
+  {
+    title: 'Quick links',
+    external: true,
+    links: [['Department of Tourism', 'https://www.bhutan.travel/'], ['Department of Immigration', 'https://www.immi.gov.bt/'], ['Drukair', 'https://www.drukair.com.bt/'], ['Bhutan Airlines', 'https://www.bhutanairlines.bt/'], ['ABTO', 'https://abto.org.bt/']],
+  },
 ];
-const official = [
-  ['Department of Tourism', 'https://www.bhutan.travel/'],
-  ['Department of Immigration', 'https://www.immi.gov.bt/'],
-  ['Drukair', 'https://www.drukair.com.bt/'],
-  ['Bhutan Airlines', 'https://www.bhutanairlines.bt/'],
-  ['Gross National Happiness', 'https://www.gnhcentrebhutan.org/'],
-  ['ABTO', 'https://abto.org.bt/'],
-];
-const tel = (p: string) => `tel:${p.replace(/\s/g, '')}`;
 ---
-<footer class="footer t-caption">
-  <div class="container footer__grid">
-    <section class="footer__about" aria-label="About Bhutanova Travels">
-      <a href="/" aria-label="Bhutanova Travels home"><Logo light /></a>
-      <p class="t-body">A Thimphu-based tour operator crafting cultural, festival and trekking journeys across Bhutan — guided by the values of Gross National Happiness.</p>
-      <Social />
-    </section>
-
-    <!-- Contact comes straight after the about block on phones; from 768px it moves back to the last column. -->
-    <section class="footer__contact-col" aria-labelledby="f-contact">
-      <p id="f-contact" class="footer__h t-title">Contact</p>
-      <ul class="footer__contact">
-        <li><Icon name="location-dot" /><span>{SITE.address}</span></li>
-        <li><Icon name="phone" /><span><a href={tel(SITE.phone)}>{SITE.phone}</a><br /><a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></span></li>
-        <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+<footer class="footer">
+  <div class="container footer__main">
+    <div class="footer__us">
+      <a class="footer__logo" href="/" aria-label="Bhutanova Travels home"><Logo light /></a>
+      <ul class="footer__contact t-label">
+        <li>WhatsApp: <a href={tel(SITE.phone)}>{SITE.phone}</a></li>
+        <li>Phone: <a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></li>
+        <li>Email: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+        <li>Address: {SITE.address}</li>
+        <li>Licence: Department of Tourism, no. {SITE.licence}</li>
       </ul>
-    </section>
+      <p class="footer__h t-label t-caps">Connect with us</p>
+      <Social />
+    </div>
 
-    <nav aria-labelledby="f-explore">
-      <p id="f-explore" class="footer__h t-title">Explore</p>
-      <ul class="footer__links">{explore.map(([t, u]) => <li><a class="t-label" href={u}>{t}</a></li>)}</ul>
-    </nav>
-
-    <nav aria-labelledby="f-links">
-      <p id="f-links" class="footer__h t-title">Official resources</p>
-      <ul class="footer__links">{official.map(([t, u]) => <li><a class="t-label" href={u} target="_blank" rel="noopener">{t}</a></li>)}</ul>
-    </nav>
+    <div class="footer__cols">
+      {columns.map((c, i) => (
+        <nav aria-labelledby={`f-${i}`}>
+          <p id={`f-${i}`} class="footer__h t-label t-caps">{c.title}</p>
+          <ul class="t-label">
+            {c.links.map(([t, u]) => (
+              <li>{c.external
+                ? <a href={u} target="_blank" rel="noopener">{t.slice(0, t.lastIndexOf(' ') + 1)}<span class="ext">{t.slice(t.lastIndexOf(' ') + 1)}<Icon name="arrow-up-right" /></span><span class="sr-only"> (opens in a new tab)</span></a>
+                : <a href={u}>{t}</a>}</li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
   </div>
 
   <div class="footer__bar t-label">
-    <div class="container footer__bar-in">
+    <div class="container">
       <p>© {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
-      <p><a href="/sitemap-index.xml">Sitemap</a><span aria-hidden="true">·</span><a href="/privacy/">Privacy</a></p>
+      <p class="footer__legal"><a href="/privacy/">Privacy policy</a><span aria-hidden="true">|</span><a href="/cancellation-policy/">Cancellation policy</a></p>
     </div>
   </div>
 </footer>
 
 <style>
-  .footer { background: var(--s-500); color: var(--on-dark-2); }
-  .footer a { transition: color var(--dur-1), text-decoration-color var(--dur-2); }
-  .footer a:hover { color: #fff; }
+  .footer { background: var(--s-500); color: var(--on-dark-2); -webkit-font-smoothing: antialiased; }
+  .footer a { color: inherit; text-decoration: underline 1px transparent; text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
+  .footer a:hover { color: #fff; text-decoration-color: currentColor; }
+  .footer ul { list-style: none; padding: 0; }
 
-  .footer__grid { display: grid; gap: var(--space-10); padding-block: var(--space-12); }
-  .footer__about :global(.social) { margin-top: var(--space-1); }
-  .footer__about { display: grid; gap: var(--space-4); justify-items: start; align-content: start; max-width: 380px; }
-  .footer__about :global(.logo) { width: 150px; }
+  .footer__main { display: grid; gap: var(--space-12); padding-block: var(--space-16) var(--space-12); }
 
-  .footer__h { color: #fff; margin-bottom: var(--space-2); }
-  /* Link rows: 8px above and below on phones (comfortable taps), 4px on desktop */
-  .footer { --row: var(--space-2); }
-  .footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
-  .footer__links a, .footer__contact a { display: inline-block; padding-block: var(--row); text-decoration: underline 1px transparent; text-underline-offset: 4px; }
-  .footer__links a:hover, .footer__contact a:hover { text-decoration-color: currentColor; }
-  .footer__contact li { display: flex; gap: var(--space-3); align-items: flex-start; }
-  .footer__contact li > span:not(:has(a)) { padding-block: var(--row); }
-  .footer__contact :global(.icon) { flex: none; margin-top: calc(var(--row) - 1px + .3em); font-size: 14px; color: var(--on-dark-3); }
+  /* Left: logo, one line, contact details, social */
+  .footer__us { display: grid; justify-items: start; align-content: start; }
+  .footer__logo { display: block; }
+  .footer__logo :global(.logo) { width: 200px; }
+  .footer__contact { display: grid; gap: var(--space-2); margin-top: var(--space-8); }
+  .footer__contact a { color: #fff; }
+  .footer__us > .footer__h { margin: var(--space-8) 0 0; }
+  /* Social icons in outlined circles, 12px under their title */
+  .footer__us :global(.social) { gap: var(--space-3); margin: var(--space-3) 0 0; }
+  .footer__us :global(.social a) { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid rgb(255 255 255 / .32); border-radius: var(--r-full); font-size: 18px; color: #fff; transition: border-color var(--dur-1), background-color var(--dur-1); }
+  .footer__us :global(.social a:hover) { border-color: #fff; background: rgb(255 255 255 / .08); }
 
+  /* Right: four columns (two by two on phones) */
+  .footer__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10) var(--space-6); }
+  .footer__h { margin-bottom: var(--space-4); color: #fff; }
+  .footer__cols ul { display: grid; }
+  .footer__cols a { display: inline-block; padding-block: var(--space-2); }
+  /* The outside-link arrow stays with the last word when a name wraps */
+  .ext { white-space: nowrap; }
+  .ext :global(.icon) { display: inline-block; margin-left: var(--space-1); font-size: 11px; opacity: .7; }
 
-  .footer__bar { background: var(--s-800); color: var(--on-dark-3); }
-  .footer__bar-in { display: flex; flex-direction: column; gap: 0; padding-block: var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom)); }
-  .footer__bar span { margin-inline: var(--space-2); }
-  .footer__bar a { display: inline-block; padding-block: var(--space-3); }
-  .footer__bar-in p { margin: 0; }
+  /* Bottom bar: copyright left, policies right */
+  .footer__bar { background: var(--s-800); }
+  .footer__bar .container { display: grid; gap: var(--space-2); padding-block: var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom)); }
+  .footer__legal { display: flex; align-items: center; gap: var(--space-3); }
+  .footer__legal a { display: inline-block; padding-block: var(--space-2); }
+  .footer__legal span { opacity: .4; }
 
   @media (min-width: 768px) {
-    .footer__grid { grid-template-columns: 1fr 1fr; column-gap: var(--space-12); padding-block: var(--space-16) var(--space-12); }
-    .footer__about { grid-column: 1 / -1; }
-      .footer__bar-in { flex-direction: row; justify-content: space-between; align-items: center; }
+    .footer__cols { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .footer__bar .container { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   }
   @media (min-width: 1024px) {
-    .footer { --row: var(--space-1); }
-    .footer__grid { grid-template-columns: 1.4fr 1fr 1fr 1.2fr; column-gap: var(--space-16); }
-    .footer__about { grid-column: auto; }
+    .footer__main { grid-template-columns: 4fr 8fr; column-gap: var(--space-16); padding-block: var(--space-20) var(--space-16); }
+    .footer__cols a { padding-block: var(--space-1); }
   }
 </style>

@@ -22,11 +22,11 @@ const { items } = Astro.props;
 <style>
   .places { row-gap: var(--space-12); }
   .places a { display: block; color: inherit; }
-  .places img { width: 100%; aspect-ratio: 15 / 11; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-3) var(--ease-out); }
+  .places img { width: 100%; aspect-ratio: 15 / 11; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
   .places__body { padding-top: var(--space-4); }
   .places p { margin-top: var(--space-3); color: var(--text-2); }
   @media (hover: hover) {
-    .places a:hover img { scale: 1.03; }
+    .places a:hover img { scale: 1.02; }
     .places a:hover h3 { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
   }
 </style>

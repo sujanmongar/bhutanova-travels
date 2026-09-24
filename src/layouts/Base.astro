@@ -83,7 +83,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 
       // A link to #section only lands correctly if the browser's one-time initial scroll happens after
-      // everything above the target has finished loading; images and reveal animations shift things after
+      // everything above the target has finished loading; images shift things after
       // that, so a deep link (nav "Why us", a guide's table of contents) can land short. Once the page has
       // settled, nudge it back onto the target — instantly, so it doesn't visibly re-scroll.
       if (location.hash) {
@@ -100,8 +100,13 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
         const [prev, next] = rail.querySelectorAll<HTMLButtonElement>('button');
         const step = () => ((box.firstElementChild as HTMLElement)?.offsetWidth ?? 0) + (parseFloat(getComputedStyle(box).columnGap) || 0) || box.clientWidth;
         const sync = () => {
+          // Everything already fits (e.g. three guides in a three-up row): no arrows at all
+          rail.classList.toggle('is-idle', box.scrollWidth <= box.clientWidth + 4);
           prev.disabled = box.scrollLeft < 4;
           next.disabled = box.scrollLeft + box.clientWidth >= box.scrollWidth - 4;
+          // A disabled button loses focus; hand it to the other arrow so keyboard users stay in the row
+          const f = document.activeElement;
+          if ((f === prev || f === next) && f.disabled) (f === next ? prev : next).focus();
         };
         prev.onclick = () => box.scrollBy({ left: -step(), behavior: smooth });
         next.onclick = () => box.scrollBy({ left: step(), behavior: smooth });
@@ -110,30 +115,19 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
         sync();
       });
 
-      // Scroll reveal: [data-reveal] rises once; [data-reveal="stagger"] staggers its children.
-      // ponytail: a group reveals together (stagger capped at 6); observe per card if long grids should trickle in.
+      // Scroll-in: [data-reveal] fades up once; in [data-reveal="stagger"] the children follow 60ms apart (capped at 4).
       const io = new IntersectionObserver((entries) => entries.forEach((e) => {
         if (!e.isIntersecting) return;
         e.target.classList.add('is-in');
         io.unobserve(e.target);
       }), { rootMargin: '0px 0px -8% 0px' });
       document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
-        if (el.dataset.reveal === 'stagger') [...el.children].forEach((c, i) => (c as HTMLElement).style.setProperty('--i', String(Math.min(i, 5))));
+        if (el.dataset.reveal === 'stagger') [...el.children].forEach((c, i) => (c as HTMLElement).style.setProperty('--i', String(Math.min(i, 4))));
         io.observe(el);
       });
 
       // Lets iOS Safari show :active press states
       document.addEventListener('touchstart', () => {}, { passive: true });
-
-      // Card → detail image morph: name only the clicked card's image so view-transition names stay unique
-      addEventListener('pageswap', (e) => {
-        const url = (e as any).activation?.entry?.url;
-        if (!url) return;
-        const link = document.querySelector<HTMLAnchorElement>(`:is(.tc, .bc) h3 a[href="${new URL(url).pathname}"]`);
-        const pic = link?.closest('.tc, .bc')?.querySelector<HTMLImageElement>('img');
-        if (pic) pic.style.viewTransitionName = 'hero-img';
-      });
-      addEventListener('pageshow', () => document.querySelectorAll<HTMLImageElement>(':is(.tc, .bc) img').forEach((i) => (i.style.viewTransitionName = '')));
     </script>
   </body>
 </html>

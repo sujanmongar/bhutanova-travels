@@ -4,6 +4,7 @@
 import Hero from './blocks/Hero.astro';
 import PageBanner from './blocks/PageBanner.astro';
 import Intro from './blocks/Intro.astro';
+import FounderNote from './blocks/FounderNote.astro';
 import Reasons from './blocks/Reasons.astro';
 import StoryRows from './blocks/StoryRows.astro';
 import RichText from './blocks/RichText.astro';
@@ -15,7 +16,6 @@ import FaqBlock from './blocks/FaqBlock.astro';
 import BookingSteps from './blocks/BookingSteps.astro';
 import Team from './blocks/Team.astro';
 import Partners from './blocks/Partners.astro';
-import CtaBanner from './CtaBanner.astro';
 import WhatsAppCta from './WhatsAppCta.astro';
 import GithubSlugger from 'github-slugger';
 
@@ -25,16 +25,16 @@ const { sections, title } = Astro.props;
 const hasH1 = ['pageBanner', 'hero'].includes(sections[0]?._type);
 // Heading ids from every Text block share one counter (and skip ids the layout already uses), so anchors stay unique.
 const slugger = new GithubSlugger();
-['main', 'drawer', 'plan', 'whatsapp', 'rail-quotes'].forEach((id) => slugger.slug(id));
+['main', 'drawer', 'plan', 'whatsapp', 'rail-quotes', 'themes'].forEach((id) => slugger.slug(id));
 
-const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, team: Team, faqList: FaqBlock, partners: Partners };
-// The two older components take slightly different prop names.
-const cta = (b: any) => ({ title: b.heading, text: b.text ?? '', cta: b.buttonLabel, href: b.buttonLink, image: b.image?.url, hotspot: b.image?.hotspot });
+const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, founderNote: FounderNote, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, team: Team, faqList: FaqBlock, partners: Partners };
+// The Call to action and WhatsApp card blocks both render the closing contact section (the photo is no longer used).
+const cta = (b: any) => ({ title: b.heading, text: b.text, cta: b.buttonLabel, href: b.buttonLink, id: 'plan' });
 const whatsapp = (b: any) => ({ title: b.heading, ...(b.text && { text: b.text }), about: b.topic, id: 'whatsapp' });
 ---
 {!hasH1 && <h1 class="sr-only">{title}</h1>}
 {sections.map((b) => {
-  if (b._type === 'ctaBanner') return <CtaBanner {...cta(b)} />;
+  if (b._type === 'ctaBanner') return <WhatsAppCta {...cta(b)} />;
   if (b._type === 'whatsapp') return <WhatsAppCta {...whatsapp(b)} />;
   const Block = blocks[b._type];
   return Block ? <Block {...b} pageTitle={title} slugger={slugger} /> : null;

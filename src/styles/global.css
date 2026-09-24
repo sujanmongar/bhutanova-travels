@@ -37,9 +37,8 @@
 
   /* Motion */
   --ease-out: cubic-bezier(.22, 1, .36, 1);
-  --ease-in: cubic-bezier(.55, 0, 1, .45);
   --ease-in-out: cubic-bezier(.65, 0, .35, 1);
-  --dur-1: 150ms; --dur-2: 240ms; --dur-3: 400ms; --dur-4: 700ms; --stagger: 70ms;
+  --dur-1: 150ms; --dur-2: 240ms; --dur-3: 400ms; --dur-4: 600ms; --stagger: 60ms;
 
   /* ---------- Spacing: 8-point scale ----------
      Every margin, padding, gap and spacing offset is one of these steps. Only 1–2px borders are exempt. */
@@ -181,6 +180,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .sh__act { grid-column: 2; grid-row: 1 / span 3; display: flex; align-items: center; gap: var(--space-6); }
 .sh__act .arrows { display: none; }
 @media (min-width: 768px) { .sh__act .arrows { display: flex; } }
+.arrows.is-idle, .sh__act .arrows.is-idle { display: none; }  /* nothing to scroll to (set by the arrow script) */
 @media (max-width: 767px) { .sh--row { grid-template-columns: minmax(0, 1fr); } .sh--row .sh__act { display: none; } }
 /* Split: heading left, intro right (desktop) */
 @media (min-width: 1024px) {
@@ -197,19 +197,22 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   -webkit-tap-highlight-color: transparent;
   /* Same text weight on every fill: without this, white-on-navy text renders heavier than navy-on-white on macOS */
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out),
-    box-shadow var(--dur-2) var(--ease-out), translate var(--dur-2) var(--ease-out), scale var(--dur-1) var(--ease-out);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), scale var(--dur-1) var(--ease-out);
 }
 .btn:focus-visible { outline-offset: 3px; }
-.btn:active { scale: .97; translate: none; box-shadow: none; transition-duration: 80ms; }
-/* Dark by default; every button warms to the brand orange on hover */
+.btn:active { scale: .98; transition-duration: 80ms; }  /* a small press, felt more than seen */
+/* Hover: each variant goes one quiet step darker (or firmer); no colour change, no movement */
 .btn--primary { background: var(--s-500); color: #fff; }
 .btn--light { background: #fff; color: var(--ink); }
 .btn--outline { background: transparent; color: var(--ink); border-color: rgb(22 46 68 / .28); }
 .btn--soft { background: var(--surface); color: var(--ink); border-color: var(--border); }
 .btn--on-dark { background: transparent; border-color: rgb(255 255 255 / .32); color: #fff; }
 @media (hover: hover) {
-  :is(.btn--primary, .btn--light, .btn--outline, .btn--soft, .btn--on-dark):hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); }
+  .btn--primary:hover { background: var(--s-800); }
+  .btn--light:hover { background: var(--s-50); }
+  .btn--outline:hover { border-color: var(--s-500); background: rgb(22 46 68 / .04); }
+  .btn--soft:hover { border-color: var(--border-dark); }
+  .btn--on-dark:hover { border-color: rgb(255 255 255 / .72); background: rgb(255 255 255 / .08); }
 }
 .btn--sm { --btn-h: 40px; padding: 0 var(--space-4); }
 .btn--lg { --btn-h: 56px; padding: 0 var(--space-8); }
@@ -235,7 +238,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   transition: background-color var(--dur-1), color var(--dur-1), border-color var(--dur-1), opacity var(--dur-2), scale var(--dur-1) var(--ease-out);
 }
 @media (hover: hover) { .arrow:not(:disabled):hover { background: var(--s-500); border-color: var(--s-500); color: #fff; } }
-.arrow:not(:disabled):active { scale: .92; }
+.arrow:not(:disabled):active { scale: .96; }
 .arrow:disabled { opacity: .35; box-shadow: none; cursor: default; }
 
 /* Horizontal rail: swipe on mobile, 2-up tablet, 3-up desktop. Block padding gives hover lift/shadow room. */
@@ -338,7 +341,6 @@ textarea.input { min-height: 120px; resize: vertical; }
   background: var(--surface); color: var(--s-500); font-size: 16px; cursor: pointer; transition: background var(--dur-1), scale var(--dur-1);
 }
 .sheet__close:hover { background: var(--surface-2); }
-.sheet__close:active { scale: .92; }
 @media (min-width: 768px) {
   .sheet { margin: 0 0 0 auto; width: min(440px, 100%); height: 100dvh; max-height: none; border-radius: var(--r-xl) 0 0 var(--r-xl); translate: 100% 0; }
   .sheet[open] { translate: 0 0; }
@@ -360,24 +362,26 @@ textarea.input { min-height: 120px; resize: vertical; }
 @media (min-width: 1024px) { .widget-sticky { position: sticky; top: calc(var(--header-h) + var(--space-6)); } }
 
 /* ---------- Motion ---------- */
-@keyframes rise { from { opacity: 0; translate: 0 var(--rise, 24px); } }
+/* Motion: quiet and quick, the same few moves everywhere. Content fades in and rises 12px once as it enters the screen;
+   banner photos settle from a 3% zoom; pages cross-fade; card photos ease in 2% on hover. Nothing bounces, spins or
+   moves on its own. All of it is off for people who ask for reduced motion. */
+@keyframes rise { from { opacity: 0; translate: 0 var(--rise, 12px); } }
 @keyframes fade { from { opacity: 0; } }
 @keyframes fade-out { to { opacity: 0; } }
-@keyframes kenburns { from { scale: 1.08; } }
-@keyframes page-in { from { opacity: 0; translate: 0 12px; } }
+@keyframes settle { from { scale: 1.03; } }
 
 @media (prefers-reduced-motion: no-preference) {
-  /* Page change: native cross-document View Transitions (Chrome/Edge 126+, Safari 18.2+). Zero JS. */
+  /* Page change: a short cross-fade (native cross-document View Transitions); the header stays put */
   @view-transition { navigation: auto; }
-  ::view-transition-group(*) { animation-duration: var(--dur-3); animation-timing-function: var(--ease-out); }
-  ::view-transition-old(root) { animation: fade-out 160ms var(--ease-in) both; }
-  ::view-transition-new(root) { animation: page-in var(--dur-3) var(--ease-out) 60ms both; }
-  ::view-transition-old(hero-img), ::view-transition-new(hero-img) { height: 100%; object-fit: cover; overflow: clip; }
+  ::view-transition-old(root) { animation: fade-out 120ms var(--ease-out) both; }
+  ::view-transition-new(root) { animation: fade 240ms var(--ease-out) both; }
 
-  /* Banner entrance */
-  .banner > img, .banner > picture > img { animation: kenburns 6s cubic-bezier(.33, 1, .68, 1) backwards; }
-  .banner > div > * { --rise: 16px; animation: rise 900ms var(--ease-out) 120ms backwards; }
-  .banner > div > * + * { animation-delay: 240ms; }
+  /* Page banners and the homepage hero: the photo settles, then the words fade up one after another */
+  :is(.banner, .hero) img { animation: settle 1.6s var(--ease-out) backwards; }
+  :is(.banner > div, .hero__in) > * { animation: rise var(--dur-4) var(--ease-out) 150ms backwards; }
+  :is(.banner > div, .hero__in) > :nth-child(2) { animation-delay: 230ms; }
+  :is(.banner > div, .hero__in) > :nth-child(3) { animation-delay: 310ms; }
+  :is(.banner > div, .hero__in) > :nth-child(n + 4) { animation-delay: 390ms; }
 
   /* Accordions: animated <details> height (Chromium 131+; others open instantly) */
   @supports (interpolate-size: allow-keywords) and selector(::details-content) {
@@ -389,7 +393,7 @@ textarea.input { min-height: 120px; resize: vertical; }
     details[open]::details-content { block-size: auto; opacity: 1; }
   }
 }
-/* Scroll reveal — hidden state only with JS on, on screen, motion allowed */
+/* Scroll-in: hidden only when JS is on and motion is allowed; each block rises once, cards in a row 60ms apart */
 @media screen and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   [data-reveal]:not(.is-in) { opacity: 0; }
   [data-reveal=''].is-in, [data-reveal='stagger'].is-in > * { animation: rise var(--dur-4) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }

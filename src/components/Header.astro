@@ -252,7 +252,7 @@ const searchIndex = [
     position: sticky; top: 0; z-index: 50; color: var(--ink);
     background: rgb(255 255 255 / .72); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
     transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
-    view-transition-name: site-header;
+    view-transition-name: site-header;  /* stays put while the page underneath cross-fades */
   }
   /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
   .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
@@ -264,9 +264,10 @@ const searchIndex = [
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--s-800); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) :is(.burger, .icon-btn) { background: rgb(255 255 255 / .16); color: #fff; }
   @media (hover: hover) {
-    :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); }
+    :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--s-50); }
   }
   .nav__in { position: relative; display: flex; align-items: center; gap: var(--space-2); height: var(--header-h); }
+  .burger:active, .icon-btn:active { scale: .96; }
   .nav__logo { flex: none; transition: opacity var(--dur-2); }
   .nav__middle { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; }
   /* The menu fades out and the field fades in over the same space, instead of one instantly vanishing
@@ -281,7 +282,6 @@ const searchIndex = [
     transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
   }
   .burger:hover, .icon-btn:hover { background: rgb(12 25 37 / .1); }
-  .burger:active, .icon-btn:active { scale: .92; }
   /* Search toggle: one button at a fixed spot in the header, its icon swaps instead of a second button appearing. */
   .nav__search { position: relative; }
   .nav__search :global(.i-close) { display: none; }
@@ -381,9 +381,9 @@ const searchIndex = [
   .drawer__cta .btn { --btn-h: 52px; }
   .drawer__cta .btn--primary { grid-column: 1 / -1; --btn-h: 56px; }
   .drawer__cta :global(.icon) { font-size: 18px; }
-  @keyframes d-in { from { opacity: 0; translate: 0 14px; } }
+  /* Drawer: the rows fade up quickly, 30ms apart */
   @media (prefers-reduced-motion: no-preference) {
-    .drawer[open] :is(.drawer__list > li, .drawer__foot) { animation: d-in .5s var(--ease-out) backwards; animation-delay: calc(90ms + var(--i, 6) * 40ms); }
+    .drawer[open] :is(.drawer__list > li, .drawer__foot) { --rise: 8px; animation: rise var(--dur-3) var(--ease-out) backwards; animation-delay: calc(60ms + var(--i, 6) * 30ms); }
   }
 
   /* Desktop */
@@ -411,7 +411,7 @@ const searchIndex = [
       display: none; position: absolute; top: calc(100% - var(--space-4)); left: calc(var(--space-4) * -1); min-width: 272px; margin: 0; padding: var(--space-2); list-style: none;
       background: #fff; border: 1px solid rgb(12 25 37 / .06); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     }
-    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .sub__list { display: block; --rise: -6px; animation: rise var(--dur-2) var(--ease-out); }
+    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .sub__list { display: block; --rise: -4px; animation: rise var(--dur-2) var(--ease-out); }
     /* The item under the pointer wins, so two panels never show at once */
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .sub__list { display: none; }
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link :global(.chev) { rotate: 180deg; }

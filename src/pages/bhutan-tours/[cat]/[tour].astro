@@ -36,22 +36,13 @@ const md = (s: string) =>
   }).join('');
 
 const tabs = [
-  ['highlights', 'Highlights', t.highlights.length || 1],
+  ['highlights', 'Highlights', t.highlights.length],
   ['itinerary', 'Itinerary', t.itinerary.length],
   ['map', 'Route map', t.map],
   ['inclusions', 'Inclusions & exclusions', t.inclusions.length + t.exclusions.length],
   ['additional-info', 'Additional information', t.priceNotes.length],
   ['faq', 'Common questions', faqs.length],
 ].filter((x) => x[2]);
-// Trip facts, shown under the highlights: only what "Inclusions & exclusions" doesn't already say (no hotels, meals,
-// guide or transport there). The tour's own fields show only when filled in.
-const tripFacts = ([
-  ['location-dot', 'Destinations', [...new Set(t.route.map((r) => r.replace(/\s*\(.*?\)\s*$/, '')))].join(', ')],
-  ['users-three', 'Group size', t.groupSize],
-  ['identification-badge', 'Guide languages', t.guideLanguages],
-  ['mountains', 'Max altitude', t.maxAltitude],
-  ['gauge', 'Best season', t.bestSeason],
-] as const).filter(([, , v]) => v);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const chat = wa(url, t.title);
 const price = t.price.toLocaleString('en-US');
@@ -89,8 +80,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
         <picture>
           <source media="(max-width: 767px)" srcset={srcset(g, [480, 800, 1200], 4 / 3)} sizes="100vw" />
           <img src={img(g, 1200, 800)} srcset={srcset(g, [480, 800, 1200, 1600], 3 / 2)} sizes="(min-width:1200px) 756px, calc(72vw - 46px)"
-            alt={`${t.title} photo ${i + 1}`} width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async"
-            style={i === 0 ? 'view-transition-name: hero-img' : undefined} />
+            alt={`${t.title} photo ${i + 1}`} width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
         </picture>
         </button>
       ))}
@@ -121,23 +111,10 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
         {tabs.map(([id, label]) => <a class="t-label" href={`#${id}`}>{label}</a>)}
       </nav>
 
-      {(t.highlights.length > 0 || tripFacts.length > 0) && (
+      {t.highlights.length > 0 && (
         <section id="highlights" class="block">
-          <h2>{t.highlights.length > 0 ? 'Highlights' : 'Trip facts'}</h2>
-          {t.highlights.length > 0 && <ul class="bullets">{t.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>}
-          {tripFacts.length > 0 && (
-            <div class="trip">
-              {t.highlights.length > 0 && <h3 class="t-card">Trip facts</h3>}
-              <dl class="trip__list">
-                {tripFacts.map(([icon, label, value]) => (
-                  <div>
-                    <dt class="t-label subtle"><Icon name={icon} />{label}</dt>
-                    <dd class="t-body">{value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
-          )}
+          <h2>Highlights</h2>
+          <ul class="bullets">{t.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
         </section>
       )}
 
@@ -364,7 +341,6 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
     -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); transition: opacity var(--dur-2), scale var(--dur-1) var(--ease-out), background var(--dur-1);
   }
   .gal__btn:hover { background: #fff; }
-  .gal__btn:not(:disabled):active { scale: .92; }
   .gal__btn:disabled { opacity: 0; pointer-events: none; }
   .gal__btn--prev { left: var(--space-4); } .gal__btn--next { right: var(--space-4); }
   @media (min-width: 768px) {
@@ -482,16 +458,6 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .checks :global(.no) { color: var(--text-3); }
   .map { border-radius: var(--radius); corner-shape: squircle; border: 1px solid var(--border); }
 
-  /* Trip facts: under the highlights, only what the inclusions don't already say */
-  .trip { margin-top: var(--space-10); }
-  .trip h3 { margin-bottom: var(--space-4); }
-  .trip__list { display: grid; gap: var(--space-6) var(--grid-gap); margin: 0; }
-  @media (min-width: 768px) { .trip__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  .trip__list div { display: grid; gap: var(--space-1); }
-  .trip dt { display: flex; align-items: center; gap: var(--space-2); }
-  .trip dt :global(.icon) { flex: none; font-size: 18px; color: var(--ink); }
-  .trip dd { margin: 0; color: var(--ink); }
-
   /* Price card: at the end on phones/tablets, sticky sidebar from 1200px */
   .price-card { display: grid; gap: var(--space-2); max-width: 480px; padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: #fff; }
   .price b { color: var(--ink); }
@@ -522,8 +488,8 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .bar .bar__wa { width: var(--btn-h); padding: 0; font-size: 22px; }
   .bar { transition: translate var(--dur-3) var(--ease-out); }
   .bar.is-off { translate: 0 110%; }
+  @media (prefers-reduced-motion: no-preference) { .bar { --rise: 100%; animation: rise var(--dur-3) var(--ease-out) 300ms backwards; } }
   @media (min-width: 1200px) { .bar { display: none; } }
-  @media (prefers-reduced-motion: no-preference) { .bar { --rise: 100%; animation: rise var(--dur-4) var(--ease-out) 500ms backwards; } }
 
   /* Enquiry sheet */
   @media (min-width: 768px) { .enq { width: min(560px, 100%); } }
