@@ -51,6 +51,7 @@
   --section: var(--space-16);   /* between sections */
   --card-pad: var(--space-6);   /* inside cards and panels */
   --grid-gap: var(--space-6);   /* between cards, rows and grids alike, at every width (so a card is 384px on desktop everywhere) */
+  --measure: calc(var(--fs-base) * 34);  /* reading column for articles: 612px, about 70 characters a line */
   --header-h: 64px;
   --card-photo: 240px;          /* photo height on every tour, blog, guide and place card (270px from 768px) */
 
@@ -341,13 +342,19 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .input:hover { border-color: var(--text-2); }
 .input:focus { outline: none; border-color: var(--s-500); box-shadow: var(--ring); }
 textarea.input { min-height: 120px; resize: vertical; }
+/* iOS draws date fields at a fixed native width that ignores width: 100%, so in a half-width column they spill out
+   of the form. Plain appearance lets them fit like every other input (tapping still opens the date picker). */
+@supports (-webkit-touch-callout: none) {
+  .input[type='date'] { display: block; -webkit-appearance: none; appearance: none; }
+  .input[type='date']::-webkit-date-and-time-value { text-align: left; }
+}
 @media (min-width: 1200px) { .input { min-height: 46px; } }
 
 /* ---------- Sheet: native <dialog>; bottom sheet on phones, side sheet from 768px ---------- */
 .sheet {
   position: fixed; inset: 0; z-index: 100; margin: auto 0 0; padding: 0; border: 0; width: 100%; max-width: none; max-height: 92dvh;
   border-radius: var(--r-xl) var(--r-xl) 0 0; background: #fff; color: var(--text); box-shadow: 0 -16px 48px rgb(12 25 37 / .2);
-  overscroll-behavior: contain; translate: 0 100%;
+  overflow: hidden auto; overscroll-behavior: contain; translate: 0 100%;  /* scrolls up and down only, never sideways */
   transition: translate var(--dur-3) var(--ease-out), overlay var(--dur-3) allow-discrete, display var(--dur-3) allow-discrete;
 }
 .sheet[open] { translate: 0 0; }
