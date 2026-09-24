@@ -41,7 +41,7 @@ const related = [...rest.filter((g) => g.data.group === guide.data.group), ...re
         <h2>More travel guides</h2>
         <div class="sh__act"><a class="link-more" href="/travel-guide/">All guides<Icon name="arrow-right" /></a><Arrows target="rail-guides" label="guides" /></div>
       </div>
-      <div class="rail" id="rail-guides" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" />)}</div>
+      <div class="rail" id="rail-guides" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" rail />)}</div>
       <a class="link-more m-only" href="/travel-guide/">All guides<Icon name="arrow-right" /></a>
     </div>
   </section>

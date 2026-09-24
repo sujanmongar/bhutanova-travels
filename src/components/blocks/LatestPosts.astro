@@ -1,8 +1,10 @@
 ---
-// The three newest posts: swiped on phones, three columns from 768px. Same card as the blog index.
+// The three newest posts in a row like the tour row: one on phones, two on tablets, three from 1200px (arrows only
+// when there is more to see). Same card as the blog index.
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
 import BlogCard from '../BlogCard.astro';
+import Arrows from '../Arrows.astro';
 interface Props { heading: string; grey?: boolean }
 const { heading, grey = false } = Astro.props;
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
@@ -12,15 +14,13 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) =>
   <div class="container">
     <div class="sh sh--row" data-reveal>
       <h2>{heading}</h2>
-      <div class="sh__act"><a class="link-more" href="/blog/">All articles<Icon name="arrow-right" /></a></div>
+      <div class="sh__act">
+        <a class="link-more" href="/blog/">All articles<Icon name="arrow-right" /></a>
+        <Arrows target="rail-posts" label="articles" />
+      </div>
     </div>
-    <div class="rail posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} />)}</div>
+    <div class="rail" id="rail-posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} rail />)}</div>
     <a class="link-more m-only" href="/blog/">All articles<Icon name="arrow-right" /></a>
   </div>
 </section>
 )}
-<style>
-  @media (min-width: 768px) {
-    .posts { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; overflow: visible; }
-  }
-</style>

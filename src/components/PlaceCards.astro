@@ -8,9 +8,9 @@ const { items } = Astro.props;
   {items.map((p) => (
     <li>
       <a href={p.href}>
-        <img src={img(p.image, 600, 440)} srcset={srcset(p.image, [400, 600, 900, 1200], 15 / 11)}
-          sizes="(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) 45vw, calc(100vw - 32px)"
-          alt="" width="600" height="440" loading="lazy" decoding="async" />
+        <img src={img(p.image, 800, 600)} srcset={srcset(p.image, [400, 600, 900, 1200], 4 / 3)}
+          sizes="(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)"
+          alt="" width="800" height="600" loading="lazy" decoding="async" />
         <div class="places__body">
           <h3 class="t-card">{p.title}</h3>
           <p class="t-body">{p.text}</p>
@@ -22,7 +22,8 @@ const { items } = Astro.props;
 <style>
   .places { row-gap: var(--space-12); }
   .places a { display: block; color: inherit; }
-  .places img { width: 100%; aspect-ratio: 15 / 11; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
+  /* Same photo height as every other card */
+  .places img { width: 100%; height: var(--card-photo); object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
   .places__body { padding-top: var(--space-4); }
   .places p { margin-top: var(--space-3); color: var(--text-2); }
   @media (hover: hover) {

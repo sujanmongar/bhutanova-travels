@@ -50,8 +50,9 @@
   --stack: var(--space-8);      /* section title → its content */
   --section: var(--space-16);   /* between sections */
   --card-pad: var(--space-6);   /* inside cards and panels */
-  --grid-gap: var(--space-6);   /* between cards in a grid */
+  --grid-gap: var(--space-6);   /* between cards, rows and grids alike, at every width (so a card is 384px on desktop everywhere) */
   --header-h: 64px;
+  --card-photo: 240px;          /* photo height on every tour, blog, guide and place card (270px from 768px) */
 
   /* ---------- Typography — Typescale: 18px base, Minor Third (1.200) ----------
      Desktop h1–h6 = 18px × 2.986 · 2.488 · 2.074 · 1.728 · 1.44 · 1.2 (53.7 · 44.8 · 37.3 · 31.1 · 25.9 · 21.6px); body 18px.
@@ -91,8 +92,9 @@
 }
 @media (min-width: 768px) {
   :root {
-    --gutter: var(--space-8); --stack: var(--space-12); --section: var(--space-24); --grid-gap: var(--space-8);
+    --gutter: var(--space-8); --stack: var(--space-12); --section: var(--space-24);
     --header-h: 80px;
+    --card-photo: 270px;
     /* Desktop: 18 × 1.2ⁿ — Minor Third */
     --fs-h1: calc(var(--fs-base) * 2.986); --fs-h2: calc(var(--fs-base) * 2.488); --fs-h3: calc(var(--fs-base) * 2.074);
     --fs-h4: calc(var(--fs-base) * 1.728); --fs-h5: calc(var(--fs-base) * 1.44);  --fs-h6: calc(var(--fs-base) * 1.2);

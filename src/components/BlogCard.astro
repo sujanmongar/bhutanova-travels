@@ -1,17 +1,19 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { img, srcset } from '../config';
-interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string }
-const { post, base = '/blog/' } = Astro.props;
+// rail: the card sits in a row (2 across until 1200px) rather than the 3-column grid. The photo frame has the same
+// fixed height as every card (--card-photo), so sizes asks for at least 360px (270 × 4/3) wherever the frame is narrower.
+interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string; rail?: boolean }
+const { post, base = '/blog/', rail = false } = Astro.props;
 const d = post.data;
 const href = `${base}${post.id}/`;
 const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ');
 ---
 <article class="bc">
   <div class="bc__img">
-    <img src={img(d.image, 800, 533)} srcset={srcset(d.image, [400, 600, 800, 1200], 3 / 2)}
-      sizes="(min-width:1200px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)"
-      alt="" width="800" height="533" loading="lazy" decoding="async" />
+    <img src={img(d.image, 800, 600)} srcset={srcset(d.image, [400, 600, 800, 1200], 4 / 3)}
+      sizes={rail ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)' : '(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)'}
+      alt="" width="800" height="600" loading="lazy" decoding="async" />
   </div>
   <p class="bc__meta t-label">{meta}</p>
   <h3 class="t-card"><a href={href}>{d.title}</a></h3>
@@ -19,7 +21,8 @@ const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-
 </article>
 <style>
   .bc { position: relative; display: flex; flex-direction: column; height: 100%; }
-  .bc__img { aspect-ratio: 3 / 2; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; }
+  /* Same photo height as every other card */
+  .bc__img { height: var(--card-photo); margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; }
   @supports not (corner-shape: squircle) { .bc__img { clip-path: inset(0 round var(--radius)); } }
   .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
   .bc__meta { color: var(--text-3); }

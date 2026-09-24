@@ -54,7 +54,7 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
   /* Phones: each group is a swipe row instead of a long stack of cards */
   @media (max-width: 767px) {
     .guides {
-      grid-auto-flow: column; grid-auto-columns: min(84%, 340px); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
+      grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); column-gap: var(--space-4); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
       margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter); scroll-padding-inline: var(--gutter); /* room for focus rings */
     }
     .guides::-webkit-scrollbar { display: none; }

@@ -23,7 +23,7 @@ const id = 'themes';
       {cats.map((c) => (
         <li>
           <article class="cat">
-            <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes={grid ? '(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)' : '(min-width:1200px) 340px, (min-width:768px) 320px, 78vw'}
+            <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes={grid ? '(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)' : '(min-width:1200px) 340px, (min-width:768px) 320px, calc(100vw - 52px)'}
               alt="" width="680" height="952" loading="lazy" decoding="async" />
             <div class="cat__txt">
               <h3 class="t-card"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
@@ -38,9 +38,9 @@ const id = 'themes';
 
 <style>
   /* Row: clipped to the content width like the tour row, swiped or moved with the arrows; nothing moves on its own.
-     Card widths: 300px (phones, the next card peeking in), 320px from 768px, 340px from 1200px. */
+     Card widths: phones as wide as the tour and blog cards (the next card peeking in 20px), 320px from 768px, 340px from 1200px. */
   .cats {
-    display: grid; grid-auto-flow: column; grid-auto-columns: min(78vw, 300px); gap: var(--space-4); list-style: none;
+    display: grid; grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); gap: var(--space-4); list-style: none;
     margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter); scroll-padding-inline: var(--gutter); /* 8px keeps the focus ring unclipped */
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
   }

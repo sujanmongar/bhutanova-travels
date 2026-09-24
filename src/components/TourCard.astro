@@ -4,9 +4,9 @@ import { img, srcset } from '../config';
 import { tourPath } from '../utils';
 interface Props { tour: CollectionEntry<'tours'>; eager?: boolean; rail?: boolean }
 const { tour, eager, rail } = Astro.props;
-// Phones: a 4:3 photo frame as wide as the card (the rail leaves 20px of the next card showing), so cards read landscape.
-// From 768px the frame is 270px tall and 340–555px wide; the CDN's 4:3 crop is drawn at the frame's width, or 360px
-// (270 × 4/3) when the frame is narrower, so sizes is the larger of the two and nothing gets upscaled.
+// The photo frame is the same height on every card site-wide (--card-photo: 240px phones, 270px from 768px), whatever
+// the card's width; the CDN's 4:3 crop is drawn at the frame's width, or 360px (270 × 4/3) when the frame is narrower,
+// so sizes is the larger of the two and nothing gets upscaled.
 // Rail: 2-up from 768px, 3-up from 1200px. Grid: 1 → 2 → 3 columns (768 / 1024px).
 const sizes = rail
   ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)'
@@ -23,8 +23,7 @@ const t = tour.data;
 </article>
 <style>
   .tc { position: relative; display: flex; flex-direction: column; height: 100%; }
-  .tc__img { position: relative; aspect-ratio: 4 / 3; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; isolation: isolate; }
-  @media (min-width: 768px) { .tc__img { aspect-ratio: auto; height: 270px; } }
+  .tc__img { position: relative; height: var(--card-photo); margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; isolation: isolate; }
   @supports not (corner-shape: squircle) { .tc__img { clip-path: inset(0 round var(--radius)); } }
   .tc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
   .tc h3 a::after { content: ''; position: absolute; inset: 0; z-index: 2; }

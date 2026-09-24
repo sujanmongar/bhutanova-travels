@@ -146,7 +146,7 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   /* Reviews: stars, the words in the regular sans with highlighted phrases, then a small round portrait, name and trip.
      No boxes. Phones: a sideways row. Tablet/desktop: 2 / 3 staggered columns, each review as tall as its words. */
   .quotes {
-    display: grid; grid-auto-flow: column; grid-auto-columns: min(84%, 340px); gap: var(--space-8); list-style: none;
+    display: grid; grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); gap: var(--space-4); list-style: none;
     margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter);
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: var(--gutter); scrollbar-width: none;
   }

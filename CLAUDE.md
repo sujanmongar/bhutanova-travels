@@ -56,7 +56,7 @@ icons are **Regular** (outline, one colour, no duotone fill, no orange fill, no 
 Tokens `--space-1` 4 · `--space-2` 8 · `--space-3` 12 · `--space-4` 16 · `--space-6` 24 · `--space-8` 32 ·
 `--space-10` 40 · `--space-12` 48 · `--space-16` 64 · `--space-20` 80 · `--space-24` 96 · `--space-32` 128.
 Semantic (mobile / ≥768px): `--gutter` 16/32 page edge · `--stack` 32/48 section title → content ·
-`--section` 64/96 between sections · `--card-pad` 24 · `--grid-gap` 24/32.
+`--section` 64/96 between sections · `--card-pad` 24 · `--grid-gap` 24 (every width).
 Every margin, padding, gap and spacing offset uses one of these. Only 1–2px borders/hairlines are exempt.
 
 ### Look
