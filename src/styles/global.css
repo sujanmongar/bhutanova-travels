@@ -329,6 +329,34 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .prose th, .prose td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }
 .prose :is(td, th).nw { white-space: nowrap; }
 .prose th { background: var(--surface); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-2); }
+/* Media in articles: photos, photos side by side, videos and maps, tour cards and pull quotes (rendered by pt.ts) */
+.prose figure { margin-block: var(--space-10); }
+.prose figure :is(img, iframe) { display: block; width: 100%; height: auto; border: 0; border-radius: var(--r-md); background: var(--surface); }
+.prose figcaption {
+  margin-top: var(--space-3); color: var(--text-2);
+  font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption);
+}
+.prose figcaption a { color: inherit; text-decoration-color: var(--border-dark); }
+.prose .gallery > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+.prose .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
+.prose .gallery--3 img:first-child { grid-column: 1 / -1; }
+.prose .embed iframe { aspect-ratio: 16 / 9; }
+.prose .embed--map iframe { aspect-ratio: 4 / 3; }
+/* Tour card: a row between hairlines, the whole row is the link */
+.prose .tc { position: relative; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-4); align-items: center; margin-block: var(--space-10); padding-block: var(--space-4); border-block: 1px solid var(--border); }
+.prose .tc img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--r-sm); background: var(--surface); }
+.prose .tc .t-label { color: var(--text-2); }
+.prose .tc .t-card { margin-block: var(--space-1); }
+.prose .tc a { color: var(--ink); text-decoration: underline 1.5px transparent; text-underline-offset: 5px; }
+.prose .tc a::after { content: ''; position: absolute; inset: 0; }
+.prose .tc b { color: var(--ink); }
+@media (hover: hover) { .prose .tc:hover a { text-decoration-color: var(--p-500); } }
+.prose .tc a:focus-visible { outline: none; }
+.prose .tc:has(a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 4px; }  /* the whole row is the target */
+/* Pull quote: the quote role between hairlines (the "Quote / note" paragraph style keeps its tinted box) */
+.prose .pq { padding-block: var(--space-6); border-block: 1px solid var(--border); }
+.prose .pq blockquote { padding: 0; background: none; border: 0; border-radius: 0; font-family: var(--ff-display); font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; font-style: italic; color: var(--ink); }
+.prose .pq figcaption { margin-top: var(--space-3); }
 
 /* ---------- Forms ---------- */
 .field { display: grid; gap: var(--space-2); }

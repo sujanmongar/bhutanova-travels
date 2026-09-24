@@ -95,6 +95,12 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
   beside the tentative itinerary timeline, 5 days then "Show all"), what's included, every day in full (one entry per
   day, never "Day 2–3"), questions, more tours, contact card.
+- Blog posts are one clean reading column (`--measure`): breadcrumbs, title, dek, one meta line (topic · date · author),
+  a wide cover, the text, then share buttons (each network's logo in its colour + its name). Recent posts float beside
+  the text from 1200px (after the share buttons below that). Then tours matched to the post, then the contact card.
+- Article bodies (posts, guides, destinations, sights, page Text blocks) can hold photos (caption + automatic credit),
+  2–3 photos side by side, a video or map (YouTube no-cookie, Vimeo, Google Maps), a tour card and a pull quote; pt.ts
+  renders them. Every blog post uses them: real licensed photos with credits, and videos checked to play when embedded.
 - Every page closes with the same contact section (WhatsAppCta; Sanity's Call to action and WhatsApp card blocks render
   it too): heading + line, the trip planner picked in the homepage's Plan your trip, WhatsApp + one button, phone, email.
   Filters are text tabs (orange underline), like the blog topics — no pill chips.

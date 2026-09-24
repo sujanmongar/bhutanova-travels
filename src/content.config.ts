@@ -12,10 +12,11 @@ const API = 'https://234ghw8x.api.sanity.io/v2025-02-19/data/query/production';
 function applyCrop({ url, crop, dims, hotspot, ...rest }: any) {
   const [l, t] = [crop?.left ?? 0, crop?.top ?? 0];
   const [w, h] = [1 - l - (crop?.right ?? 0), 1 - t - (crop?.bottom ?? 0)];
-  if (!dims || (w > 0.999 && h > 0.999)) return { ...rest, url, hotspot };
+  const ratio = dims && (w * dims.width) / (h * dims.height); // the photo's shape after the crop, for width/height
+  if (!dims || (w > 0.999 && h > 0.999)) return { ...rest, url, hotspot, ratio };
   const clamp = (n: number) => Math.min(1, Math.max(0, n));
   const rect = [l * dims.width, t * dims.height, w * dims.width, h * dims.height].map(Math.round).join(',');
-  return { ...rest, url: `${url}?rect=${rect}`, hotspot: hotspot && { x: clamp((hotspot.x - l) / w), y: clamp((hotspot.y - t) / h) } };
+  return { ...rest, url: `${url}?rect=${rect}`, ratio, hotspot: hotspot && { x: clamp((hotspot.x - l) / w), y: clamp((hotspot.y - t) / h) } };
 }
 
 // Local review: under `astro dev` with a read token in .env, unpublished drafts show on localhost, so
@@ -49,6 +50,12 @@ const BLOCK_IMG = '{ "url": asset->url, alt, hotspot, crop, "dims": asset->metad
 // Photo credit for licences that need one (Wikimedia CC BY-SA); Unsplash photos have none.
 const CREDIT = '"credit": select(defined(image.asset->creditLine) => image.asset->{ "text": creditLine, "url": source.url })';
 const credit = z.object({ text: z.string(), url: z.string().optional() }).optional();
+// Article bodies: resolve the rich blocks (photos with their credit line, side-by-side photos, tour cards) for pt.ts.
+const PHOTO = '{ ..., "url": asset->url, "dims": asset->metadata.dimensions, "credit": asset->{ "text": creditLine, "url": source.url } }';
+const BODY = `"body": body[]{ ...,
+  _type == "photo" => ${PHOTO},
+  _type == "gallery" => { ..., "images": images[]${PHOTO} },
+  _type == "tourCard" => { "tour": tour->{ "id": slug.current, title, days, price, "category": category->slug.current, "image": image.asset->url } } }`;
 const SEO = `"seo": seo{ title, description, "image": image.${IMG}, noindex }`;
 const seo = z.object({ title: z.string().optional(), description: z.string().optional(), image: z.string().optional(), noindex: z.boolean().optional() }).default({});
 
@@ -102,7 +109,7 @@ export const collections = {
     }),
   }),
   blog: defineCollection({
-    loader: sanity(`*[_type == "post"]{ "id": slug.current, title, excerpt, "image": image.${IMG}, date, author, tags, body, ${SEO} }`),
+    loader: sanity(`*[_type == "post"]{ "id": slug.current, title, excerpt, "image": image.${IMG}, date, author, tags, ${BODY}, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       excerpt: z.string(),
@@ -115,7 +122,7 @@ export const collections = {
     }),
   }),
   guides: defineCollection({
-    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, menuTitle, excerpt, "image": image.${IMG}, group, order, menu, updated, body, ${SEO} }`),
+    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, menuTitle, excerpt, "image": image.${IMG}, group, order, menu, updated, ${BODY}, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       menuTitle: z.string().nullish(),
@@ -130,7 +137,7 @@ export const collections = {
   }),
   destinations: defineCollection({
     loader: sanity(`*[_type == "destination"]{
-      "id": slug.current, title, excerpt, "image": image.${IMG}, ${CREDIT}, body, highlights, region, altitude, bestTime, gettingThere, order,
+      "id": slug.current, title, excerpt, "image": image.${IMG}, ${CREDIT}, ${BODY}, highlights, region, altitude, bestTime, gettingThere, order,
       "tours": tours[]->slug.current, "nearby": nearby[]->slug.current, ${SEO} }`),
     schema: z.object({
       title: z.string(),
@@ -152,7 +159,7 @@ export const collections = {
   sights: defineCollection({
     loader: sanity(`*[_type == "sight" && defined(destination->slug.current)]{
       "id": destination->slug.current + "/" + slug.current, "destination": destination->slug.current, title, excerpt,
-      "page": coalesce(page, false), "image": image.${IMG}, ${CREDIT}, body, altitude, timeNeeded, difficulty, bestTime, updated, order, ${SEO} }`),
+      "page": coalesce(page, false), "image": image.${IMG}, ${CREDIT}, ${BODY}, altitude, timeNeeded, difficulty, bestTime, updated, order, ${SEO} }`),
     schema: z.object({
       destination: z.string(),
       title: z.string(),
@@ -190,6 +197,7 @@ export const collections = {
       "id": select(_id == "home" => "home", slug.current), title, ${SEO},
       sections[]{
         ...,
+        _type == "richText" => { ${BODY} },
         "image": image${BLOCK_IMG},
         rows[]{ ..., "image": image${BLOCK_IMG} },
         logos[]{ ..., "image": image{ "url": asset->url, alt } },
