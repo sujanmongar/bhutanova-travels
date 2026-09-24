@@ -79,11 +79,11 @@ export const tour = defineType({
     defineField({name: 'gallery', title: 'Gallery', type: 'array', of: [{type: 'image'}], options: {layout: 'grid'}, group: 'content'}),
     lines('highlights', 'Highlights'),
     // Trip facts shown under the photos. Accommodation, meals, guide and transport come from "What's included".
-    // Trip facts: no longer shown on the site (owner's call); hidden so existing values are kept, not lost.
-    defineField({name: 'groupSize', title: 'Group size', type: 'string', group: 'content', hidden: true, description: 'e.g. "Private tour, from 1 traveller". Hidden when empty.'}),
-    defineField({name: 'guideLanguages', title: 'Guide languages', type: 'string', group: 'content', hidden: true, description: 'e.g. "English, Hindi". Hidden when empty.'}),
-    defineField({name: 'maxAltitude', title: 'Max altitude', type: 'string', group: 'content', hidden: true, description: 'The highest point of the trip, e.g. "3,120 m (Tiger\'s Nest)".'}),
-    defineField({name: 'bestSeason', title: 'Best season', type: 'string', group: 'content', hidden: true, description: 'e.g. "March–May and September–November".'}),
+    // Trip facts, shown under the highlights. Each shows only when filled in.
+    defineField({name: 'groupSize', title: 'Group size', type: 'string', group: 'content', description: 'e.g. "Private tour, from 1 traveller". Hidden when empty.'}),
+    defineField({name: 'guideLanguages', title: 'Guide languages', type: 'string', group: 'content', description: 'e.g. "English, Hindi". Hidden when empty.'}),
+    defineField({name: 'maxAltitude', title: 'Max altitude', type: 'string', group: 'content', description: 'The highest point of the trip, e.g. "3,120 m (Tiger\'s Nest)".'}),
+    defineField({name: 'bestSeason', title: 'Best season', type: 'string', group: 'content', description: 'e.g. "March–May and September–November".'}),
     defineField({
       name: 'itinerary',
       title: 'Day by day',

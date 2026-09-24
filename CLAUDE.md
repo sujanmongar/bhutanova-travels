@@ -40,7 +40,7 @@ Headings run in strict order h1 > … > h6. A heading element uses its own level
 | Label | `.t-label` | 16 | 16 | Nav, breadcrumbs, dates, tags, facts lines, form labels (500) |
 | Button | `.t-button` | 16 | 16 | Button text (600). Button visuals keep their variants — only the text style is shared |
 | Link | `.t-link` | 16 | 16 | "Learn more / see all" — same text style as buttons (600) |
-| Price | `.t-price` | 20.3 | 25.9 | Tour page price box and sticky bar — sans 600, never serif. Tour cards: one Body line, "8 days · from $1,690 per person", price bold |
+| Price | `.t-price` | 20.3 | 25.9 | Tour page details bar and phone booking bar — sans 600, never serif. Tour cards: one Body line, "8 days · from $1,690 per person", price bold |
 
 Section items (why us, how booking works, FAQ, blog cards and the homepage blog list) share one order: label 16 → 8px →
 item title `.t-card` → 12px → `.t-body` in `.muted` (text-2). Icon/number → title 24px.
@@ -88,9 +88,16 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   as it enters (`data-reveal`, cards in a row 60ms apart); banner/hero photos settle from a 3% zoom and their words fade
   up; pages cross-fade (header stays put); card photos ease in 2% on hover; buttons press to 98%. No bounces, no big
   zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
-  The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
+  Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
+  flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
   outline → navy border); no orange hover. Everything is off for reduced motion.
+- Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
+  pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
+  beside the tentative itinerary timeline, 5 days then "Show all"), what's included, every day in full (one entry per
+  day, never "Day 2–3"), questions, more tours, contact card.
 - Every page closes with the same contact section (WhatsAppCta; Sanity's Call to action and WhatsApp card blocks render
   it too): heading + line, the trip planner picked in the homepage's Plan your trip, WhatsApp + one button, phone, email.
-  Filters are text tabs (orange underline), like the tour page tabs — no pill chips.
+  Filters are text tabs (orange underline), like the blog topics — no pill chips.
+  Listing pages with sections or filters (travel guide topics, destination regions, blog topics) use one `<TabBar>` directly
+  under the banner, pinned under the header; jump links mark the section in view.
 - Verify in the browser at 1280 and 375 before reporting; restart the dev server after CSS or content changes (it caches).

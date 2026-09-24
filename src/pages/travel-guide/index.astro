@@ -5,6 +5,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import Icon from '../../components/Icon.astro';
+import TabBar from '../../components/TabBar.astro';
 import { slug } from '../../utils';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const groups = [...new Set(guides.map((g) => g.data.group))];
@@ -19,15 +20,13 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
     <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1><p class="banner__line">Visas, costs, seasons and what to expect: everything to plan a trip to Bhutan.</p></div>
   </section>
 
-  <nav class="jump" aria-label="Guide topics">
-    <div class="container jump__in">{groups.map((g) => <a class="t-label" href={`#${slug(g)}`}>{g}</a>)}</div>
-  </nav>
+  <TabBar label="Guide topics" links={groups.map((g) => [g, `#${slug(g)}`])} />
 
   {groups.map((g, i) => (
     <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(g)}>
       <div class="container">
         <div class="sh" data-reveal><h2>{g}</h2></div>
-        <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" />)}</div>
+        <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" list />)}</div>
       </div>
     </section>
   ))}
@@ -46,21 +45,16 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
   </section>
 </Base>
 <style>
-  .jump { position: sticky; top: var(--header-h); z-index: 20; background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
-  .jump__in { display: flex; gap: var(--space-6); overflow-x: auto; scrollbar-width: none; }
-  .jump a { flex: none; display: inline-flex; align-items: center; min-height: 52px; color: var(--text-2); transition: color var(--dur-1); }
-  .jump a:hover { color: var(--ink); text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
   .guides { row-gap: var(--space-10); }
-  /* Phones: each group is a swipe row instead of a long stack of cards */
+  /* Phones: every guide in the topic as a list row (thumbnail, title, two lines), so all of them can be scanned at once */
   @media (max-width: 767px) {
-    .guides {
-      grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); column-gap: var(--space-4); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
-      margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter); scroll-padding-inline: var(--gutter); /* room for focus rings */
-    }
-    .guides::-webkit-scrollbar { display: none; }
-    .guides > :global(*) { scroll-snap-align: start; }
+    .guides { row-gap: 0; border-top: 1px solid var(--border-dark); }
+    .guides > :global(.bc) { display: grid; grid-template-columns: 88px minmax(0, 1fr); column-gap: var(--space-4); align-items: start; height: auto; padding-block: var(--space-4); border-bottom: 1px solid var(--border-dark); }
+    .guides :global(.bc__img) { grid-row: 1 / span 2; width: 88px; height: 88px; margin: 0; border-radius: var(--r-sm); }
+    .guides :global(.bc__meta) { display: none; }  /* the topic is already the section title */
+    .guides :global(.bc h3) { margin: 0; }
+    .guides :global(.bc__ex) { margin-top: var(--space-1); -webkit-line-clamp: 2; }
   }
-  /* html scroll-padding already clears the header; this only clears the jump bar, so a group lands right under it */
-  section[id] { scroll-margin-top: var(--space-10); }
   .ask { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-4) var(--space-8); }
 </style>
+

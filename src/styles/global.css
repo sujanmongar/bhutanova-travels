@@ -258,6 +258,25 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
+/* ---------- Tab bar (TabBar.astro): directly under a page banner, pinned under the header ----------
+   Travel guide topics, destination regions (jump links) and blog topics (filters) all look and sit the same way:
+   text tabs, the current one in ink with an orange bar under it. */
+.tabbar { position: sticky; top: var(--header-h); z-index: 20; background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.tabbar__in { display: flex; gap: var(--space-6); overflow-x: auto; scrollbar-width: none; }
+.tabbar__in::-webkit-scrollbar { display: none; }
+.tabbar__in > :is(a, button) {
+  position: relative; flex: none; display: inline-flex; align-items: center; min-height: 52px; padding: 0; border: 0; background: none;
+  color: var(--text-2); white-space: nowrap; cursor: pointer; transition: color var(--dur-1);
+}
+.tabbar__in > :is(a, button)::after { content: ''; position: absolute; inset: auto 0 -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
+.tabbar__in > :is([aria-current='true'], [aria-pressed='true']) { color: var(--ink); }
+.tabbar__in > :is([aria-current='true'], [aria-pressed='true'])::after { scale: 1 1; }
+.tabbar__in > :is(a, button):focus-visible { outline-offset: -2px; }  /* the scrolling bar would clip an outside ring */
+@media (hover: hover) { .tabbar__in > :is(a, button):hover { color: var(--ink); } }
+@media (max-width: 767px) { .tabbar__in { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); } }
+/* Jumps to a section land just under the tab bar (52px + hairline), so no strip of the previous section shows */
+html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12)); }
+
 /* ---------- Page banner (inner pages) ---------- */
 .banner {
   position: relative; display: grid; align-items: end; color: #fff; background: var(--s-800);
@@ -399,7 +418,15 @@ textarea.input { min-height: 120px; resize: vertical; }
 @media screen and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
   [data-reveal]:not(.is-in) { opacity: 0; }
   [data-reveal=''].is-in, [data-reveal='stagger'].is-in > * { animation: rise var(--dur-4) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
+  [data-reveal].is-past, [data-reveal='stagger'].is-past > * { animation: none; }  /* scrolled past: just show it */
 }
+/* Touch screens have no hover: a card dims a touch while it's pressed, so the tap is felt */
+@media (hover: none) {
+  :is(.tc, .bc, .cat, .places a, .stops a) { -webkit-tap-highlight-color: transparent; }
+  :is(.tc, .bc, .cat, .places a, .stops a):active img { opacity: .82; transition: opacity var(--dur-1) var(--ease-out); }
+}
+/* Photos that load while you scroll fade in instead of popping (the class is set by Base.astro) */
+img.is-arriving { animation: fade var(--dur-3) var(--ease-out); }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, ::before, ::after { transition: none !important; animation: none !important; }

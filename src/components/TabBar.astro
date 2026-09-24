@@ -1,0 +1,27 @@
+---
+// One row of tabs directly under a page banner, pinned under the header while the page scrolls. Either jump links to the
+// page's sections (travel guide topics, destination regions), which mark the section you're reading, or filter buttons
+// passed in the slot (blog topics). Styles: .tabbar in global.css.
+interface Props { label: string; links?: [string, string][]; filter?: boolean }
+const { label, links, filter = false } = Astro.props;
+---
+<nav class="tabbar" aria-label={label}>
+  <div class="container tabbar__in" data-tabbar data-filter={filter ? '' : undefined} role={filter ? 'toolbar' : undefined} aria-label={filter ? label : undefined}>
+    {links ? links.map(([text, href]) => <a class="t-label" href={href}>{text}</a>) : <slot />}
+  </div>
+</nav>
+
+<script>
+  // Jump links: underline the section in view and keep that tab visible when the bar scrolls sideways
+  document.querySelectorAll<HTMLElement>('[data-tabbar]').forEach((bar) => {
+    const links = [...bar.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
+    if (!links.length) return;
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+      if (!e.isIntersecting) return;
+      links.forEach((a) => a.setAttribute('aria-current', String(a.hash === `#${e.target.id}`)));
+      const on = links.find((a) => a.hash === `#${e.target.id}`);
+      if (on) bar.scrollTo({ left: on.offsetLeft - bar.offsetLeft - 16, behavior: 'smooth' });
+    }), { rootMargin: '-35% 0px -60% 0px' });
+    links.forEach((a) => { const s = document.getElementById(decodeURIComponent(a.hash.slice(1))); if (s) io.observe(s); });
+  });
+</script>

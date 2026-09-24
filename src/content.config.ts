@@ -67,7 +67,7 @@ export const collections = {
   tours: defineCollection({
     loader: sanity(`*[_type == "tour"]{
       "id": slug.current, title, "category": category->slug.current, nights, days, route, price, priceNotes, summary,
-      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights,
+      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights, groupSize, guideLanguages, maxAltitude, bestSeason,
       itinerary[]{ title, body, overnight, "image": image.${IMG},
         "places": (places[]->{ _type, title, excerpt, "slug": slug.current, "dest": destination->slug.current, "page": coalesce(page, false),
           "image": coalesce(image.${IMG}, destination->image.${IMG}) })[defined(slug)] },
@@ -84,6 +84,10 @@ export const collections = {
       image: z.string(),
       gallery: z.array(z.string()).default([]),
       highlights: z.array(z.string()).default([]),
+      groupSize: z.string().optional(),
+      guideLanguages: z.string().optional(),
+      maxAltitude: z.string().optional(),
+      bestSeason: z.string().optional(),
       itinerary: z
         .array(z.object({
           title: z.string(), image: z.string().optional(), body: z.string(), overnight: z.string().optional(),

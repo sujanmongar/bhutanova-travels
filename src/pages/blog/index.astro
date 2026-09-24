@@ -4,6 +4,7 @@ import Base from '../../layouts/Base.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
+import TabBar from '../../components/TabBar.astro';
 import { slug } from '../../utils';
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
 const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
@@ -14,13 +15,13 @@ const hero = 'photo-1585904194096-15ef66ccd234';
     <BannerImg src={hero} alt="Masked dancers at a Bhutanese tshechu" />
     <div><Breadcrumbs items={[['Blog']]} light /><h1>Stories from Bhutan</h1><p class="banner__line">Stories, festival notes and practical advice from our team in Thimphu.</p></div>
   </section>
+  <TabBar label="Filter posts by topic" filter>
+    <button class="t-label" type="button" aria-pressed="true" data-topic="">All stories</button>
+    {tags.map((t) => <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t}</button>)}
+  </TabBar>
   <section class="section">
     <div class="container">
       <h2 class="sr-only">All stories</h2>
-      <div class="topics" role="toolbar" aria-label="Filter posts by topic" data-filter>
-        <button class="t-label" type="button" aria-pressed="true" data-topic="">All stories</button>
-        {tags.map((t) => <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t}</button>)}
-      </div>
       <p class="sr-only" aria-live="polite" data-status></p>
       <ul class="grid-3 posts" data-reveal="stagger">
         {posts.map((p) => <li data-tags={p.data.tags.map(slug).join(' ')}><BlogCard post={p} /></li>)}
@@ -59,25 +60,8 @@ const hero = 'photo-1585904194096-15ef66ccd234';
   if (initial && buttons.some((b) => b.dataset.topic === initial)) apply(initial, false);
 </script>
 <style>
-  /* Topic tabs: the same text tabs as the tour page (the chosen one in ink with an orange underline) */
-  /* Sticks under the site header while the list scrolls, frosted like the tour page tabs */
-  .topics {
-    position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: var(--space-1); overflow-x: auto; scrollbar-width: none; white-space: nowrap;
-    margin: 0 calc(var(--gutter) * -1) var(--space-10); padding: 0 var(--gutter); border-bottom: 1px solid var(--border);
-    background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
-  }
-  .topics::-webkit-scrollbar { display: none; }
-  .topics button { position: relative; flex: none; padding: var(--space-4) var(--space-3); border: 0; background: none; color: var(--text-2); cursor: pointer; transition: color var(--dur-1); }
-  .topics button:first-child { padding-left: 0; }
-  .topics button:focus-visible { outline-offset: -2px; }  /* the scrolling bar would clip an outside ring */
-  .topics button::after { content: ''; position: absolute; inset: auto var(--space-3) -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
-  .topics button:first-child::after { left: 0; }
-  .topics button[aria-pressed='true'] { color: var(--ink); }
-  .topics button[aria-pressed='true']::after { scale: 1 1; }
-  @media (hover: hover) { .topics button:hover { color: var(--ink); } }
-  @media (max-width: 767px) { .topics { mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); } }
-  @media (min-width: 768px) { .topics { margin-inline: 0; padding: 0; } }
-  @media (scripting: none) { .topics { display: none; } }
+  /* The filter needs JS; without it every post simply shows */
+  @media (scripting: none) { :global(.tabbar) { display: none; } }
   .posts { row-gap: var(--space-10); }
   .posts > li[hidden] { display: none; }
 </style>

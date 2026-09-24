@@ -52,7 +52,11 @@ const detail = (m: (typeof people)[number]) =>
 <script>
   // "Show all": reveal the rest of the group and drop the button
   document.querySelectorAll<HTMLButtonElement>('[data-more]').forEach((b) => b.addEventListener('click', () => {
-    b.closest('[data-group]')!.querySelectorAll<HTMLElement>('li[hidden]').forEach((li) => (li.hidden = false));
+    // the rest of the group eases in instead of snapping into place
+    b.closest('[data-group]')!.querySelectorAll<HTMLElement>('li[hidden]').forEach((li) => {
+      li.hidden = false;
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) li.animate([{ opacity: 0, translate: '0 8px' }, { opacity: 1, translate: '0 0' }], { duration: 300, easing: 'cubic-bezier(.22, 1, .36, 1)' });
+    });
     b.remove();
   }));
 </script>

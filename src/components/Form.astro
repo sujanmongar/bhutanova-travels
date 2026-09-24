@@ -5,8 +5,32 @@ const { subject, class: cls, id } = Astro.props;
 // No endpoint yet → fall back to the visitor's mail app so enquiries are never lost.
 const action = SITE.formEndpoint || `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}`;
 ---
-<form class={cls} id={id} action={action} method="post" enctype={SITE.formEndpoint ? undefined : 'text/plain'}>
+<form class={cls} id={id} action={action} method="post" enctype={SITE.formEndpoint ? undefined : 'text/plain'} data-form data-email={SITE.email}>
   <input type="hidden" name="_subject" value={subject} />
   <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" hidden />
   <slot />
+  <p class="form__status t-caption" aria-live="polite" data-form-status hidden></p>
 </form>
+
+<script>
+  // After a valid submit the button shows it is working (a double tap can't send twice) and one line says what happens
+  // next: "Sending…" to the form service, or that the email app is opening while there is no form service yet.
+  document.querySelectorAll<HTMLFormElement>('form[data-form]').forEach((form) => form.addEventListener('submit', () => {
+    const btn = form.querySelector<HTMLButtonElement>('button:not([type="button"])');
+    const status = form.querySelector<HTMLElement>('[data-form-status]');
+    const mail = form.getAttribute('action')?.startsWith('mailto:');
+    if (btn) {
+      btn.setAttribute('aria-busy', 'true');
+      requestAnimationFrame(() => (btn.disabled = true));
+      setTimeout(() => { btn.disabled = false; btn.removeAttribute('aria-busy'); }, 4000);
+    }
+    if (status) {
+      status.hidden = false;
+      status.textContent = mail ? `Your email app should open with your details filled in. If it doesn't, write to ${form.dataset.email}.` : 'Sending your enquiry…';
+    }
+  }));
+</script>
+<style>
+  .form__status { grid-column: 1 / -1; color: var(--text-2); }
+  :global(.btn[aria-busy='true']) { opacity: .7; cursor: progress; }
+</style>

@@ -3,9 +3,10 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
+import TabBar from '../../components/TabBar.astro';
 import PlaceCards from '../../components/PlaceCards.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
-import { DESTINATIONS } from '../../utils';
+import { DESTINATIONS, slug } from '../../utils';
 
 const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
 const hero = 'photo-1578556881786-851d4b79cb73';
@@ -23,8 +24,10 @@ const places = new Intl.ListFormat('en-GB').format(names.length > 4 ? [...names.
     <div><Breadcrumbs items={[['Destinations']]} light /><h1>Where to go in Bhutan</h1><p class="banner__line">Every region can be combined into one private trip — see which of our tours visit each place.</p></div>
   </section>
 
+  {groups.length > 1 && <TabBar label="Regions" links={groups.map(([region]) => [region || 'All destinations', `#${slug(region || 'all')}`])} />}
+
   {groups.map(([region, list], i) => (
-    <section class:list={['section', { 'section--grey': i % 2 === 1 }]}>
+    <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(region || 'all')}>
       <div class="container">
         <div class:list={['sh', { 'sr-only': groups.length === 1 }]}><h2>{region || 'All destinations'}</h2></div>
         <PlaceCards items={list.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, image: d.data.image, title: d.data.title, text: d.data.excerpt }))} />

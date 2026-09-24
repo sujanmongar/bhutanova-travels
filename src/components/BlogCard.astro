@@ -3,8 +3,9 @@ import type { CollectionEntry } from 'astro:content';
 import { img, srcset } from '../config';
 // rail: the card sits in a row (2 across until 1200px) rather than the 3-column grid. The photo frame has the same
 // fixed height as every card (--card-photo), so sizes asks for at least 360px (270 × 4/3) wherever the frame is narrower.
-interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string; rail?: boolean }
-const { post, base = '/blog/', rail = false } = Astro.props;
+// list: on phones the page shows the card as a list row with a 88px thumbnail (travel guide index), so the photo is small there.
+interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string; rail?: boolean; list?: boolean }
+const { post, base = '/blog/', rail = false, list = false } = Astro.props;
 const d = post.data;
 const href = `${base}${post.id}/`;
 const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ');
@@ -12,7 +13,7 @@ const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-
 <article class="bc">
   <div class="bc__img">
     <img src={img(d.image, 800, 600)} srcset={srcset(d.image, [400, 600, 800, 1200], 4 / 3)}
-      sizes={rail ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)' : '(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)'}
+      sizes={rail ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)' : `(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, ${list ? '88px' : 'calc(100vw - 32px)'}`}
       alt="" width="800" height="600" loading="lazy" decoding="async" />
   </div>
   <p class="bc__meta t-label">{meta}</p>

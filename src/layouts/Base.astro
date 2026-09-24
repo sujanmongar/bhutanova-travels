@@ -115,15 +115,35 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
         sync();
       });
 
-      // Scroll-in: [data-reveal] fades up once; in [data-reveal="stagger"] the children follow 60ms apart (capped at 4).
-      const io = new IntersectionObserver((entries) => entries.forEach((e) => {
-        if (!e.isIntersecting) return;
-        e.target.classList.add('is-in');
-        io.unobserve(e.target);
-      }), { rootMargin: '0px 0px -8% 0px' });
-      document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => {
+      // Scroll-in: [data-reveal] fades up once as it comes into view; in [data-reveal="stagger"] the children follow 60ms
+      // apart (capped at 4). Checked on every scroll frame, so nothing is left hidden after a fast flick, a jump to the
+      // end or an anchor link: whatever has been scrolled past is shown at once, without the animation (.is-past).
+      const waiting = new Set(document.querySelectorAll<HTMLElement>('[data-reveal]'));
+      waiting.forEach((el) => {
         if (el.dataset.reveal === 'stagger') [...el.children].forEach((c, i) => (c as HTMLElement).style.setProperty('--i', String(Math.min(i, 4))));
-        io.observe(el);
+      });
+      let queued = false;
+      const reveal = () => {
+        queued = false;
+        const line = innerHeight * 0.92;
+        waiting.forEach((el) => {
+          const r = el.getBoundingClientRect();
+          if (r.top > line) return;
+          el.classList.add('is-in');
+          if (r.bottom < 0) el.classList.add('is-past');
+          waiting.delete(el);
+        });
+        if (!waiting.size) { removeEventListener('scroll', ask); removeEventListener('resize', ask); }
+      };
+      const ask = () => { if (!queued) { queued = true; requestAnimationFrame(reveal); } };
+      addEventListener('scroll', ask, { passive: true });
+      addEventListener('resize', ask);
+      reveal();
+
+      // Photos still loading fade in when they arrive (already-loaded ones just show)
+      document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((i) => {
+        if (i.complete) return;
+        i.addEventListener('load', () => i.classList.add('is-arriving'), { once: true });
       });
 
       // Lets iOS Safari show :active press states
