@@ -1,14 +1,14 @@
 ---
 // Team: the office team as cards, then guides and drivers as a swipeable row of portraits with a Guides / Drivers switch.
-// Sample profiles (placeholder ticked in Sanity) show on the local preview only; the live site never shows stand-ins.
+// Sample profiles (placeholder ticked in Sanity) show everywhere, with a one-line note that they're placeholders; the
+// note goes away by itself once no sample profiles are left.
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
 import { img, srcset, focal } from '../../config';
 interface Props { heading: string; text?: string; grey?: boolean }
 const { heading, text, grey = false } = Astro.props;
-const people = (await getCollection('team'))
-  .filter((m) => import.meta.env.DEV || !m.data.placeholder)
-  .sort((a, b) => a.data.order - b.data.order);
+const people = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
+const samples = people.some((m) => m.data.placeholder);
 // One card for everyone, grouped: office team, then guides, then drivers. A long group shows its first 8 and a button
 // reveals the rest, so dozens of guides never turn the page into a wall.
 const LIMIT = 8;
@@ -21,7 +21,11 @@ const detail = (m: (typeof people)[number]) =>
 {people.length > 0 && (
 <section id="team" class:list={['section', { 'section--grey': grey }]}>
   <div class="container">
-    <div class="sh" data-reveal><h2>{heading}</h2>{text && <p>{text}</p>}</div>
+    <div class="sh" data-reveal>
+      <h2>{heading}</h2>
+      {text && <p>{text}</p>}
+      {samples && <p class="note t-caption subtle">Photos and names are placeholders while we add our own team.</p>}
+    </div>
 
     {groups.map((g) => (
       <div class="group" data-group>
@@ -58,6 +62,8 @@ const detail = (m: (typeof people)[number]) =>
 </script>
 
 <style>
+  /* The section-intro rule sets paragraphs to body size; the note stays small print */
+  .sh .note { margin-top: var(--space-3); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); }
   .group + .group { margin-top: var(--space-16); }
   /* Group titles sit a step above the names: sub-section size (22.8 phones / 25.9 desktop) over card-size names */
   .group__h { margin-bottom: var(--space-6); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }

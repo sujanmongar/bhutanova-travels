@@ -169,7 +169,7 @@ export const collections = {
       seo,
     }),
   }),
-  // Team members for the About page. Sample profiles (placeholder ticked) are filtered out of live builds by the component.
+  // Team members for the About page. Sample profiles (placeholder ticked) show with a placeholder note.
   team: defineCollection({
     loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order, "placeholder": coalesce(placeholder, false) }`),
     schema: z.object({

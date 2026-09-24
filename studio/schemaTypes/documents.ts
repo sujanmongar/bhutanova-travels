@@ -308,7 +308,7 @@ export const teamMember = defineType({
     defineField({name: 'languages', title: 'Languages', type: 'string', description: 'e.g. "English, German".', hidden: ({parent}) => parent?.group !== 'guide'}),
     defineField({name: 'years', title: 'Years with us / on the road', type: 'number', hidden: ({parent}) => parent?.group === 'office'}),
     defineField({name: 'order', title: 'Position', type: 'number', initialValue: 99, description: 'Lower numbers appear first.'}),
-    defineField({name: 'placeholder', title: 'Sample profile', type: 'boolean', initialValue: false, description: 'Ticked = a stand-in while real profiles are gathered. Sample profiles show on the preview only, never on the live site.'}),
+    defineField({name: 'placeholder', title: 'Sample profile', type: 'boolean', initialValue: false, description: 'Ticked = a stand-in while real profiles are gathered. While any sample is showing, the section adds a line saying the profiles are placeholders.'}),
   ],
   orderings: [{title: 'Position', name: 'order', by: [{field: 'order', direction: 'asc'}]}],
   preview: {
