@@ -41,7 +41,7 @@ await client.request({
     headers: github,
     rule: {
       on: ['create', 'update', 'delete'],
-      filter: '_type in ["page", "tour", "category", "post", "guide", "faqs", "reviews"]',
+      filter: '_type in ["page", "tour", "category", "destination", "sight", "post", "guide", "teamMember", "faqs", "reviews"]',
       projection: '{"ref": "main"}',
     },
   },
