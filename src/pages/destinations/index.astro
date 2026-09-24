@@ -3,16 +3,19 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
-import Icon from '../../components/Icon.astro';
+import PlaceCards from '../../components/PlaceCards.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
-import { img, srcset } from '../../config';
 import { DESTINATIONS } from '../../utils';
 
 const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
 const hero = 'photo-1578556881786-851d4b79cb73';
 const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: destinations.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`${DESTINATIONS}${d.id}/`, Astro.site).href, name: d.data.title })) };
-// Names only the places that have a page ("Paro, Thimphu and Punakha").
-const places = new Intl.ListFormat('en-GB').format(destinations.map((d) => d.data.title));
+// Grouped by region, west to east; destinations without a region yet share one untitled group.
+const REGIONS = ['Western Bhutan', 'Central Bhutan', 'Eastern Bhutan', 'Northern Bhutan', ''];
+const groups = REGIONS.map((r) => [r, destinations.filter((d) => (d.data.region ?? '') === r)] as const).filter(([, list]) => list.length > 0);
+// Names the first few places that have a page ("Paro, Thimphu, Punakha, Haa Valley and more").
+const names = destinations.map((d) => d.data.title);
+const places = new Intl.ListFormat('en-GB').format(names.length > 4 ? [...names.slice(0, 4), 'more'] : names);
 ---
 <Base title="Bhutan destinations" description={`Where to go in Bhutan — ${places}, with what to see, when to visit and which tours go there.`} image={hero} schema={list}>
   <section class="banner">
@@ -20,38 +23,13 @@ const places = new Intl.ListFormat('en-GB').format(destinations.map((d) => d.dat
     <div><Breadcrumbs items={[['Destinations']]} light /><h1>Where to go in Bhutan</h1><p class="banner__line">Every region can be combined into one private trip — see which of our tours visit each place.</p></div>
   </section>
 
-  <section class="section section--grey">
-    <div class="container">
-      <h2 class="sr-only">All destinations</h2>
-      <ul class="grid-3 dest" data-reveal="stagger">
-        {destinations.map((d) => (
-          <li>
-            <a href={`${DESTINATIONS}${d.id}/`}>
-              <img src={img(d.data.image, 600, 440)} srcset={srcset(d.data.image, [400, 600, 900, 1200], 15 / 11)}
-                sizes="(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) 45vw, calc(100vw - 32px)"
-                alt="" width="600" height="440" loading="lazy" decoding="async" />
-              <div class="dest__body">
-                <h3 class="t-card">{d.data.title}<Icon name="arrow-right" /></h3>
-                <p class="t-body">{d.data.excerpt}</p>
-              </div>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </div>
-  </section>
+  {groups.map(([region, list], i) => (
+    <section class:list={['section', { 'section--grey': i % 2 === 1 }]}>
+      <div class="container">
+        <div class:list={['sh', { 'sr-only': groups.length === 1 }]}><h2>{region || 'All destinations'}</h2></div>
+        <PlaceCards items={list.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, image: d.data.image, title: d.data.title, text: d.data.excerpt }))} />
+      </div>
+    </section>
+  ))}
   <WhatsAppCta about="where to go in Bhutan" />
 </Base>
-<style>
-  .dest { row-gap: var(--space-12); }
-  .dest a { display: block; color: inherit; }
-  .dest img { width: 100%; aspect-ratio: 15 / 11; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-3) var(--ease-out); }
-  .dest__body { padding-top: var(--space-4); }
-  .dest h3 { display: flex; align-items: center; gap: var(--space-2); }
-  .dest h3 :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
-  .dest p { margin-top: var(--space-3); color: var(--text-2); }
-  @media (hover: hover) {
-    .dest a:hover img { scale: 1.03; }
-    .dest a:hover h3 :global(.icon) { translate: 3px 0; color: var(--ink); }
-  }
-</style>

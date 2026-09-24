@@ -13,6 +13,7 @@ import LatestPosts from './blocks/LatestPosts.astro';
 import Reviews from './blocks/Reviews.astro';
 import FaqBlock from './blocks/FaqBlock.astro';
 import BookingSteps from './blocks/BookingSteps.astro';
+import Team from './blocks/Team.astro';
 import Partners from './blocks/Partners.astro';
 import CtaBanner from './CtaBanner.astro';
 import WhatsAppCta from './WhatsAppCta.astro';
@@ -26,7 +27,7 @@ const hasH1 = ['pageBanner', 'hero'].includes(sections[0]?._type);
 const slugger = new GithubSlugger();
 ['main', 'drawer', 'plan', 'whatsapp', 'rail-quotes'].forEach((id) => slugger.slug(id));
 
-const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, faqList: FaqBlock, partners: Partners };
+const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, team: Team, faqList: FaqBlock, partners: Partners };
 // The two older components take slightly different prop names.
 const cta = (b: any) => ({ title: b.heading, text: b.text ?? '', cta: b.buttonLabel, href: b.buttonLink, image: b.image?.url, hotspot: b.image?.hotspot });
 const whatsapp = (b: any) => ({ title: b.heading, ...(b.text && { text: b.text }), about: b.topic, id: 'whatsapp' });

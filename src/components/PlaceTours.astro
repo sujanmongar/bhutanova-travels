@@ -1,0 +1,21 @@
+---
+// "Tours that visit …" as a swipe rail, for destination and sight pages.
+import type { CollectionEntry } from 'astro:content';
+import Icon from './Icon.astro';
+import TourCard from './TourCard.astro';
+import { TOURS } from '../utils';
+interface Props { heading: string; tours: CollectionEntry<'tours'>[]; grey?: boolean }
+const { heading, tours, grey = false } = Astro.props;
+---
+{tours.length > 0 && (
+  <section class:list={['section', { 'section--grey': grey }]}>
+    <div class="container">
+      <div class="sh sh--row">
+        <h2>{heading}</h2>
+        <div class="sh__act"><a class="link-more" href={TOURS}>All packages<Icon name="arrow-right" /></a></div>
+      </div>
+      <div class="rail" data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
+      <a class="link-more m-only" href={TOURS}>All packages<Icon name="arrow-right" /></a>
+    </div>
+  </section>
+)}

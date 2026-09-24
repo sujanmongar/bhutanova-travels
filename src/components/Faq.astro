@@ -11,7 +11,7 @@ const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntit
   <div class="faq__list">
     {items.map((f: { q: string; a: string }, i: number) => (
       <details open={i === open} name="faq">
-        <summary><h3 class="t-title">{f.q}</h3><Icon name="close" class="faq__tog" /></summary>
+        <summary><h3 class="t-card">{f.q}</h3><Icon name="close" class="faq__tog" /></summary>
         <p class="faq__a t-body">{f.a}</p>
       </details>
     ))}
@@ -32,7 +32,9 @@ const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntit
   /* Phosphor X (Bold) turned 45° reads as a plus while closed, and turns back into an X when open */
   summary :global(.faq__tog) { margin-top: var(--space-1); font-size: 14px; color: var(--s-500); rotate: 45deg; transition: rotate var(--dur-3) var(--ease-out); }
   details[open] :global(.faq__tog) { rotate: 0deg; }
-  .faq__a { padding: 0 var(--space-10) var(--space-6) 0; max-width: 64ch; color: var(--text); }
+  /* Same order as the why-us and booking-step items: title → 12px → answer in the muted colour */
+  details[open] summary { padding-bottom: var(--space-3); }
+  .faq__a { padding: 0 var(--space-10) var(--space-6) 0; max-width: 64ch; color: var(--text-2); }
   .faq--split { max-width: none; display: grid; gap: var(--stack); }
   .faq__head :global(.sh) { margin-bottom: 0; }
   @media (min-width: 1024px) {

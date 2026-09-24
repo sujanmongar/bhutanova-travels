@@ -3,18 +3,15 @@ import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
-import Icon from '../../components/Icon.astro';
-import TourCard from '../../components/TourCard.astro';
+import CategoryTiles from '../../components/blocks/CategoryTiles.astro';
+import TourRail from '../../components/blocks/TourRail.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
-import { img } from '../../config';
-import { catPath, tourPath } from '../../utils';
+import { catPath } from '../../utils';
 
+// The hub leads with themes, not every package: the tour list keeps growing, and each theme page lists its own tours.
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-// Theme order first (as in the menu), then shortest trip first within a theme.
-const rank = Object.fromEntries(cats.map((c, i) => [c.id, i]));
-const tours = (await getCollection('tours')).sort((a, b) => rank[a.data.category.id] - rank[b.data.category.id] || a.data.days - b.data.days);
 const hero = 'photo-1578556881786-851d4b79cb73';
-const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(tourPath(t), Astro.site).href, name: t.data.title })) };
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: cats.map((c, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(catPath(c.id), Astro.site).href, name: c.data.menuTitle })) };
 ---
 <Base title="Bhutan tour packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
   <section class="banner">
@@ -26,31 +23,8 @@ const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListEl
     </div>
   </section>
 
-  <section class="section section--grey">
-    <div class="container">
-      <div class="sh sh--split"><h2>All tour packages</h2><p>Every package can be tailored to your dates, pace and interests.</p></div>
-      <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
-    </div>
-  </section>
+  <CategoryTiles heading="Tour themes" grey grid hideHeading />
 
-  <nav class="section cats" aria-labelledby="themes">
-    <div class="container">
-      <div class="sh" data-reveal><h2 id="themes">Browse by theme</h2></div>
-      <ul data-reveal="stagger">
-        {cats.map((c) => (
-          <li><a class="t-title" href={catPath(c.id)}><img src={img(c.data.image, 168, 126)} alt="" width="56" height="42" loading="lazy" decoding="async" /><span>{c.data.menuTitle}</span><Icon name="arrow-right" /></a></li>
-        ))}
-      </ul>
-    </div>
-  </nav>
+  <TourRail _key="popular" heading="Popular tour packages" />
   <WhatsAppCta about="your tour packages" />
 </Base>
-<style>
-  .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0 var(--space-10); list-style: none; margin: 0; padding: 0; }
-  .cats a { display: flex; align-items: center; gap: var(--space-4); min-height: 72px; padding: var(--space-3) 0; border-top: 1px solid var(--border-dark); color: var(--ink); transition: color var(--dur-1); }
-  .cats img { width: 56px; height: 42px; border-radius: var(--r-sm); object-fit: cover; background: var(--s-50); }
-  .cats span { flex: 1; }
-  .cats a :global(.icon) { font-size: 13px; color: var(--text-3); transition: translate var(--dur-2) var(--ease-out), color var(--dur-2); }
-  @media (hover: hover) { .cats a:hover span { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 5px; } .cats a:hover :global(.icon) { translate: 3px 0; color: var(--ink); } }
-  .tours { row-gap: var(--space-12); }
-</style>

@@ -40,13 +40,13 @@ const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#${id}`, about);
   .wa__act { display: grid; justify-items: start; gap: var(--space-2); }
   .wa__num {
     display: inline-flex; align-items: center; gap: var(--space-4); min-height: 56px;
-    font-family: var(--ff); font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 500; color: #fff; white-space: nowrap;
+    font-family: var(--ff); font-size: var(--fs-price); line-height: var(--lh-price); letter-spacing: var(--ls-price); font-weight: var(--fw-price); color: #fff; white-space: nowrap;
     transition: color var(--dur-1);
   }
   .wa__ic { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; background: #25d366; color: #fff; font-size: 28px; transition: scale var(--dur-2) var(--ease-out); }
   .wa__link {
-    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--p-100);
-    text-decoration: underline 1.5px rgb(255 227 176 / .5); text-underline-offset: 6px; transition: color var(--dur-1), text-decoration-color var(--dur-2);
+    display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: #fff;
+    text-decoration: underline 1.5px rgb(255 255 255 / .5); text-underline-offset: 6px; transition: color var(--dur-1), text-decoration-color var(--dur-2);
   }
   .wa__link :global(.icon) { font-size: 12px; transition: translate var(--dur-2) var(--ease-out); }
   .wa__alt { color: var(--on-dark-3); }

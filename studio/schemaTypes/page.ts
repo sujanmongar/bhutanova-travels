@@ -227,6 +227,20 @@ const reviewList = defineType({
   preview: preview('Reviews'),
 })
 
+const team = defineType({
+  name: 'team',
+  title: 'Team',
+  type: 'object',
+  icon: UsersIcon,
+  description: 'Office team as cards, then guides and drivers as a row of portraits. People are added under Team in the menu.',
+  fields: [
+    defineField({name: 'heading', title: 'Heading', type: 'string', initialValue: 'Meet the team', validation: (r) => r.required()}),
+    defineField({name: 'text', title: 'Intro', type: 'text', rows: 2}),
+    defineField({name: 'grey', title: 'Grey background', type: 'boolean', initialValue: false}),
+  ],
+  preview: {select: {title: 'heading'}, prepare: ({title}) => ({title, subtitle: 'Team'})},
+})
+
 const bookingSteps = defineType({
   name: 'bookingSteps',
   title: 'Booking steps',
@@ -297,7 +311,7 @@ const partners = defineType({
   title: 'Partner logos',
   type: 'object',
   icon: UsersIcon,
-  description: 'A row of greyscale logos that turn to colour on hover.',
+  description: 'A row of greyscale logos that turn to colour on hover. It scrolls on its own when the logos don\'t fit the width.',
   fields: [
     defineField({name: 'label', title: 'Label', type: 'string', initialValue: 'Registered with and flying in partnership with'}),
     defineField({
@@ -312,6 +326,7 @@ const partners = defineType({
           fields: [
             defineField({name: 'name', title: 'Organisation', type: 'string', validation: (r) => r.required()}),
             defineField({name: 'image', title: 'Logo (PNG or SVG with transparent background)', type: 'image', validation: (r) => r.required()}),
+            defineField({name: 'url', title: 'Website', type: 'url', description: 'Their official site. The logo links to it in a new tab.'}),
           ],
           preview: {select: {title: 'name', media: 'image'}},
         }),
@@ -321,7 +336,7 @@ const partners = defineType({
   preview: {prepare: () => ({title: 'Partner logos'})},
 })
 
-export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, bookingSteps, faqList, ctaBanner, whatsapp, partners]
+export const blockTypes = [hero, pageBanner, intro, reasons, storyRows, richText, tourRail, categoryTiles, latestPosts, reviewList, bookingSteps, team, faqList, ctaBanner, whatsapp, partners]
 
 // ---------- Page ----------
 const TOP = ['hero', 'pageBanner']

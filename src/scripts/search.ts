@@ -4,7 +4,7 @@ import arrowSvg from '../icons/arrow-right.svg?raw';
 export type SearchItem = { t: string; k: string; u: string };
 export type Group = { key: string; label: string; items: SearchItem[] };
 
-const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Destination: 'Destinations', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
+const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Destination: 'Destinations', Sight: 'Places to see', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
 const ORDER = Object.keys(KIND);
 
 const arrow = arrowSvg.replace('<svg', '<svg class="icon" aria-hidden="true" focusable="false"');

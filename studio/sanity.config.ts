@@ -31,9 +31,11 @@ export default defineConfig({
             S.documentTypeListItem('tour').title('Tours'),
             S.documentTypeListItem('category').title('Tour categories'),
             S.documentTypeListItem('destination').title('Destinations'),
+            S.documentTypeListItem('sight').title('Sights'),
             S.divider(),
             S.documentTypeListItem('post').title('Blog posts'),
             S.documentTypeListItem('guide').title('Travel guides'),
+            S.documentTypeListItem('teamMember').title('Team'),
             S.divider(),
             ...[...SINGLETONS].map((id) =>
               S.listItem()

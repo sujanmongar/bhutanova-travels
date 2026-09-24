@@ -8,11 +8,12 @@ export const SITE = {
   phone: '+975 77 34 44 26',
   phoneAlt: '+975 17 44 99 32',
   whatsapp: '97577344426',
+  // '#' = profile not set up yet: the icon shows but links nowhere, and it's left out of the structured data.
   social: {
-    facebook: 'https://facebook.com/',
-    instagram: 'https://instagram.com/',
-    linkedin: 'https://linkedin.com/',
-    twitter: 'https://x.com/',
+    facebook: '#',
+    instagram: '#',
+    linkedin: '#',
+    twitter: '#',
     whatsapp: 'https://wa.me/97577344426',
   },
   // Paste a Formspree / Web3Forms / Basin endpoint here. Empty = forms open the visitor's mail app.

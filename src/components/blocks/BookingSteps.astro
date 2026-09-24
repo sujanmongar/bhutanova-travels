@@ -15,7 +15,7 @@ const chat = wa(new URL(Astro.url.pathname, Astro.site).href, 'planning a trip')
         <li class="step">
           <span class="step__n" aria-hidden="true">{i + 1}</span>
           <div class="step__txt">
-            <h3 class="t-title">{s.title}</h3>
+            <h3 class="t-card">{s.title}</h3>
             {s.text && <p class="t-body muted">{s.text}</p>}
           </div>
         </li>
@@ -34,12 +34,12 @@ const chat = wa(new URL(Astro.url.pathname, Astro.site).href, 'planning a trip')
   /* Phones: number in a small ring on the left, a line down to the next one; title → description 12px.
      Desktop: one row, the rings joined by a line across; ring → title 24px. */
   .steps { --ring: var(--space-10); display: grid; list-style: none; margin: 0; padding: 0; counter-reset: none; }
-  .step { position: relative; display: grid; grid-template-columns: var(--ring) minmax(0, 1fr); column-gap: var(--space-6); padding-bottom: var(--space-8); }
+  .step { position: relative; display: grid; grid-template-columns: var(--ring) minmax(0, 1fr); align-content: start; column-gap: var(--space-6); padding-bottom: var(--space-8); }
   .step:last-child { padding-bottom: 0; }
   .step__n {
     position: relative; z-index: 1; display: grid; place-items: center; width: var(--ring); height: var(--ring);
     border: 1.5px solid var(--s-500); border-radius: var(--r-full); background: var(--white);
-    font-family: var(--ff-display); font-size: var(--fs-h6); line-height: 1; color: var(--s-500); font-variant-numeric: lining-nums;
+    font-family: var(--ff-display); font-size: var(--fs-h6); line-height: 1; color: var(--ink); font-variant-numeric: lining-nums;
   }
   .section--grey .step__n { background: var(--surface); }
   /* the joining line */

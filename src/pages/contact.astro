@@ -29,9 +29,9 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
           {info.map(([i, t, v]) => (
             <li>
               <Icon name={i} />
-              <div><h3 class="t-title">{t}</h3><div class="info__v">{v.map(([text, href]) => href
-                ? <a class="t-caption" href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener">{text}</a>
-                : <p class="t-caption">{text}</p>)}</div></div>
+              <div><h3 class="t-card">{t}</h3><div class="info__v">{v.map(([text, href]) => href
+                ? <a class="t-body" href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener">{text}</a>
+                : <p class="t-body">{text}</p>)}</div></div>
             </li>
           ))}
         </ul>
@@ -78,7 +78,7 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
   @media (min-width: 768px) and (max-width: 1199px) { .info { grid-template-columns: 1fr 1fr; } }
   .info li { display: flex; gap: var(--space-3); padding: var(--space-4) 0; border-top: 1px solid var(--border-dark); }
   .info li > :global(.icon) { font-size: 16px; margin-top: var(--space-1); color: var(--p-600); }
-  .info h3 { margin: 0 0 var(--space-1); }
+  .info h3 { margin: 0 0 var(--space-3); }
   /* Two values (the phone numbers) wrap when they don't fit; the row gap keeps each link's tap area clear of the next */
   .info__v { display: flex; flex-wrap: wrap; gap: var(--space-6); }
   .info a, .info p { color: var(--text-2); word-break: break-word; }

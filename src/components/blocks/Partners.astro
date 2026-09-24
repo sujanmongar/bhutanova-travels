@@ -1,42 +1,97 @@
 ---
 import { type BlockImage } from '../../config';
-interface Props { label?: string; logos?: { _key: string; name: string; image?: BlockImage }[] }
+interface Props { label?: string; logos?: { _key: string; name: string; url?: string; image?: BlockImage }[] }
 const { label, logos = [] } = Astro.props;
 ---
 <section class="partners">
   <div class="container partners__in">
     {label && <p class="t-label subtle">{label}</p>}
-    <ul>
-      {/* SVGs as they are; raster logos as lossless PNG at 3× the displayed height, so edges and small type stay sharp */}
-      {logos.filter((l) => l.image?.url).map((l) => {
-        const base = l.image!.url.split('?')[0];
-        return <li><img src={base.endsWith('.svg') ? base : `${base}?h=132&fit=max&fm=png`} alt={l.name} title={l.name} width="201" height="140" loading="lazy" decoding="async" /></li>;
-      })}
-    </ul>
+    <!-- Logos that don't fit the width scroll on their own, full width on phones (script below); otherwise they sit still. -->
+    <div class="marquee" data-marquee>
+      <ul class="marquee__track">
+        {/* SVGs as they are; raster logos as lossless PNG at 3× the displayed height, so edges and small type stay sharp */}
+        {logos.filter((l) => l.image?.url).map((l) => {
+          const base = l.image!.url.split('?')[0];
+          const logo = <img src={base.endsWith('.svg') ? base : `${base}?h=132&fit=max&fm=png`} alt={l.name} title={l.name} width="201" height="140" loading="lazy" decoding="async" />;
+          return <li>{l.url ? <a href={l.url} target="_blank" rel="noopener">{logo}<span class="sr-only"> (opens in a new tab)</span></a> : logo}</li>;
+        })}
+      </ul>
+    </div>
   </div>
 </section>
+
+<script>
+  // Too many logos for the width: repeat the row once (hidden from screen readers and the Tab key) and let it run as
+  // an endless loop. Stays still for reduced motion — the row can be swiped instead — and pauses on hover or focus.
+  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-marquee]').forEach((box) => {
+    const track = box.firstElementChild as HTMLElement;
+    const fit = () => {
+      if (box.dataset.stopped) return; // a visitor swiped it: leave it as a plain swipeable row
+      const moving = box.classList.contains('is-moving');
+      const one = moving ? track.scrollWidth / 2 : track.scrollWidth;
+      const over = one > box.clientWidth;
+      if (over === (moving || box.classList.contains('is-swipe'))) return;
+      box.classList.toggle('is-moving', over && !still);
+      box.classList.toggle('is-swipe', over && still);
+      if (over && !still) {
+        [...track.children].forEach((li) => {
+          const c = li.cloneNode(true) as HTMLElement;
+          c.setAttribute('aria-hidden', 'true');
+          c.querySelectorAll('a').forEach((a) => (a.tabIndex = -1));
+          track.append(c);
+        });
+        box.style.setProperty('--loop', `${Math.round(one / 40)}s`); // ~40px a second
+      } else if (!over && moving) {
+        [...track.children].slice(track.children.length / 2).forEach((c) => c.remove());
+      }
+    };
+    new ResizeObserver(fit).observe(box);
+    // On touch, the first touch hands the row to the visitor: it stops and can be swiped (WCAG 2.2.2).
+    box.addEventListener('touchstart', () => {
+      if (!box.classList.contains('is-moving')) return;
+      [...track.children].slice(track.children.length / 2).forEach((c) => c.remove());
+      box.classList.replace('is-moving', 'is-swipe');
+      box.dataset.stopped = '1';
+    }, { passive: true });
+    // Logo widths are only known once each image loads.
+    track.querySelectorAll('img').forEach((i) => i.addEventListener('load', fit));
+  });
+</script>
+
 <style>
   /* Partners */
-  .partners { padding-block: var(--space-12) var(--space-16); border-top: 1px solid var(--border); }
-  /* Phones: centred, three logos a row, so a wide wordmark stays readable. Tablets: one centred row. Desktop: label left, logos spread. */
-  .partners__in { display: grid; gap: var(--space-6); text-align: center; }
-  .partners ul { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-6) var(--space-4); list-style: none; margin: 0; padding: 0; }
-  .partners li { flex: 0 0 calc((100% - var(--space-4) * 2) / 3); display: grid; place-items: center; }
+  .partners { padding-block: var(--space-12) var(--space-16); border-top: 1px solid var(--border); overflow-x: clip; }
+  /* Phones and tablets: label centred above a full-width row. Desktop: label left, logos beside it. */
+  /* minmax(0, 1fr): the doubled, max-content logo row must not widen the column (it would push the label off screen) */
+  .partners__in { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-6); text-align: center; }
+  .marquee { margin-inline: calc(50% - 50vw); padding-block: var(--space-1); } /* room for the focus ring */
+  .marquee__track { display: flex; justify-content: center; align-items: center; list-style: none; margin: 0; padding: 0; }
+  .marquee li { flex: none; display: grid; place-items: center; padding-inline: var(--space-4); }
+  .marquee a { display: grid; place-items: center; }
   /* Same height for every logo; very wide wordmarks are capped in width so they don't outweigh the emblems */
-  .partners img { width: auto; height: 36px; max-width: min(100%, 140px); object-fit: contain; }
+  .marquee img { width: auto; height: 36px; max-width: 140px; object-fit: contain; }
+  .marquee.is-moving { mask-image: linear-gradient(90deg, transparent, #000 var(--space-8), #000 calc(100% - var(--space-8)), transparent); }
+  .marquee.is-moving .marquee__track { justify-content: flex-start; width: max-content; animation: marquee var(--loop, 30s) linear infinite; }
+  .marquee.is-moving:hover .marquee__track { animation-play-state: paused; }
+  /* Keyboard focus: stop and let the row scroll, so the browser can bring the focused logo into view */
+  .marquee.is-moving:focus-within { overflow-x: auto; scrollbar-width: none; mask-image: none; }
+  .marquee.is-moving:focus-within .marquee__track { animation: none; }
+  .marquee.is-swipe { overflow-x: auto; scrollbar-width: none; }
+  .marquee.is-swipe .marquee__track { justify-content: flex-start; width: max-content; }
+  @keyframes marquee { to { translate: -50% 0; } }
   /* Muted until hovered, on hover devices only: touch screens show the logos in full colour */
   @media (hover: hover) {
-    .partners img { filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
-    .partners li:hover img { filter: none; opacity: 1; }
+    .marquee img { filter: grayscale(1); opacity: .65; transition: filter var(--dur-3), opacity var(--dur-3); }
+    .marquee li:hover img { filter: none; opacity: 1; }
   }
-  @media (min-width: 768px) {
-    .partners img { max-width: 140px; }
-    .partners ul { column-gap: var(--space-8); }
-    .partners li { flex-basis: auto; }
-  }
+  @media (min-width: 768px) { .marquee li { padding-inline: var(--space-6); } }
   @media (min-width: 1024px) {
-    .partners__in { grid-template-columns: 220px 1fr; gap: var(--space-12); align-items: center; text-align: left; }
-    .partners ul { justify-content: space-between; }
-    .partners img { height: 44px; }
+    .partners__in { grid-template-columns: 220px minmax(0, 1fr); gap: var(--space-12); align-items: center; text-align: left; }
+    .marquee { margin-inline: 0; }
+    .marquee:not(.is-moving):not(.is-swipe) .marquee__track { justify-content: space-between; }
+    .marquee:not(.is-moving):not(.is-swipe) li:first-child { padding-left: 0; }
+    .marquee:not(.is-moving):not(.is-swipe) li:last-child { padding-right: 0; }
+    .marquee img { height: 44px; }
   }
 </style>

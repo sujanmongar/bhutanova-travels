@@ -1,0 +1,71 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import BannerImg from '../../../components/BannerImg.astro';
+import PlaceBody from '../../../components/PlaceBody.astro';
+import Sights from '../../../components/Sights.astro';
+import PlaceTours from '../../../components/PlaceTours.astro';
+import WhatsAppCta from '../../../components/WhatsAppCta.astro';
+import { img } from '../../../config';
+import { DESTINATIONS } from '../../../utils';
+
+// Only sights ticked "Own page" get a page; the rest live on their destination's page.
+export async function getStaticPaths() {
+  const destinations = await getCollection('destinations');
+  const tours = await getCollection('tours');
+  const sights = await getCollection('sights');
+  return sights.flatMap((s) => {
+    const d = destinations.find((x) => x.id === s.data.destination);
+    if (!s.data.page || !d) return [];
+    return [{
+      params: { id: d.id, sight: s.id.split('/')[1] },
+      props: {
+        s,
+        d,
+        others: sights.filter((o) => o.data.destination === d.id && o.id !== s.id),
+        tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined),
+      },
+    }];
+  });
+}
+const { s, d, others, tours } = Astro.props;
+const { Content } = await render(s);
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const image = s.data.image ?? d.data.image;
+const schema = {
+  '@context': 'https://schema.org', '@type': 'TouristAttraction', name: s.data.title, description: s.data.excerpt, url,
+  image: img(image, 1200),
+  containedInPlace: { '@type': 'TouristDestination', name: d.data.title, url: new URL(`${DESTINATIONS}${d.id}/`, Astro.site).href },
+};
+const facts: [string, string][] = [
+  s.data.altitude && ['mountains', `Altitude ${s.data.altitude}`],
+  s.data.timeNeeded && ['clock', s.data.timeNeeded],
+  s.data.difficulty && ['person-simple-hike', `Difficulty: ${s.data.difficulty.toLowerCase()}`],
+  s.data.bestTime && ['gauge', `Best time: ${s.data.bestTime}`],
+].filter((f): f is [string, string] => !!f);
+const reviewed = s.data.updated?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+<Base title={`${s.data.title}, ${d.data.title}`} description={s.data.excerpt} image={image} schema={schema} seo={s.data.seo}>
+  <section class="banner">
+    <BannerImg src={image} />
+    <div>
+      <Breadcrumbs items={[['Destinations', DESTINATIONS], [d.data.title, `${DESTINATIONS}${d.id}/`], [s.data.title]]} light />
+      <h1>{s.data.title}</h1>
+      <p class="banner__line">{[d.data.title, d.data.region].filter(Boolean).join(', ')}</p>
+    </div>
+  </section>
+
+  <PlaceBody facts={facts} credit={s.data.image ? s.data.credit : d.data.credit}>
+    <div class="prose"><Content /></div>
+    {reviewed && <p class="reviewed t-caption subtle">Last reviewed {reviewed}</p>}
+  </PlaceBody>
+
+  <Sights heading={`More to see in ${d.data.title}`} sights={others} fallbackImage={d.data.image} grey />
+  <PlaceTours heading={`Tours that visit ${d.data.title}`} tours={tours} grey={others.length === 0} />
+  <WhatsAppCta about={`visiting ${s.data.title}`} />
+</Base>
+<style>
+  .reviewed { margin-top: var(--space-8); }
+  .reviewed + :global(.credit) { margin-top: var(--space-2); }
+</style>

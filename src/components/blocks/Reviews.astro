@@ -42,7 +42,7 @@ const pic = (r: Review) => {
 // platform's logo. Untick it once the rating and count are the real ones.
 const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo_tripadvisor' };
 ---
-{(reviews.sample ? reviews.platforms : reviews.items).length > 0 && (
+{(reviews.items.length > 0 || reviews.platforms.length > 0) && (
 <section class:list={['section', { 'section--grey': grey }]}>
   {ratingSchema && <script type="application/ld+json" set:html={ldJson(ratingSchema)} />}
   <div class="container">
@@ -73,9 +73,8 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
       )}
     </div>
 
-    <!-- A wall of reviews: staggered columns, each review as long as it needs to be. Phones swipe through them.
-         Hidden while "sample" is ticked: placeholder quotes must not read as real guests. The platform links still show. -->
-    {!reviews.sample && (
+    <!-- A wall of reviews: staggered columns, each review as long as it needs to be. Phones swipe through them. -->
+    {reviews.items.length > 0 && (
       <ul class="quotes" data-reveal="stagger">
         {reviews.items.map((r) => {
           const p = pic(r);

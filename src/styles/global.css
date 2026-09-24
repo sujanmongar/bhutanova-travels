@@ -1,9 +1,7 @@
 /* One variable file per family. Italic files only download if a page actually uses <em> or a pull quote. */
-@import '@fontsource-variable/inter/wght.css';
-@import '@fontsource-variable/inter/wght-italic.css';
-/* Libre Caslon Text for titles and headings only (it ships 400 and 400 italic; headings use 400). */
-@import '@fontsource/libre-caslon-text/latin-400.css';
-@import '@fontsource/libre-caslon-text/latin-400-italic.css';
+/* Fraunces for titles and headings only, with its optical-size axis so large headings get the display cut. */
+@import '@fontsource-variable/fraunces/opsz.css';
+@import '@fontsource-variable/fraunces/opsz-italic.css';
 
 /* ---------- Tokens ---------- */
 :root {
@@ -14,13 +12,13 @@
   --s-50: #e8eaec; --s-300: #637382; --s-500: #162e44; --s-800: #0c1925;
   --t-500: #01b3a7;
 
-  /* Navy-ink neutrals — still not black, but dark enough to read crisply.
-     Contrast on white / on --surface: */
-  --ink: #132433;      /* headings        15.8 / 14.7 */
-  --text: #2b3c4d;     /* body            11.3 / 10.5 */
-  --text-2: #41515f;   /* intros, cards    8.2 / 7.6 */
-  --text-3: #55626e;   /* meta, captions   6.3 / 5.8 */
-  --on-dark: #fff; --on-dark-2: #cfd8e0; --on-dark-3: #aebac6;
+  /* Two text colours (owner's rule): primary ink for headings and titles, one secondary grey for every other text —
+     body, descriptions, checklists, answers, dates, captions. Contrast on white / on --surface: */
+  --ink: #132433;      /* primary         15.8 / 14.7 */
+  --text-2: #41515f;   /* secondary        8.2 / 7.6 */
+  --text: var(--text-2); --text-3: var(--text-2);   /* older names, kept so every use lands on the one secondary grey */
+  /* On navy: white for primary, one light grey for secondary */
+  --on-dark: #fff; --on-dark-2: #cfd8e0; --on-dark-3: var(--on-dark-2);
   --success: #0b7a34; --warning: #fabc07; --error: #c63733;
   --white: #fff;
   --surface: #f5f7f9; --surface-2: #ebeff3;
@@ -64,8 +62,8 @@
      h1–h6 keep the scale's default sizes. Section titles are <h2> elements rendered at the H3 size (user's call).
      Card title = h5, item title = h6, hero = h1. Live at /styleguide/; rules in CLAUDE.md. */
   /* Same split and fallbacks as Perplexity's pplxSans / pplxSerif stacks */
-  --ff: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
-  --ff-serif: 'Libre Caslon Text', ui-serif, Georgia, Cambria, serif;
+  --ff: ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', system-ui, sans-serif; /* device font: SF Pro, Segoe UI, Roboto */
+  --ff-serif: 'Fraunces Variable', ui-serif, Georgia, Cambria, serif;
   --ff-body: var(--ff);   /* body text is sans; only titles and headings use the serif */
   --ff-display: var(--ff-serif);
   --fs-base: 1.125rem;  /* 18px */
@@ -80,6 +78,8 @@
   --fs-display: var(--fs-h1); --lh-display: var(--lh-h1); --ls-display: var(--ls-h1);   /* hero = h1 */
   --fs-card: var(--fs-h5);    --lh-card: var(--lh-h5);    --ls-card: var(--ls-h5);      /* card titles = h5 */
   --fs-title: var(--fs-h6);   --lh-title: var(--lh-h6);   --ls-title: var(--ls-h6);     /* item titles = h6 */
+  /* content titles: h2 inside a content column (tour sections, guide / blog / destination / sight text) = h4 on phones */
+  --fs-ctitle: var(--fs-h4);  --lh-ctitle: var(--lh-h4);  --ls-ctitle: var(--ls-h4);
   --fs-quote: var(--fs-h5);   --lh-quote: 1.4;            --ls-quote: 0;                /* italic 400 */
   /* Sans. Reading text is the 18px base; UI controls and small text sit on the 16px floor. */
   --fs-body: var(--fs-base); --lh-body: 1.6; --ls-body: 0; --fw-body: 400;     /* 18 — reading text, every description */
@@ -97,8 +97,10 @@
     /* Desktop: 18 × 1.2ⁿ — Minor Third */
     --fs-h1: calc(var(--fs-base) * 2.986); --fs-h2: calc(var(--fs-base) * 2.488); --fs-h3: calc(var(--fs-base) * 2.074);
     --fs-h4: calc(var(--fs-base) * 1.728); --fs-h5: calc(var(--fs-base) * 1.44);  --fs-h6: calc(var(--fs-base) * 1.2);
-    /* Libre Caslon runs large, so card titles take one step less on desktop (21.6); phones keep h5 (20.3) */
+    /* Card titles take one step less on desktop (21.6); phones keep h5 (20.3) */
     --fs-card: var(--fs-h6);
+    /* content titles = h5 on desktop, a step under section titles (37.3) and above card titles (21.6) */
+    --fs-ctitle: var(--fs-h5); --lh-ctitle: var(--lh-h5); --ls-ctitle: var(--ls-h5);
   }
 }
 
@@ -136,8 +138,8 @@ h4, .t-h4 { font-family: var(--ff-display); font-size: var(--fs-h4); line-height
 h5, .t-h5 { font-family: var(--ff-display); font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); font-weight: 400; font-variant-numeric: lining-nums; }
 h6, .t-h6 { font-family: var(--ff-display); font-size: var(--fs-h6); line-height: var(--lh-h6); letter-spacing: var(--ls-h6); font-weight: 400; font-variant-numeric: lining-nums; }
 /* Component titles sit on the same scale, but by name: a card title stays a card title at any heading level. */
-.t-card { font-family: var(--ff-display); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); font-weight: 400; font-variant-numeric: lining-nums; }
-.t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 400; font-variant-numeric: lining-nums; }
+.t-card { font-family: var(--ff-display); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); font-weight: 400; font-variant-numeric: lining-nums; color: var(--ink); }
+.t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 400; font-variant-numeric: lining-nums; color: var(--ink); }
 .t-quote { font-family: var(--ff-display); font-size: var(--fs-quote); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; font-style: italic; color: var(--ink); font-variant-numeric: lining-nums; }
 .t-body { font-family: var(--ff-body); font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); }
 .t-caption { font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); }
@@ -202,9 +204,9 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .btn:active { scale: .97; translate: none; box-shadow: none; transition-duration: 80ms; }
 /* Dark by default; every button warms to the brand orange on hover */
 .btn--primary { background: var(--s-500); color: #fff; }
-.btn--light { background: #fff; color: var(--s-800); }
+.btn--light { background: #fff; color: var(--ink); }
 .btn--outline { background: transparent; color: var(--ink); border-color: rgb(22 46 68 / .28); }
-.btn--soft { background: var(--surface); color: var(--s-500); border-color: var(--border); }
+.btn--soft { background: var(--surface); color: var(--ink); border-color: var(--border); }
 .btn--on-dark { background: transparent; border-color: rgb(255 255 255 / .32); color: #fff; }
 @media (hover: hover) {
   :is(.btn--primary, .btn--light, .btn--outline, .btn--soft, .btn--on-dark):hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); }
@@ -238,7 +240,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 
 /* Horizontal rail: swipe on mobile, 2-up tablet, 3-up desktop. Block padding gives hover lift/shadow room. */
 .rail {
-  display: grid; grid-auto-flow: column; grid-auto-columns: min(84%, 340px); gap: var(--space-4);
+  display: grid; grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); gap: var(--space-4); /* phones: 20px of the next card peeks in */
   overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
   list-style: none; margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1) calc(var(--space-8) * -1); padding: var(--space-2) var(--gutter) var(--space-8); scroll-padding-inline: var(--gutter);
 }
@@ -273,9 +275,9 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .crumbs li + li::before { content: '/'; margin-inline: var(--space-2); opacity: .6; }
 .crumbs a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); color: var(--text-2); transition: color var(--dur-1); }
 .crumbs a:hover { color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
-.crumbs [aria-current] { display: inline-block; vertical-align: bottom; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
+.crumbs [aria-current] { display: inline-block; vertical-align: bottom; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
 .crumbs--light ol { color: rgb(255 255 255 / .82); }
-.crumbs--light a { color: rgb(255 255 255 / .94); }
+.crumbs--light a { color: #fff; }
 .crumbs--light a:hover { color: #fff; }
 .crumbs--light [aria-current] { color: #fff; }
 .banner .crumbs { margin-bottom: var(--space-4); }
@@ -284,12 +286,14 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 64ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--text); }
 .prose > * + * { margin-top: var(--space-6); }
-.prose h2 { margin-top: var(--space-12); }
+.prose h2 { margin-top: var(--space-12); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
 /* h2 renders at the H3 size, so article h3s step down one to keep the order */
-.prose h3 { margin-top: var(--space-8); font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); }
+.prose h3 { margin-top: var(--space-8); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
 .prose :is(h2, h3) + * { margin-top: var(--space-3); }
-.prose a { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
-.prose a:hover { color: var(--p-800); text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+/* In-text links look the same everywhere on light pages: in articles and in any running text (a plain <a> inside a body or
+   caption paragraph). Navy panels (footer, WhatsApp card) keep their own light link colour. */
+.prose a, main p:is(.t-body, .t-caption):not(.wa *) > a:not([class]) { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
+.prose a:hover, main p:is(.t-body, .t-caption):not(.wa *) > a:not([class]):hover { color: var(--p-800); text-decoration-color: currentColor; text-decoration-thickness: 2px; }
 .prose ul, .prose ol { padding-left: var(--space-6); }
 .prose li + li { margin-top: var(--space-2); }
 .prose li::marker { color: var(--p-500); }
@@ -298,6 +302,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .prose blockquote { margin-inline: 0; padding: var(--space-4) var(--space-6); background: var(--p-50); border-left: 3px solid var(--p-500); border-radius: 0 var(--r-md) var(--r-md) 0; }
 .prose table { width: 100%; border-collapse: collapse; font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); display: block; overflow-x: auto; }
 .prose th, .prose td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }
+.prose :is(td, th).nw { white-space: nowrap; }
 .prose th { background: var(--surface); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-2); }
 
 /* ---------- Forms ---------- */
@@ -348,7 +353,8 @@ textarea.input { min-height: 120px; resize: vertical; }
   font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); font-weight: 400; letter-spacing: var(--ls-title); color: var(--ink);
 }
 .widget--cta { gap: var(--space-3); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); color: #fff; }
-.widget--cta .widget__h { color: #fff; border-color: rgb(255 255 255 / .16); }
+/* Support card (help / plan a trip): one design everywhere — title at card size over body text, like every other item */
+.widget--cta .widget__h { color: #fff; border-color: rgb(255 255 255 / .16); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
 .widget--cta p:not(.widget__h) { margin-bottom: var(--space-1); font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--on-dark-2); }
 .widget-sticky { display: grid; gap: var(--space-6); }
 @media (min-width: 1024px) { .widget-sticky { position: sticky; top: calc(var(--header-h) + var(--space-6)); } }

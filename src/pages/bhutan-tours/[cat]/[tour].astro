@@ -6,6 +6,7 @@ import Form from '../../../components/Form.astro';
 import Faq from '../../../components/Faq.astro';
 import TourCard from '../../../components/TourCard.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
+import PlanCta from '../../../components/PlanCta.astro';
 import { img, srcset, SITE, wa, tel } from '../../../config';
 import { TOURS, catPath } from '../../../utils';
 
@@ -35,12 +36,22 @@ const md = (s: string) =>
   }).join('');
 
 const tabs = [
-  ['highlights', 'Highlights', t.highlights.length],
-  ['itinerary', 'Day by day', t.itinerary.length],
+  ['highlights', 'Highlights', t.highlights.length || 1],
+  ['itinerary', 'Itinerary', t.itinerary.length],
   ['map', 'Route map', t.map],
-  ['inclusions', 'Included', t.inclusions.length],
-  ['good-to-know', 'Good to know', t.priceNotes.length],
+  ['inclusions', 'Inclusions & exclusions', t.inclusions.length + t.exclusions.length],
+  ['additional-info', 'Additional information', t.priceNotes.length],
+  ['faq', 'Common questions', faqs.length],
 ].filter((x) => x[2]);
+// Trip facts, shown under the highlights: only what "Inclusions & exclusions" doesn't already say (no hotels, meals,
+// guide or transport there). The tour's own fields show only when filled in.
+const tripFacts = ([
+  ['location-dot', 'Destinations', [...new Set(t.route.map((r) => r.replace(/\s*\(.*?\)\s*$/, '')))].join(', ')],
+  ['users-three', 'Group size', t.groupSize],
+  ['identification-badge', 'Guide languages', t.guideLanguages],
+  ['mountains', 'Max altitude', t.maxAltitude],
+  ['gauge', 'Best season', t.bestSeason],
+] as const).filter(([, , v]) => v);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const chat = wa(url, t.title);
 const price = t.price.toLocaleString('en-US');
@@ -58,16 +69,30 @@ const schema = [
 const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [1200, 800];
 ---
 <Base title={`${t.title} – ${t.nights} nights / ${t.days} days Bhutan tour`} description={t.summary} image={t.image} schema={schema} seo={t.seo}>
-  <!-- Gallery: the CDN crops every file to its frame (4:3 on phones, 3:2 from 768px) -->
+  <!-- What the tour is comes first: breadcrumb, title, summary, length, theme and places, then the photos -->
+  <div class="container head">
+    <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle, catPath(cat.id)], [t.title]]} />
+    <h1>{t.title}</h1>
+    <p class="lead t-body">{t.summary}</p>
+    <ul class="facts t-label muted">
+      <li><Icon name="clock" />{t.days} days · {t.nights} nights</li>
+      <li><Icon name="ph_compass" />{cat.data.menuTitle}</li>
+      <li><Icon name="users-three" />Private tour</li>
+    </ul>
+  </div>
+
+  <!-- Gallery: the CDN crops every file to its frame (4:3 on phones, 3:2 from 768px); it moves on its own (script below) -->
   <div class="gal">
     <div class="gal__track" id="gal">
       {gallery.map((g, i) => (
+        <button type="button" class="gal__open" data-view={i} aria-label={`View photo ${i + 1} of ${gallery.length} full screen`}>
         <picture>
           <source media="(max-width: 767px)" srcset={srcset(g, [480, 800, 1200], 4 / 3)} sizes="100vw" />
           <img src={img(g, 1200, 800)} srcset={srcset(g, [480, 800, 1200, 1600], 3 / 2)} sizes="(min-width:1200px) 756px, calc(72vw - 46px)"
             alt={`${t.title} photo ${i + 1}`} width="1200" height="800" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async"
             style={i === 0 ? 'view-transition-name: hero-img' : undefined} />
         </picture>
+        </button>
       ))}
     </div>
     {gallery.length > 1 && (
@@ -78,52 +103,75 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
     )}
   </div>
 
-  <!-- Phones/tablets read head → price card → sections; from 1200px the price card is a sticky sidebar -->
+  <!-- Phones/tablets: photos → price card → sections → help card. From 1200px both cards sit in a sticky sidebar. -->
   <div class="container layout">
-    <div class="head">
-      <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle, catPath(cat.id)], [t.title]]} />
-      <h1>{t.title}</h1>
-      <p class="lead t-body">{t.summary}</p>
-      <ul class="facts t-label muted">
-        <li><Icon name="clock" />{t.days} days · {t.nights} nights</li>
-        <li><Icon name="ph_compass" />Private tour</li>
-      </ul>
-      <p class="route t-caption muted">{t.route.map((r, i) => <>{i > 0 && <Icon name="arrow-right" />}<span>{r}</span></>)}</p>
-    </div>
-
+    <div class="side">
     <aside class="price-card" aria-label="Price">
       <p class="t-label subtle">From</p>
       <p class="price num t-label subtle"><b class="t-price"><abbr class="t-label" title="US dollars">USD</abbr> {price}</b> / person</p>
-      {t.priceNotes.length > 0 && <ul class="notes t-caption muted">{t.priceNotes.map((n) => <li>{n}</li>)}</ul>}
       <button class="btn btn--primary btn--block btn--lg" type="button" data-open-enquiry>Send an enquiry</button>
-      <p class="assure t-label subtle"><Icon name="check" />No payment needed to enquire</p>
     </aside>
+    <div class="help">
+      <PlanCta title="Need help booking?" text="Talk to a local trip expert — we'll tailor this tour to your dates." action={{ href: tel(SITE.phone), label: `Call ${SITE.phone}`, icon: 'phone' }} topic={t.title} />
+    </div>
+    </div>
 
     <div class="main">
       <nav class="tabs" aria-label="Tour sections">
         {tabs.map(([id, label]) => <a class="t-label" href={`#${id}`}>{label}</a>)}
       </nav>
 
-      {t.highlights.length > 0 && (
+      {(t.highlights.length > 0 || tripFacts.length > 0) && (
         <section id="highlights" class="block">
-          <h2>Highlights</h2>
-          <ul class="bullets">{t.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
+          <h2>{t.highlights.length > 0 ? 'Highlights' : 'Trip facts'}</h2>
+          {t.highlights.length > 0 && <ul class="bullets">{t.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>}
+          {tripFacts.length > 0 && (
+            <div class="trip">
+              {t.highlights.length > 0 && <h3 class="t-card">Trip facts</h3>}
+              <dl class="trip__list">
+                {tripFacts.map(([icon, label, value]) => (
+                  <div>
+                    <dt class="t-label subtle"><Icon name={icon} />{label}</dt>
+                    <dd class="t-body">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
         </section>
       )}
 
       {t.itinerary.length > 0 && (
         <section id="itinerary" class="block">
-          <h2>Day by day</h2>
+          <h2>Itinerary</h2>
           <ol class="days">
             {t.itinerary.map((d, i) => (
               <li>
                 <details open={i === 0}>
-                  <summary><h3 class="t-title">{d.title}</h3><Icon name="chevron-up" class="chev" /></summary>
+                  <summary><h3 class="t-card">{d.title}</h3><Icon name="chevron-up" class="chev" /></summary>
                   <div class="day">
-                    {d.image && <img src={img(d.image, 900, 400)} srcset={srcset(d.image, [600, 900, 1360], 9 / 4)} sizes="(min-width:768px) 680px, calc(100vw - 72px)"
+                    {d.places.length === 0 && d.image && <img src={img(d.image, 900, 400)} srcset={srcset(d.image, [600, 900, 1360], 9 / 4)} sizes="(min-width:768px) 680px, calc(100vw - 72px)"
                       alt="" width="900" height="400" loading="lazy" decoding="async" />}
                     <Fragment set:html={md(d.body)} />
                     {d.overnight && <p class="overnight t-caption muted"><Icon name="ph_bed" />Overnight: {d.overnight}</p>}
+                    {/* The day's sights at the end of the day: a swipeable row of cards linking to their own pages
+                        (a sight without a page links to its destination) */}
+                    {d.places.length > 0 && (
+                      <div class="stops-wrap">
+                        <p class="t-label subtle">Places on this day</p>
+                        <ul class="stops">
+                          {d.places.map((p) => (
+                            <li>
+                              <a href={p._type === 'destination' ? `/destinations/${p.slug}/` : p.page ? `/destinations/${p.dest}/${p.slug}/` : `/destinations/${p.dest}/`}>
+                                {p.image && <img src={img(p.image, 480, 360)} srcset={srcset(p.image, [240, 480, 720], 4 / 3)} sizes="240px" alt="" width="480" height="360" loading="lazy" decoding="async" />}
+                                <span class="stops__t t-label">{p.title}</span>
+                                {p.excerpt && <span class="stops__x t-caption muted">{p.excerpt}</span>}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </details>
               </li>
@@ -140,16 +188,19 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
         </section>
       )}
 
-      {t.inclusions.length > 0 && (
+      {(t.inclusions.length > 0 || t.exclusions.length > 0) && (
         <section id="inclusions" class="block">
+          <h2>Inclusions & exclusions</h2>
           <div class="inc">
-            <div>
-              <h2>What's included</h2>
-              <ul class="checks">{t.inclusions.map((x) => <li class="t-body"><Icon name="check" class="ok" />{x}</li>)}</ul>
-            </div>
+            {t.inclusions.length > 0 && (
+              <div>
+                <h3 class="t-card">What's included</h3>
+                <ul class="checks">{t.inclusions.map((x) => <li class="t-body"><Icon name="check" class="ok" />{x}</li>)}</ul>
+              </div>
+            )}
             {t.exclusions.length > 0 && (
               <div>
-                <h2>Not included</h2>
+                <h3 class="t-card">Not included</h3>
                 <ul class="checks">{t.exclusions.map((x) => <li class="t-body"><Icon name="close" class="no" />{x}</li>)}</ul>
               </div>
             )}
@@ -158,8 +209,8 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
       )}
 
       {t.priceNotes.length > 0 && (
-        <section id="good-to-know" class="block">
-          <h2>Good to know</h2>
+        <section id="additional-info" class="block">
+          <h2>Additional information</h2>
           <ul class="notes t-body">{t.priceNotes.map((n) => <li>{n}</li>)}</ul>
         </section>
       )}
@@ -171,12 +222,6 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
         </section>
       )}
 
-      <div class="help-card">
-        <p class="t-title">Need help booking?</p>
-        <p class="t-body muted">Talk to a local trip expert — we'll tailor this tour to your dates.</p>
-        <a class="btn btn--outline" href={tel(SITE.phone)}><Icon name="phone" />Call {SITE.phone}</a>
-        <a class="btn btn--soft" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
-      </div>
     </div>
   </div>
 
@@ -226,11 +271,44 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
       </Form>
     </div>
   </dialog>
+
+  <!-- Full-screen photo viewer: swipe on phones, arrows / keyboard on desktop, Esc or the close button to leave -->
+  <dialog class="lb" id="lb" aria-label={`${t.title} photos`}>
+    <button type="button" class="lb__close" aria-label="Close photos" data-lb-close><Icon name="close" /></button>
+    <div class="lb__track" data-lb-track>
+      {gallery.map((g, i) => (
+        <figure><img src={img(g, 1600)} srcset={srcset(g, [800, 1200, 1600, 2400])} sizes="100vw" alt={`${t.title} photo ${i + 1}`} loading="lazy" decoding="async" /></figure>
+      ))}
+    </div>
+    {gallery.length > 1 && (
+      <>
+        <button type="button" class="lb__btn lb__btn--prev" aria-label="Previous photo" data-lb-step="-1"><Icon name="chevron-left" /></button>
+        <button type="button" class="lb__btn lb__btn--next" aria-label="Next photo" data-lb-step="1"><Icon name="chevron-right" /></button>
+      </>
+    )}
+    <p class="lb__count t-label" aria-live="polite" data-lb-count>1 / {gallery.length}</p>
+  </dialog>
 </Base>
 
 <script>
   const dlg = document.getElementById('enquiry') as HTMLDialogElement;
   document.querySelectorAll('[data-open-enquiry]').forEach((b) => b.addEventListener('click', () => dlg.showModal()));
+
+  // Photo viewer
+  const lb = document.getElementById('lb') as HTMLDialogElement;
+  const lbTrack = lb.querySelector<HTMLElement>('[data-lb-track]')!;
+  const lbCount = lb.querySelector<HTMLElement>('[data-lb-count]')!;
+  const total = lbTrack.children.length;
+  const at = () => Math.round(lbTrack.scrollLeft / lbTrack.clientWidth);
+  const go = (i: number, instant = false) => lbTrack.scrollTo({ left: Math.max(0, Math.min(total - 1, i)) * lbTrack.clientWidth, behavior: instant ? 'instant' : 'smooth' });
+  document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.addEventListener('click', () => {
+    lb.showModal();
+    go(Number(b.dataset.view), true);
+  }));
+  lbTrack.addEventListener('scroll', () => (lbCount.textContent = `${at() + 1} / ${total}`), { passive: true });
+  lb.querySelectorAll<HTMLElement>('[data-lb-step]').forEach((b) => b.addEventListener('click', () => go(at() + Number(b.dataset.lbStep))));
+  lb.querySelector('[data-lb-close]')!.addEventListener('click', () => lb.close());
+  lb.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(at() + 1); if (e.key === 'ArrowLeft') go(at() - 1); });
   // .sheet__in fills the dialog, so target === dialog means a backdrop tap
   dlg.addEventListener('click', (e) => { const t = e.target as Element; if (t === dlg || t.closest('[data-close]')) dlg.close(); });
 
@@ -246,6 +324,26 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   }), { rootMargin: '-45% 0px -50% 0px' });
   document.querySelectorAll('.block[id]').forEach((s) => spy.observe(s));
 
+  // Gallery: next photo every 4.5s while it's on screen, back to the first after the last. Hover or focus pauses it; a swipe,
+  // a sideways scroll or the arrows hand it to the visitor for good. Nothing moves for reduced motion.
+  const gal = document.getElementById('gal');
+  if (gal && gal.children.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let playing = true, seen = false, touching = false;
+    const stop = () => (playing = false);
+    gal.addEventListener('touchstart', () => (touching = true), { passive: true });
+    addEventListener('touchend', () => (touching = false), { passive: true });
+    gal.addEventListener('scroll', () => { if (touching) stop(); }, { passive: true });
+    gal.addEventListener('wheel', (e) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) stop(); }, { passive: true });
+    gal.parentElement!.querySelectorAll('.gal__btn, .gal__open').forEach((b) => b.addEventListener('click', stop));
+    new IntersectionObserver(([e]) => (seen = e.isIntersecting), { threshold: 0.5 }).observe(gal);
+    setInterval(() => {
+      if (!playing || !seen || document.hidden || gal.matches(':hover, :focus-within')) return;
+      const [a, b] = gal.children as unknown as HTMLElement[];
+      const atEnd = gal.scrollLeft + gal.clientWidth >= gal.scrollWidth - 2;
+      gal.scrollTo({ left: atEnd ? 0 : gal.scrollLeft + (b.offsetLeft - a.offsetLeft), behavior: 'smooth' });
+    }, 4500);
+  }
+
   // Hide the booking bar while the price card (same action) is on screen
   const bar = document.querySelector('.bar');
   const pc = document.querySelector('.price-card');
@@ -254,10 +352,11 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
 
 <style>
   /* Gallery: full-bleed 4:3 on phones, centred 3:2 with side peeks on tablet/desktop */
-  .gal { position: relative; }
+  .gal { position: relative; margin-top: var(--space-8); }
   .gal__track { display: flex; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .gal__track::-webkit-scrollbar { display: none; }
-  .gal__track picture { flex: 0 0 100%; scroll-snap-align: center; }
+  .gal__open { flex: 0 0 100%; scroll-snap-align: center; display: block; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .gal__open picture { display: block; }
   .gal__track img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; background: var(--s-50); }
   .gal__btn {
     position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
@@ -269,30 +368,51 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .gal__btn:disabled { opacity: 0; pointer-events: none; }
   .gal__btn--prev { left: var(--space-4); } .gal__btn--next { right: var(--space-4); }
   @media (min-width: 768px) {
-    .gal { max-width: calc(var(--container) + var(--gutter) * 2); margin: var(--space-8) auto 0; padding-inline: var(--gutter); }
+    .gal { max-width: calc(var(--container) + var(--gutter) * 2); margin: var(--space-10) auto 0; padding-inline: var(--gutter); }
     .gal__track { gap: var(--space-3); border-radius: var(--radius); corner-shape: squircle; }
-    .gal__track picture { flex-basis: 72%; }
+    .gal__open { flex-basis: 72%; }
     .gal__track img { aspect-ratio: 3 / 2; border-radius: var(--radius); corner-shape: squircle; }
     .gal__btn { width: 48px; height: 48px; }
     .gal__btn--prev { left: calc(var(--gutter) + var(--space-6)); } .gal__btn--next { right: calc(var(--gutter) + var(--space-6)); }
   }
-  @media (min-width: 1200px) { .gal { margin-top: var(--space-10); } .gal__track picture { flex-basis: 63%; } }
+  @media (min-width: 1200px) { .gal__open { flex-basis: 63%; } }
+
+  /* Full-screen photo viewer */
+  .lb { --focus: #fff; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: rgb(8 16 24 / .96); color: #fff; }
+  /* Nothing behind the viewer scrolls while it's open */
+  :global(html:has(dialog.lb[open])) { overflow: hidden; }
+  .lb::backdrop { background: rgb(8 16 24 / .96); }
+  .lb__track { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
+  .lb__track::-webkit-scrollbar { display: none; }
+  .lb__track figure { flex: 0 0 100%; height: 100%; min-height: 0; display: grid; place-items: center; margin: 0; padding: var(--space-16) var(--space-4); scroll-snap-align: center; }
+  /* Each photo fits the screen: never taller than the viewer (minus room for the close button and counter) */
+  .lb__track img { width: auto; height: auto; max-width: 100%; max-height: calc(100dvh - var(--space-16) * 2); object-fit: contain; border-radius: var(--r-sm); }
+  .lb__close, .lb__btn { position: absolute; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; cursor: pointer; }
+  .lb__close { top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); right: var(--space-4); }
+  .lb__btn { top: 50%; translate: 0 -50%; display: none; }
+  .lb__count { position: absolute; left: 50%; bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; color: var(--on-dark-2); }
+  @media (min-width: 768px) { .lb__btn { display: grid; } .lb__btn--prev { left: var(--space-6); } .lb__btn--next { right: var(--space-6); } }
 
   /* Layout */
-  .layout { display: grid; gap: var(--space-8); padding-block: var(--stack) var(--section); }
-  .layout > * { min-width: 0; }
+  .head { padding-top: var(--space-6); }
+  .layout { display: grid; gap: var(--space-8); padding-block: var(--space-10) var(--section); } /* breathing space after the photos */
+  .layout > *, .side > * { min-width: 0; }
+  /* Phones/tablets: the sidebar dissolves so its two cards take their own places in the page */
+  .side { display: contents; }
+  .main { order: 0; }
+  .price-card { order: 1; }
+  .help { order: 2; }
   @media (min-width: 1200px) {
-    .layout { grid-template-columns: minmax(0, 1fr) 360px; grid-template-areas: 'head side' 'main side'; column-gap: var(--space-16); }
-    .head { grid-area: head; }
-    .main { grid-area: main; }
+    .head { padding-top: var(--space-10); }
+    .layout { grid-template-columns: minmax(0, 1fr) 360px; column-gap: var(--space-16); }
+    .side { display: grid; gap: var(--space-4); grid-column: 2; grid-row: 1; align-self: start; position: sticky; top: calc(var(--header-h) + var(--space-6)); }
+    .main { grid-column: 1; grid-row: 1; }
   }
   .head :global(.crumbs) { margin-bottom: var(--space-4); }
   .lead { margin-top: var(--space-4); max-width: 68ch; color: var(--text-2); }
-  .facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); list-style: none; margin: var(--space-6) 0 var(--space-3); padding: 0; }
+  .facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); list-style: none; margin: var(--space-6) 0 0; padding: 0; }
   .facts li { display: inline-flex; align-items: center; gap: var(--space-2); }
   .facts :global(.icon) { font-size: 20px; color: var(--ink); }
-  .route { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
-  .route :global(.icon) { font-size: 12px; color: var(--p-500); }
 
   .tabs {
     position: sticky; top: var(--header-h); z-index: 5; display: flex; gap: var(--space-1); margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter);
@@ -310,19 +430,19 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
 
   .block { padding-block: var(--space-10); border-bottom: 1px solid var(--border); scroll-margin-top: var(--space-12); }
   .block:last-of-type { border-bottom: 0; }
-  .block h2 { margin-bottom: var(--space-6); }
+  /* Titles inside the content column use the content-title role (same as guides, destinations, sights and blog posts) */
+  .block h2 { margin-bottom: var(--space-6); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
   .bullets { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
-  @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: var(--space-8); } }
   .bullets li { display: flex; gap: var(--space-3); }
   .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 12px) / 2); font-size: 12px; color: var(--s-500); }
   .notes { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-4); }
   .notes li::marker { color: var(--p-500); }
 
   .days { list-style: none; margin: 0; padding: 0; }
-  .days li { position: relative; padding-left: var(--space-10); }
-  .days li::before { content: ''; position: absolute; left: var(--space-2); top: var(--space-4); width: 8px; height: 8px; border-radius: 50%; background: var(--s-500); }
-  .days li::after { content: ''; position: absolute; left: var(--space-3); translate: -50% 0; top: var(--space-8); bottom: calc(var(--space-2) * -1); width: 2px; background: var(--border-dark); }
-  .days li:last-child::after { display: none; }
+  .days > li { position: relative; padding-left: var(--space-10); }
+  .days > li::before { content: ''; position: absolute; left: var(--space-2); top: var(--space-4); width: 8px; height: 8px; border-radius: 50%; background: var(--s-500); }
+  .days > li::after { content: ''; position: absolute; left: var(--space-3); translate: -50% 0; top: var(--space-8); bottom: calc(var(--space-2) * -1); width: 2px; background: var(--border-dark); }
+  .days > li:last-child::after { display: none; }
   .days summary {
     display: flex; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) 0 var(--space-4); cursor: pointer; list-style: none; border-bottom: 1px solid var(--border);
     color: var(--ink); transition: color var(--dur-1);
@@ -332,15 +452,29 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .days summary::-webkit-details-marker { display: none; }
   .days :global(.chev) { flex: none; font-size: 12px; margin-top: var(--space-2); rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); color: var(--text-3); }
   details[open] > summary :global(.chev) { rotate: 0deg; }
-  .day { display: grid; gap: var(--space-3); max-width: 68ch; padding: var(--space-6) 0 var(--space-8); }
-  .day img { border-radius: var(--r-md); width: 100%; aspect-ratio: 9 / 4; object-fit: cover; background: var(--s-50); }
-  .day :global(ul) { padding-left: var(--space-4); display: grid; gap: var(--space-2); margin: 0; }
+  /* Same order as the FAQ below it: title → 12px → text */
+  .days details[open] summary { padding-bottom: 0; border-bottom: 0; }
+  .day { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-3); max-width: 68ch; padding: var(--space-3) 0 var(--space-8); border-bottom: 1px solid var(--border); }
+  .day > img { border-radius: var(--r-md); width: 100%; aspect-ratio: 9 / 4; object-fit: cover; background: var(--s-50); }
+  /* The day's places: a swipeable row at the end of the day, after the overnight line */
+  .stops-wrap { display: grid; gap: var(--space-3); margin-top: var(--space-4); min-width: 0; }
+  .stops { display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: var(--space-4); list-style: none; margin: 0; padding: 0 0 var(--space-2);
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .stops::-webkit-scrollbar { display: none; }
+  .stops li { scroll-snap-align: start; }
+  .stops a { display: grid; gap: var(--space-2); }
+  .stops img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); }
+  .stops__t { color: var(--ink); }
+  .stops__x { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  @media (hover: hover) { .stops a:hover .stops__t { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 4px; } }
+  .day :global(ul:not(.stops)) { padding-left: var(--space-4); display: grid; gap: var(--space-2); margin: 0; }
   .day :global(li::marker) { color: var(--p-500); }
   .overnight { display: inline-flex; align-items: center; gap: var(--space-2); justify-self: start; padding: var(--space-1) var(--space-3); border-radius: var(--r-sm); background: var(--surface); }
   .overnight :global(.icon) { color: var(--p-700); }
 
   .inc { display: grid; gap: var(--space-8); }
   @media (min-width: 768px) { .inc { grid-template-columns: 1.4fr 1fr; gap: var(--space-10); } }
+  .inc h3 { margin-bottom: var(--space-4); }
   .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-2); }
   .checks li { display: flex; gap: var(--space-3); }
   .checks :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 12px) / 2); font-size: 12px; }
@@ -348,19 +482,22 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .checks :global(.no) { color: var(--text-3); }
   .map { border-radius: var(--radius); corner-shape: squircle; border: 1px solid var(--border); }
 
-  /* Price card: inline under the head on phones/tablets, sticky sidebar from 1200px */
+  /* Trip facts: under the highlights, only what the inclusions don't already say */
+  .trip { margin-top: var(--space-10); }
+  .trip h3 { margin-bottom: var(--space-4); }
+  .trip__list { display: grid; gap: var(--space-6) var(--grid-gap); margin: 0; }
+  @media (min-width: 768px) { .trip__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .trip__list div { display: grid; gap: var(--space-1); }
+  .trip dt { display: flex; align-items: center; gap: var(--space-2); }
+  .trip dt :global(.icon) { flex: none; font-size: 18px; color: var(--ink); }
+  .trip dd { margin: 0; color: var(--ink); }
+
+  /* Price card: at the end on phones/tablets, sticky sidebar from 1200px */
   .price-card { display: grid; gap: var(--space-2); max-width: 480px; padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: #fff; }
-  @media (min-width: 1200px) { .price-card { grid-area: side; position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start; } }
   .price b { color: var(--ink); }
   .price abbr, .bar abbr { color: var(--text-3); text-decoration: none; }
   .price-card .btn { margin-top: var(--space-2); }
-  .assure { display: flex; align-items: center; justify-content: center; gap: var(--space-1); }
-  .assure :global(.icon) { color: var(--success); }
   /* Buttons fill the width on phones, sit side by side at their own size from 768px */
-  .help-card { display: flex; flex-wrap: wrap; gap: var(--space-3); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
-  .help-card p { flex-basis: 100%; }
-  .help-card .t-body { margin-bottom: var(--space-3); }
-  .help-card .btn { flex-grow: 1; }
   @media (min-width: 768px) { .help-card .btn { flex-grow: 0; } }
 
   /* Mobile/tablet booking bar: body padding keeps the footer reachable underneath */

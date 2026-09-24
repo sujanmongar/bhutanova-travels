@@ -47,7 +47,10 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
       types: {
         table: ({ value }: any) => {
           const [head, ...rows] = value.rows ?? [];
-          const tr = (r: any, tag: string) => `<tr>${(r.cells ?? []).map((c: string) => `<${tag}>${esc(c ?? '')}</${tag}>`).join('')}</tr>`;
+          // Short cells (codes, places, days, times) stay on one line so a wide table scrolls instead of stacking words;
+          // long cells still wrap.
+          const cell = (c: string, tag: string) => `<${tag}${(c ?? '').length <= 24 ? ' class="nw"' : ''}>${esc(c ?? '')}</${tag}>`;
+          const tr = (r: any, tag: string) => `<tr>${(r.cells ?? []).map((c: string) => cell(c, tag)).join('')}</tr>`;
           return `<table>${head ? `<thead>${tr(head, 'th')}</thead>` : ''}<tbody>${rows.map((r: any) => tr(r, 'td')).join('')}</tbody></table>`;
         },
       },

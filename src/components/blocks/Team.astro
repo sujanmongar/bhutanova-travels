@@ -1,0 +1,73 @@
+---
+// Team: the office team as cards, then guides and drivers as a swipeable row of portraits with a Guides / Drivers switch.
+// Sample profiles (placeholder ticked in Sanity) show on the local preview only; the live site never shows stand-ins.
+import { getCollection } from 'astro:content';
+import Icon from '../Icon.astro';
+import { img, srcset, focal } from '../../config';
+interface Props { heading: string; text?: string; grey?: boolean }
+const { heading, text, grey = false } = Astro.props;
+const people = (await getCollection('team'))
+  .filter((m) => import.meta.env.DEV || !m.data.placeholder)
+  .sort((a, b) => a.data.order - b.data.order);
+// One card for everyone, grouped: office team, then guides, then drivers. A long group shows its first 8 and a button
+// reveals the rest, so dozens of guides never turn the page into a wall.
+const LIMIT = 8;
+const groups = ([['office', 'Office team'], ['guide', 'Guides'], ['driver', 'Drivers']] as const)
+  .map(([key, label]) => ({ key, label, list: people.filter((m) => m.data.group === key) }))
+  .filter((g) => g.list.length > 0);
+const detail = (m: (typeof people)[number]) =>
+  m.data.group === 'office' ? m.data.bio : [m.data.languages, m.data.years && `${m.data.years} years`].filter(Boolean).join(' · ');
+---
+{people.length > 0 && (
+<section id="team" class:list={['section', { 'section--grey': grey }]}>
+  <div class="container">
+    <div class="sh" data-reveal><h2>{heading}</h2>{text && <p>{text}</p>}</div>
+
+    {groups.map((g) => (
+      <div class="group" data-group>
+        {groups.length > 1 && <h3 class="group__h">{g.label}</h3>}
+        <ul class="people" data-reveal="stagger">
+          {g.list.map((m, i) => (
+            <li hidden={i >= LIMIT}>
+              <div class="people__ph">
+                {m.data.photo
+                  ? <img src={img(m.data.photo.url, 480, 600, m.data.photo.hotspot)} srcset={srcset(m.data.photo.url, [240, 480, 720], 4 / 5, m.data.photo.hotspot)}
+                      sizes="(min-width:1024px) 280px, (min-width:768px) 30vw, 45vw" alt={m.data.name} width="480" height="600" loading="lazy" decoding="async"
+                      style={`object-position:${focal(m.data.photo.hotspot)}`} />
+                  : <Icon name="user" />}
+              </div>
+              <p class="t-card">{m.data.name}</p>
+              <p class="t-body muted">{m.data.role}</p>
+              {detail(m) && <p class="t-body muted">{detail(m)}</p>}
+            </li>
+          ))}
+        </ul>
+        {g.list.length > LIMIT && <button type="button" class="btn btn--outline group__more" data-more>Show all {g.list.length} {g.label.toLowerCase()}</button>}
+      </div>
+    ))}
+  </div>
+</section>
+)}
+
+<script>
+  // "Show all": reveal the rest of the group and drop the button
+  document.querySelectorAll<HTMLButtonElement>('[data-more]').forEach((b) => b.addEventListener('click', () => {
+    b.closest('[data-group]')!.querySelectorAll<HTMLElement>('li[hidden]').forEach((li) => (li.hidden = false));
+    b.remove();
+  }));
+</script>
+
+<style>
+  .group + .group { margin-top: var(--space-16); }
+  /* Group titles sit a step above the names: sub-section size (22.8 phones / 25.9 desktop) over card-size names */
+  .group__h { margin-bottom: var(--space-6); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
+  /* Everyone gets the same card: two across on phones, three from 768px, four from 1024px */
+  .people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-8) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .people { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .people { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .people li { display: grid; align-content: start; gap: var(--space-3); }
+  .people li[hidden] { display: none; }
+  .people__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; margin-bottom: var(--space-3); border-radius: var(--radius); corner-shape: squircle; overflow: hidden; background: var(--surface-2); color: var(--text-2); font-size: 48px; }
+  .people__ph img { width: 100%; height: 100%; object-fit: cover; }
+  .group__more { margin-top: var(--space-8); }
+</style>

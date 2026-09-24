@@ -34,7 +34,6 @@ const { cat, tours, others } = Astro.props;
       <h2 class="sr-only">{cat.data.menuTitle} packages</h2>
       {tours.length ? (
         <>
-          <p class="count t-label subtle">{tours.length === 1 ? '1 package, tailored to your dates' : `${tours.length} packages · each can be tailored to your dates`}</p>
           <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
         </>
       ) : <p class="t-body muted">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
@@ -56,7 +55,6 @@ const { cat, tours, others } = Astro.props;
   <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>
 <style>
-  .count { margin-bottom: var(--space-8); }
   .tours { row-gap: var(--space-12); }
   /* Same theme list as /bhutan-tours/ */
   .cats ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 0 var(--space-10); list-style: none; margin: 0; padding: 0; }

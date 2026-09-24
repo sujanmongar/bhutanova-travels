@@ -46,6 +46,9 @@ function sanity(query: string): Loader {
 
 const IMG = 'asset->url';
 const BLOCK_IMG = '{ "url": asset->url, alt, hotspot, crop, "dims": asset->metadata.dimensions }';
+// Photo credit for licences that need one (Wikimedia CC BY-SA); Unsplash photos have none.
+const CREDIT = '"credit": select(defined(image.asset->creditLine) => image.asset->{ "text": creditLine, "url": source.url })';
+const credit = z.object({ text: z.string(), url: z.string().optional() }).optional();
 const SEO = `"seo": seo{ title, description, "image": image.${IMG}, noindex }`;
 const seo = z.object({ title: z.string().optional(), description: z.string().optional(), image: z.string().optional(), noindex: z.boolean().optional() }).default({});
 
@@ -64,8 +67,10 @@ export const collections = {
   tours: defineCollection({
     loader: sanity(`*[_type == "tour"]{
       "id": slug.current, title, "category": category->slug.current, nights, days, route, price, priceNotes, summary,
-      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights,
-      itinerary[]{ title, body, overnight, "image": image.${IMG} },
+      "image": image.${IMG}, "gallery": gallery[defined(asset)].${IMG}, highlights, groupSize, guideLanguages, maxAltitude, bestSeason,
+      itinerary[]{ title, body, overnight, "image": image.${IMG},
+        "places": (places[]->{ _type, title, excerpt, "slug": slug.current, "dest": destination->slug.current, "page": coalesce(page, false),
+          "image": coalesce(image.${IMG}, destination->image.${IMG}) })[defined(slug)] },
       inclusions, exclusions, "map": map.${IMG}, featured, ${SEO} }`),
     schema: z.object({
       title: z.string(),
@@ -79,8 +84,15 @@ export const collections = {
       image: z.string(),
       gallery: z.array(z.string()).default([]),
       highlights: z.array(z.string()).default([]),
+      groupSize: z.string().optional(),
+      guideLanguages: z.string().optional(),
+      maxAltitude: z.string().optional(),
+      bestSeason: z.string().optional(),
       itinerary: z
-        .array(z.object({ title: z.string(), image: z.string().optional(), body: z.string(), overnight: z.string().optional() }))
+        .array(z.object({
+          title: z.string(), image: z.string().optional(), body: z.string(), overnight: z.string().optional(),
+          places: z.array(z.object({ _type: z.string(), title: z.string(), excerpt: z.string().optional(), slug: z.string(), dest: z.string().optional(), page: z.boolean(), image: z.string().optional() })).default([]),
+        }))
         .default([]),
       inclusions: z.array(z.string()).default([]),
       exclusions: z.array(z.string()).default([]),
@@ -103,7 +115,7 @@ export const collections = {
     }),
   }),
   guides: defineCollection({
-    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, menuTitle, excerpt, "image": image.${IMG}, group, order, inMenu, updated, body, ${SEO} }`),
+    loader: sanity(`*[_type == "guide"]{ "id": slug.current, title, menuTitle, excerpt, "image": image.${IMG}, group, order, menu, updated, body, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       menuTitle: z.string().nullish(),
@@ -111,25 +123,65 @@ export const collections = {
       image: z.string(),
       group: z.enum(['Plan & Book', 'Entry & Visa', 'Money & Costs', 'On the Ground']),
       order: z.number().default(99),
-      inMenu: z.boolean().default(false),
+      menu: z.enum(['bhutan', 'guide']).optional(),
       updated: z.coerce.date(),
       seo,
     }),
   }),
   destinations: defineCollection({
     loader: sanity(`*[_type == "destination"]{
-      "id": slug.current, title, excerpt, "image": image.${IMG}, body, highlights, bestTime, gettingThere, order,
-      "tours": tours[]->slug.current, ${SEO} }`),
+      "id": slug.current, title, excerpt, "image": image.${IMG}, ${CREDIT}, body, highlights, region, altitude, bestTime, gettingThere, order,
+      "tours": tours[]->slug.current, "nearby": nearby[]->slug.current, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       excerpt: z.string(),
       image: z.string(),
       highlights: z.array(z.string()).default([]),
+      credit,
+      region: z.string().optional(),
+      altitude: z.string().optional(),
       bestTime: z.string().optional(),
       gettingThere: z.string().optional(),
       order: z.number().default(99),
       tours: z.array(z.string()).default([]),
+      nearby: z.array(z.string()).default([]),
       seo,
+    }),
+  }),
+  // Sights inside a destination; id is "<destination>/<sight>", the page path under /destinations/.
+  sights: defineCollection({
+    loader: sanity(`*[_type == "sight" && defined(destination->slug.current)]{
+      "id": destination->slug.current + "/" + slug.current, "destination": destination->slug.current, title, excerpt,
+      "page": coalesce(page, false), "image": image.${IMG}, ${CREDIT}, body, altitude, timeNeeded, difficulty, bestTime, updated, order, ${SEO} }`),
+    schema: z.object({
+      destination: z.string(),
+      title: z.string(),
+      excerpt: z.string(),
+      page: z.boolean(),
+      image: z.string().optional(),
+      credit,
+      altitude: z.string().optional(),
+      timeNeeded: z.string().optional(),
+      difficulty: z.string().optional(),
+      bestTime: z.string().optional(),
+      updated: z.coerce.date().optional(),
+      order: z.number().default(99),
+      seo,
+    }),
+  }),
+  // Team members for the About page. Sample profiles (placeholder ticked) are filtered out of live builds by the component.
+  team: defineCollection({
+    loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order, "placeholder": coalesce(placeholder, false) }`),
+    schema: z.object({
+      name: z.string(),
+      group: z.enum(['office', 'guide', 'driver']),
+      role: z.string(),
+      photo: z.object({ url: z.string(), hotspot: z.object({ x: z.number(), y: z.number() }).optional() }).passthrough().optional(),
+      bio: z.string().optional(),
+      languages: z.string().optional(),
+      years: z.number().optional(),
+      order: z.number().default(99),
+      placeholder: z.boolean(),
     }),
   }),
   // Page-builder pages: "home" is the homepage, everything else is served at /<slug>/.

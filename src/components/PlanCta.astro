@@ -1,11 +1,20 @@
 ---
+// The support card: the one "talk to us" card used in every sidebar (tour, destination, sight, guide and blog pages).
+// Defaults to planning a trip; the tour page passes its own title, text and main action (a phone call).
 import Icon from './Icon.astro';
 import { wa } from '../config';
-const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#w-plan`, 'a trip');
+interface Props { title?: string; text?: string; action?: { href: string; label: string; icon?: string }; topic?: string }
+const {
+  title = 'Plan your Bhutan trip',
+  text = 'Tell us your dates and interests. A local expert replies within 24 hours.',
+  action = { href: '/contact/', label: 'Enquire' },
+  topic = 'a trip',
+} = Astro.props;
+const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#w-plan`, topic);
 ---
 <section class="widget widget--cta" aria-labelledby="w-plan">
-  <p class="widget__h" id="w-plan">Plan your Bhutan trip</p>
-  <p>Tell us your dates and interests. A local expert replies within 24 hours.</p>
-  <a class="btn btn--light btn--block" href="/contact/">Enquire</a>
-  <a class="btn btn--on-dark btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp</a>
+  <p class="widget__h" id="w-plan">{title}</p>
+  <p>{text}</p>
+  <a class="btn btn--light btn--block" href={action.href}>{action.icon && <Icon name={action.icon} />}{action.label}</a>
+  <a class="btn btn--on-dark btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
 </section>

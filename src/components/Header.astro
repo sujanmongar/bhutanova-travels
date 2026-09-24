@@ -6,40 +6,37 @@ import { SITE, wa, ldJson } from '../config';
 import { TOURS, DESTINATIONS, catPath, tourPath } from '../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-// Exactly the guides the client ticks "Show in the menu" (falling back to the first few) — the full list is long.
 const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
-const menuGuides = allGuides.filter((g) => g.data.inMenu);
-const guides = menuGuides.length ? menuGuides : allGuides.slice(0, 5);
+// Guides the client puts in the menu (Sanity → "Show in the menu"): under Bhutan after Destinations, or under Travel guide.
+const menuLinks = (menu: 'bhutan' | 'guide') =>
+  allGuides.filter((g) => g.data.menu === menu).map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.menuTitle ?? g.data.title }));
 const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
-// What to book, where, how to plan, who we are. The drawer and the footer's Explore list follow the same order.
-const nav = [
+// Tours, the country, how to plan, who we are. The drawer and the footer's Explore list follow the same order.
+// An item without children is a plain link (no dropdown).
+const nav: { href: string; label: string; all?: string; children: { href: string; label: string }[] }[] = [
   { href: TOURS, label: 'Tours', all: 'All tour packages', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
   {
-    href: DESTINATIONS,
-    label: 'Destinations',
-    all: 'All destinations',
-    children: [{ href: '/about-bhutan/', label: 'About Bhutan' }, ...destinations.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, label: d.data.title }))],
+    href: '/about-bhutan/',
+    label: 'Bhutan',
+    children: [{ href: DESTINATIONS, label: 'Destinations & attractions' }, ...menuLinks('bhutan')],
   },
-  {
-    href: '/travel-guide/',
-    label: 'Travel guide',
-    all: 'All travel guides',
-    children: [...guides.map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.menuTitle ?? g.data.title })), { href: '/blog/', label: 'Blog' }],
-  },
+  { href: '/travel-guide/', label: 'Travel guide', all: 'All guides', children: menuLinks('guide') },
   {
     href: '/about/',
     label: 'About',
     children: [
       { href: '/about/', label: 'About us' },
-      { href: '/#why-us', label: 'Why travel with us' },
-      { href: '/contact/', label: 'Contact' },
-      // Cancellation policy: page exists (noindex) but still has placeholder figures — link back in once real terms land.
+      { href: '/blog/', label: 'Blog' },
     ],
   },
 ];
 const path = Astro.url.pathname;
-// A section is active on its own pages and on any of its children's (About Bhutan lights up Destinations).
-const active = (item: (typeof nav)[number]) => [item, ...item.children].some((l) => !l.href.startsWith('/#') && path.startsWith(l.href));
+// One section is active: the one whose link (or child link) matches the most of the path, so a festival-dates guide
+// lights up Bhutan rather than Travel guide.
+const match = nav
+  .flatMap((item, i) => [item, ...item.children].filter((l) => !l.href.startsWith('/#') && path.startsWith(l.href)).map((l) => ({ i, n: l.href.length })))
+  .sort((a, b) => b.n - a.n)[0];
+const active = (item: (typeof nav)[number]) => match?.i === nav.indexOf(item);
 // Tour pages have their own booking bar, and /contact/ is where the button goes.
 const showFab = !/^\/(contact\/|bhutan-tours\/[^/]+\/[^/]+\/)/.test(path);
 const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
@@ -48,6 +45,7 @@ const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
 // Built from the same collections at build time — nothing fetched at runtime, no server involved.
 const tours = await getCollection('tours');
 const posts = await getCollection('blog');
+const sights = await getCollection('sights');
 const searchIndex = [
   { t: 'About Bhutan', k: 'Page', u: '/about-bhutan/' },
   { t: 'About us', k: 'Page', u: '/about/' },
@@ -55,6 +53,7 @@ const searchIndex = [
   ...cats.map((c) => ({ t: c.data.menuTitle, k: 'Category', u: catPath(c.id) })),
   ...tours.map((t) => ({ t: t.data.title, k: 'Tour', u: tourPath(t) })),
   ...destinations.map((d) => ({ t: d.data.title, k: 'Destination', u: `${DESTINATIONS}${d.id}/` })),
+  ...sights.filter((x) => x.data.page).map((x) => ({ t: x.data.title, k: 'Sight', u: `${DESTINATIONS}${x.id}/` })),
   ...allGuides.map((g) => ({ t: g.data.title, k: 'Guide', u: `/travel-guide/${g.id}/` })),
   ...posts.map((p) => ({ t: p.data.title, k: 'Article', u: `/blog/${p.id}/` })),
 ];
@@ -67,14 +66,16 @@ const searchIndex = [
       <nav class="menu" aria-label="Main">
         <ul class="menu__list">
           {nav.map((item) => (
-            <li class="menu__item has-sub">
-              <a href={item.href} class:list={['menu__link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children?.some((c) => c.href === item.href) ? 'page' : undefined}>
-                {item.label}<Icon name="chevron-up" class="chev" />
+            <li class:list={['menu__item', { 'has-sub': item.children.length > 0 }]}>
+              <a href={item.href} class:list={['menu__link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children.some((c) => c.href === item.href) ? 'page' : undefined}>
+                {item.label}{item.children.length > 0 && <Icon name="chevron-up" class="chev" />}
               </a>
-              <ul class="sub__list">
-                {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                {item.all && <li><a href={item.href} class="sub__all t-link">{item.all}<Icon name="arrow-right" /></a></li>}
-              </ul>
+              {item.children.length > 0 && (
+                <ul class="sub__list">
+                  {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                  {item.all && <li><a href={item.href} class="sub__all t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+                </ul>
+              )}
             </li>
           ))}
         </ul>
@@ -122,15 +123,19 @@ const searchIndex = [
         {nav.map((item, i) => (
           <li style={`--i:${i}`}>
             <div class="d-row">
-              <a href={item.href} class:list={['d-link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children?.some((c) => c.href === item.href) ? 'page' : undefined}>{item.label}</a>
-              <button type="button" class="d-toggle" aria-expanded={active(item) ? 'true' : 'false'} aria-controls={`d-sub-${i}`} data-toggle>
-                <Icon name="chevron-up" class="chev" /><span class="sr-only">{item.label}: show all links</span>
-              </button>
+              <a href={item.href} class:list={['d-link', { 'is-active': active(item) }]} aria-current={path === item.href && !item.children.some((c) => c.href === item.href) ? 'page' : undefined}>{item.label}</a>
+              {item.children.length > 0 && (
+                <button type="button" class="d-toggle" aria-expanded={active(item) ? 'true' : 'false'} aria-controls={`d-sub-${i}`} data-toggle>
+                  <Icon name="chevron-up" class="chev" /><span class="sr-only">{item.label}: show all links</span>
+                </button>
+              )}
             </div>
-            <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item)}>
-              {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-              {item.all && <li class="d-sub__all"><a href={item.href} class="t-link">{item.all}<Icon name="arrow-right" /></a></li>}
-            </ul>
+            {item.children.length > 0 && (
+              <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item)}>
+                {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                {item.all && <li class="d-sub__all"><a href={item.href} class="t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+              </ul>
+            )}
           </li>
         ))}
       </ul>
@@ -161,7 +166,7 @@ const searchIndex = [
   });
   addEventListener('resize', () => matchMedia('(min-width: 1024px)').matches && drawer.open && drawer.close());
 
-  // Drawer: the chevron beside "Tours"/"Travel guide" expands its links; opening one closes the other.
+  // Drawer: the chevron beside a section expands its links; opening one closes the others.
   const toggles = [...drawer.querySelectorAll<HTMLButtonElement>('[data-toggle]')];
   toggles.forEach((b) => b.addEventListener('click', () => {
     const open = b.getAttribute('aria-expanded') !== 'true';
@@ -313,7 +318,7 @@ const searchIndex = [
   /* :global — these rows are built with innerHTML at runtime, so Astro's per-component scoping never
      stamps them; an un-global'd selector here would silently match nothing. */
   :global(.search__group) { padding-top: var(--space-3); }
-  :global(.search__group-h) { padding: 0 var(--space-3) var(--space-1); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-3); }
+  :global(.search__group-h) { padding: 0 var(--space-3) var(--space-1); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--ink); }
   :global(.search__group ul) { list-style: none; margin: 0; padding: 0; }
   :global(.search__group a) {
     display: block; min-height: 48px; padding: var(--space-3); border-radius: var(--r-md);

@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
-import fontUrl from '@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url';
-import serifUrl from '@fontsource/libre-caslon-text/files/libre-caslon-text-latin-400-normal.woff2?url';
+import serifUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { SITE, img, ldJson, type Seo } from '../config';
@@ -37,7 +36,7 @@ const org = {
   address: { '@type': 'PostalAddress', streetAddress: '4730 Babesa', addressLocality: 'Thimphu', addressCountry: 'BT' },
   areaServed: { '@type': 'Country', name: 'Bhutan' },
   // Real profiles only: a bare network home page (https://facebook.com/) is a placeholder
-  sameAs: Object.entries(SITE.social).filter(([k, u]) => k !== 'whatsapp' && new URL(u).pathname.length > 1).map(([, u]) => u),
+  sameAs: Object.entries(SITE.social).filter(([k, u]) => k !== 'whatsapp' && u.startsWith('http')).map(([, u]) => u),
 };
 const ld = [org, ...(schema ? [schema].flat() : [])];
 ---
@@ -53,7 +52,6 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <meta name="theme-color" content="#162e44" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="preconnect" href="https://cdn.sanity.io" />

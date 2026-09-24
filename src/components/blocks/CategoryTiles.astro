@@ -2,23 +2,25 @@
 import { getCollection } from 'astro:content';
 import { img, srcset } from '../../config';
 import { catPath } from '../../utils';
-interface Props { heading: string; text?: string; grey?: boolean }
-const { heading, text, grey = false } = Astro.props;
+// grid: the same cards laid out as a grid (the tours hub) instead of the homepage's looping row.
+// hideHeading keeps the h2 for screen readers only, where the page's h1 already says it.
+interface Props { heading: string; text?: string; grey?: boolean; grid?: boolean; hideHeading?: boolean }
+const { heading, text, grey = false, grid = false, hideHeading = false } = Astro.props;
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 // The CDN crops each photo to the card's 5:7 shape (the same centred crop CSS cover shows), so files stay card-sized.
 const RATIO = 5 / 7;
 ---
 <section class:list={['section cats-sec', { 'section--grey': grey }]}>
   <div class="container">
-    <div class="sh" data-reveal>
+    <div class:list={['sh', { 'sr-only': hideHeading }]} data-reveal>
       <h2>{heading}</h2>
       {text && <p>{text}</p>}
     </div>
-    <ul class="cats" data-cats data-reveal>
+    <ul class:list={['cats', { 'cats--grid': grid }]} data-cats={grid ? undefined : ''} data-reveal>
       {cats.map((c) => (
         <li>
           <article class="cat">
-            <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes="(min-width:1200px) 340px, (min-width:768px) 320px, 78vw"
+            <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes={grid ? '(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)' : '(min-width:1200px) 340px, (min-width:768px) 320px, 78vw'}
               alt="" width="680" height="952" loading="lazy" decoding="async" />
             <div class="cat__txt">
               <h3 class="t-card"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
@@ -53,7 +55,7 @@ const RATIO = 5 / 7;
   .cat__txt { padding: var(--space-4); }
   .cat h3 { color: #fff; }
   .cat h3 a::after { content: ''; position: absolute; inset: 0; }
-  .cat p { margin-top: var(--space-3); color: rgb(255 255 255 / .94);
+  .cat p { margin-top: var(--space-3); color: #fff;
     display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
   .cat:has(a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 3px; }
   .cat a:focus-visible { outline: 0; }
@@ -66,4 +68,9 @@ const RATIO = 5 / 7;
     .cats { grid-auto-columns: 340px; }
     .cat__txt { padding: var(--card-pad); }
   }
+
+  /* Grid: one card per row on phones, two on tablets, three on desktop — same card as the homepage row */
+  .cats--grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); margin-inline: 0; overflow: visible; scroll-snap-type: none; }
+  @media (min-width: 768px) { .cats--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1024px) { .cats--grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 </style>

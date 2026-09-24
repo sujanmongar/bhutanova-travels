@@ -3,14 +3,20 @@ import Icon from './Icon.astro';
 import { SITE } from '../config';
 const { class: cls = '' } = Astro.props;
 const names = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X', whatsapp: 'WhatsApp' } as const;
-// A bare network home page (https://facebook.com/) is a placeholder, not a profile — skip it until the real URL is in.
-const links = Object.entries(SITE.social).filter(([, href]) => new URL(href).pathname.length > 1);
+// Every network shows; one whose profile isn't set up yet has href '#' and stays in this tab.
+const links = Object.entries(SITE.social);
 ---
 <ul class:list={['social', cls]}>
   {links.map(([k, href]) => (
-    <li><a href={href} target="_blank" rel="noopener" aria-label={names[k as keyof typeof names]}><Icon name={`social_${k}`} /></a></li>
+    <li>{href === '#'
+      ? <a href="#" aria-disabled="true" aria-label={`${names[k as keyof typeof names]} (coming soon)`} data-soon><Icon name={`social_${k}`} /></a>
+      : <a href={href} target="_blank" rel="noopener" aria-label={names[k as keyof typeof names]}><Icon name={`social_${k}`} /></a>}</li>
   ))}
 </ul>
+<script>
+  // Profiles not set up yet: the icon stays, but clicking it doesn't jump to the top of the page.
+  document.querySelectorAll('[data-soon]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+</script>
 <style>
   .social { display: flex; gap: 0; list-style: none; margin: 0 calc(var(--space-3) * -1); padding: 0; }
   .social a { display: block; padding: var(--space-3); font-size: 20px; color: rgb(255 255 255 / .82); transition: color var(--dur-1); }

@@ -3,27 +3,54 @@ import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import Icon from '../../components/Icon.astro';
-import TourCard from '../../components/TourCard.astro';
-import PlanCta from '../../components/PlanCta.astro';
 import BannerImg from '../../components/BannerImg.astro';
-import Arrows from '../../components/Arrows.astro';
+import PlaceBody from '../../components/PlaceBody.astro';
+import Sights from '../../components/Sights.astro';
+import PlaceTours from '../../components/PlaceTours.astro';
+import PlaceCards from '../../components/PlaceCards.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { img } from '../../config';
-import { DESTINATIONS, TOURS } from '../../utils';
+import { DESTINATIONS } from '../../utils';
 
 export async function getStaticPaths() {
   const destinations = await getCollection('destinations');
   const tours = await getCollection('tours');
-  return destinations.map((d) => ({ params: { id: d.id }, props: { d, tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined) } }));
+  const sights = await getCollection('sights');
+  return destinations.map((d) => {
+    // Editor's nearby picks, closest first; otherwise others in the same region.
+    const picked = d.data.nearby.map((id) => destinations.find((x) => x.id === id)).filter((x) => x !== undefined);
+    const nearby = picked.length ? picked : destinations.filter((x) => x.id !== d.id && d.data.region && x.data.region === d.data.region).sort((a, b) => a.data.order - b.data.order).slice(0, 3);
+    return {
+      params: { id: d.id },
+      props: {
+        d,
+        nearby,
+        sights: sights.filter((s) => s.data.destination === d.id),
+        tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined),
+      },
+    };
+  });
 }
-const { d, tours } = Astro.props;
+const { d, nearby, sights, tours } = Astro.props;
 const { Content } = await render(d);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const schema = {
   '@context': 'https://schema.org', '@type': 'TouristDestination', name: d.data.title, description: d.data.excerpt, url,
   image: img(d.data.image, 1200),
-  includesAttraction: d.data.highlights.map((h) => ({ '@type': 'TouristAttraction', name: h })),
+  includesAttraction: (sights.length ? sights.map((s) => s.data.title) : d.data.highlights).map((name) => ({ '@type': 'TouristAttraction', name })),
 };
+const facts: [string, string][] = [
+  d.data.region && ['location-dot', d.data.region],
+  d.data.altitude && ['mountains', `Altitude ${d.data.altitude}`],
+  d.data.bestTime && ['gauge', `Best time: ${d.data.bestTime}`],
+  d.data.gettingThere && ['path', d.data.gettingThere],
+].filter((f): f is [string, string] => !!f);
+// Sections after the article alternate grey and white, whichever of them this destination has.
+let grey = false;
+const next = (shown: boolean) => shown && (grey = !grey);
+const sightsGrey = next(sights.length > 0);
+const toursGrey = next(tours.length > 0);
+const nearbyGrey = next(nearby.length > 0);
 ---
 <Base title={`${d.data.title} travel guide`} description={d.data.excerpt} image={d.data.image} schema={schema} seo={d.data.seo}>
   <section class="banner">
@@ -31,56 +58,34 @@ const schema = {
     <div><Breadcrumbs items={[['Destinations', DESTINATIONS], [d.data.title]]} light /><h1>{d.data.title}</h1><p class="banner__line">{d.data.excerpt}</p></div>
   </section>
 
-  <div class="container layout">
-    <div class="main">
-      {(d.data.bestTime || d.data.gettingThere) && (
-        <ul class="facts t-label muted">
-          {d.data.bestTime && <li><Icon name="clock" />Best time: {d.data.bestTime}</li>}
-          {d.data.gettingThere && <li><Icon name="path" />{d.data.gettingThere}</li>}
-        </ul>
-      )}
+  <PlaceBody facts={facts} credit={d.data.credit}>
+    <div class="prose"><Content /></div>
+    {sights.length === 0 && d.data.highlights.length > 0 && (
+      <section class="block">
+        <h2>Highlights</h2>
+        <ul class="bullets">{d.data.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
+      </section>
+    )}
+  </PlaceBody>
 
-      <div class="prose"><Content /></div>
+  <Sights heading={`Things to see in ${d.data.title}`} sights={sights} fallbackImage={d.data.image} grey={sightsGrey} />
+  <PlaceTours heading={`Tours that visit ${d.data.title}`} tours={tours} grey={toursGrey} />
 
-      {d.data.highlights.length > 0 && (
-        <section class="block">
-          <h2>Highlights</h2>
-          <ul class="bullets">{d.data.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
-        </section>
-      )}
-    </div>
-    <aside class="side"><PlanCta /></aside>
-  </div>
-
-  {tours.length > 0 && (
-    <section class="section section--grey">
+  {nearby.length > 0 && (
+    <section class:list={['section', { 'section--grey': nearbyGrey }]}>
       <div class="container">
-        <div class="sh sh--row">
-          <h2>Tours that visit {d.data.title}</h2>
-          <div class="sh__act"><a class="link-more" href={TOURS}>All packages<Icon name="arrow-right" /></a><Arrows target="rail-tours" label="tours" /></div>
-        </div>
-        <div class="rail" id="rail-tours" data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
-        <a class="link-more m-only" href={TOURS}>All packages<Icon name="arrow-right" /></a>
+        <div class="sh"><h2>Places near {d.data.title}</h2></div>
+        <PlaceCards items={nearby.map((n) => ({ href: `${DESTINATIONS}${n.id}/`, image: n.data.image, title: n.data.title, text: n.data.excerpt }))} />
       </div>
     </section>
   )}
   <WhatsAppCta about={`visiting ${d.data.title}`} />
 </Base>
 <style>
-  .layout { display: grid; gap: var(--space-10); padding-block: var(--stack) var(--section); }
-  .layout > * { min-width: 0; }
-  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-16); } }
-  .facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); list-style: none; margin: 0 0 var(--space-8); padding: 0; }
-  .facts li { display: flex; gap: var(--space-2); }
-  /* Icon centred on the first line, so a fact that wraps keeps its icon at the top */
-  .facts :global(.icon) { margin-top: calc((var(--lh-label) * var(--fs-label) - 18px) / 2); font-size: 18px; color: var(--text-3); }
   .block { margin-top: var(--space-10); }
   .block h2 { margin-bottom: var(--space-6); }
   .bullets { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
   @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: var(--space-8); } }
   .bullets li { display: flex; gap: var(--space-3); }
   .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 12px) / 2); font-size: 12px; color: var(--s-500); }
-  /* The plan card is a desktop sidebar only; below 1200px the closing WhatsApp section is the page's one CTA. */
-  .side { display: none; }
-  @media (min-width: 1200px) { .side { display: grid; gap: var(--space-4); align-content: start; position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start; } }
 </style>

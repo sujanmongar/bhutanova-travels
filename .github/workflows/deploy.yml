@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+# One deploy at a time: a burst of CMS publishes queues up, and only the newest waiting run goes next, so the live
+# site always ends on the latest content (an older run can't finish last and overwrite it).
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-latest

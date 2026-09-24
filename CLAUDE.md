@@ -9,9 +9,9 @@ The single source of truth is `src/styles/global.css` (tokens + role classes). `
 Never invent a size, line height, letter spacing, weight or spacing value in a component.
 
 ### Fonts
-- **Libre Caslon Text** (serif, 400; quotes 400 italic — the family has no 500) — titles and headings only, nothing else.
-- **Inter** (sans, 400 / 500 / 600) — everything else: body text, captions, labels, buttons, links, chips, nav, prices.
-- Serif chosen by the user (Libre Caslon Text); sans = Inter. Stacks fall back like Perplexity's
+- **Fraunces** (serif, variable with optical sizes, used at 400; quotes 400 italic) — titles and headings only, nothing else.
+- **Device sans** (system stack: SF Pro on Apple, Segoe UI on Windows, Roboto on Android; 400 / 500 / 600) — everything else: body text, captions, labels, buttons, links, chips, nav, prices.
+- User's picks: Fraunces from Google Fonts (self-hosted via Fontsource), device font for the sans (fastest, SF Pro on iPhone/Mac). Stacks fall back like Perplexity's
   (`ui-serif, Georgia, Cambria` / `ui-sans-serif, system-ui, …`).
 
 ### Typography — Typescale: 18px base, Minor Third (1.200) — use a role, never raw values
@@ -29,21 +29,24 @@ Headings run in strict order h1 > … > h6. A heading element uses its own level
 | H1 | `h1`, `.hero-title` | 32.4 | 53.7 | Hero headline and page titles |
 | H2 | `.t-h2` | 28.8 | 44.8 | Scale default — kept for reference; section titles don't use it |
 | Section title | `h2` | 25.6 | 37.3 | Every section title — an `<h2>` element rendered at the **H3** size (user's call) |
-| H3 | `h3` | 25.6 | 37.3 | Sub-sections (article h3 steps down to H4 size so it sits under the h2) |
+| Content title | `.prose h2`, tour sections | 22.8 (h4) | 25.9 (h5) | h2 inside a content column: tour page sections, guide / blog / destination / sight text. Their h3 = card size |
+| H3 | `h3` | 25.6 | 37.3 | Sub-sections (outside content columns) |
 | H4 | `h4` | 22.8 | 31.1 | Rare |
-| Card title | `.t-card` | 20.3 (h5) | 21.6 (h6) | Tour, blog, category, reason cards; dialog titles — one step less on desktop because Libre Caslon runs large |
-| H6 / Item title | `h6` / `.t-title` | 18 | 21.6 | FAQs, widgets, footer column titles |
-| Quote | `.t-quote` | 20.3 | 25.9 | Pull quotes (serif italic). Review text on the homepage is Inter 400 at the H6 size (owner's call) |
-| **Body** | `.t-body` | **18** | **18** | Reading text and every description |
+| Card title | `.t-card` | 20.3 (h5) | 21.6 (h6) | Tour, blog, category cards; section items (why-us reasons, booking steps, FAQ questions); dialog titles |
+| H6 / Item title | `h6` / `.t-title` | 18 | 21.6 | Widgets, footer column titles |
+| Quote | `.t-quote` | 20.3 | 25.9 | Pull quotes (serif italic). Review text on the homepage is sans 400 at the H6 size (owner's call) |
+| **Body** | `.t-body` | **18** | **18** | Reading text, every description and every checklist |
 | Caption | `.t-caption` | 16 | 16 | Small print, secondary text |
-| Label | `.t-label` | 16 | 16 | Nav, breadcrumbs, dates, tags, checklists, form labels (500) |
+| Label | `.t-label` | 16 | 16 | Nav, breadcrumbs, dates, tags, facts lines, form labels (500) |
 | Button | `.t-button` | 16 | 16 | Button text (600). Button visuals keep their variants — only the text style is shared |
 | Link | `.t-link` | 16 | 16 | "Learn more / see all" — same text style as buttons (600) |
 | Price | `.t-price` | 20.3 | 25.9 | Tour page price box and sticky bar — sans 600, never serif. Tour cards show the price at Body size, bold, on the duration line |
 
+Section items (why us, how booking works, FAQ, blog cards and the homepage blog list) share one order: label 16 → 8px →
+item title `.t-card` → 12px → `.t-body` in `.muted` (text-2). Icon/number → title 24px.
 Uppercase variant: add `.t-caps` to a label/link (uppercase, +0.08em) — the only allowed tracking change.
-Hierarchy inside a section: title → description (Body 18) → checklists/meta (16). Step secondary text down; never enlarge the
-description. Apply a role with its class in markup; where impossible use the role's full `--fs/--lh/--ls/--fw` set together.
+Hierarchy inside a section: title → description and checklists (Body 18) → meta (16). Step secondary text down; never enlarge the
+description. Checklists are always Body 18 (owner's call) — 16 is only for UI chrome, meta and small print. Apply a role with its class in markup; where impossible use the role's full `--fs/--lh/--ls/--fw` set together.
 Colour is separate from type: `.muted` (text-2), `.subtle` (text-3). Icon sizing is exempt.
 Icons: one library, Phosphor, as SVG files in `src/icons` via `<Icon name>` (no icon fonts, no CDN). Feature/contact/fact
 icons are **Regular** (outline, one colour, no duotone fill, no orange fill, no tinted box or circle behind them). UI glyphs
@@ -57,6 +60,9 @@ Semantic (mobile / ≥768px): `--gutter` 16/32 page edge · `--stack` 32/48 sect
 Every margin, padding, gap and spacing offset uses one of these. Only 1–2px borders/hairlines are exempt.
 
 ### Look
+Text colour: two only — primary `--ink` for headings/titles (and key figures), secondary `--text-2` for every other
+text (body, descriptions, checklists, answers, dates, captions). On navy: white and `--on-dark-2`. `--text`/`--text-3`
+are aliases of `--text-2`.
 Editorial, not template: left-aligned sentence-case headings, hairline rules instead of boxed cards, photography not
 illustration.
 Sections alternate white and light grey (`.section--grey`), set per block in Sanity.
