@@ -251,7 +251,7 @@ const searchIndex = [
   /* Glass bar. Over a hero/banner photo it starts transparent with white text, then frosts on scroll. */
   .nav {
     position: sticky; top: 0; z-index: 50; color: var(--ink);
-    background: rgb(255 255 255 / .72); -webkit-backdrop-filter: saturate(180%) blur(18px); backdrop-filter: saturate(180%) blur(18px);
+    background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
     transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
     view-transition-name: site-header;  /* stays put while the page underneath cross-fades */
   }

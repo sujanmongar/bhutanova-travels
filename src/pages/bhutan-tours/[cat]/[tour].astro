@@ -397,7 +397,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .facts__buy p { display: grid; }
   .facts__buy b { color: var(--ink); }
   @media (min-width: 768px) {
-    .facts { position: sticky; top: var(--above); z-index: 30; transition: top var(--dur-2) var(--ease-out); background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+    .facts { position: sticky; top: var(--above); z-index: 30; transition: top var(--dur-2) var(--ease-out); background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
     .facts__in { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding-block: var(--space-4); }
     .facts__list { display: flex; gap: var(--space-10); }
     .facts__buy p { grid-template-columns: auto auto; align-items: baseline; column-gap: var(--space-2); }
@@ -454,7 +454,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   /* The day's number and title stay pinned at the top while you read that day, then give way to the next day.
      Phones/tablets: a white strip under the header; desktop: the left column (see below). */
   .day__head { position: sticky; top: calc(var(--above) + var(--facts-h)); z-index: 2; align-self: start; display: grid; gap: var(--space-2); align-content: start;
-    margin-inline: calc(var(--gutter) * -1); padding: var(--space-3) var(--gutter); background: rgb(255 255 255 / .96); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+    margin-inline: calc(var(--gutter) * -1); padding: var(--space-3) var(--gutter); background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--border); transition: top var(--dur-2) var(--ease-out); }
   .day__head h3 { font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
   .day__body { display: grid; gap: var(--space-4); min-width: 0; }
