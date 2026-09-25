@@ -53,7 +53,6 @@ const festival = tours.some((t) => nextFestival(t.data.festivalDates));
         </li>
       ))}
       <li class="own" data-always>
-        <p class="t-label muted">Tailor-made</p>
         <h3 class="t-card">{tours.length ? 'Want a different trip?' : 'New trips coming soon'}</h3>
         <p class="t-body muted">Tell us your days and who's coming, and a planner in Thimphu will shape a trip around you.</p>
         <a class="btn btn--primary" href="/contact/" data-open-plan>Plan your own trip</a>
@@ -128,6 +127,6 @@ const festival = tours.some((t) => nextFestival(t.data.festivalDates));
   /* Last card: a trip of your own */
   /* As tall as the tour photos beside it (it grows only if its words need more room) */
   .own { align-self: start; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); min-height: var(--card-photo); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
-  .own .btn { margin-top: 0; }
+  .own .btn { margin-top: var(--space-3); }
   @media (scripting: none) { .tools { display: none; } }
 </style>
