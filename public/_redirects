@@ -1,0 +1,4 @@
+# Removed pages: send anyone who follows an old link to the right place (301 = permanently moved)
+# The "Welcome to Bhutan" test post (deleted 2026-09-25)
+/blog/welcome-to-bhutan/  /blog/  301
+/blog/welcome-to-bhutan   /blog/  301
