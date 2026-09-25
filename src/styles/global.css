@@ -56,7 +56,7 @@
   --glass-bg: rgb(255 255 255 / .72); --glass-blur: saturate(180%) blur(18px);
   --grid-gap: var(--space-6);   /* between cards, rows and grids alike, at every width (so a card is 384px on desktop everywhere) */
   --measure: calc(var(--fs-base) * 34);  /* reading column for articles: 612px, about 70 characters a line */
-  --header-h: 64px;
+  --header-h: 72px;  /* phones: room for the larger logo and 48px buttons */
   --card-photo: 240px;          /* photo height on every tour, blog, guide and place card (270px from 768px) */
 
   /* ---------- Typography — Typescale: 18px base, Minor Third (1.200) ----------
@@ -93,7 +93,8 @@
   --fs-button: 1rem;   --lh-button: 1.6;   --ls-button: 0;   --fw-button: 600;   /* 16 — every button… */
   --fs-link: 1rem;     --lh-link: 1.6;     --ls-link: 0;     --fw-link: 600;     /* 16 — …and every text CTA, identical */
   --fs-price: var(--fs-h5); --lh-price: var(--lh-h5); --ls-price: 0; --fw-price: 600; /* tour page price box and sticky bar, sans */
-  --fs-small: calc(var(--fs-base) * .833);  /* 15 — the footer only (owner's call: footers run a step smaller) */
+  --fs-small: calc(var(--fs-base) * .778);  /* 14 — footer text only (owner's call: footers run smaller) */
+  --fs-xs: calc(var(--fs-base) * .722);     /* 13 — footer column titles and bottom bar only */
   --ls-caps: 0.08em;   /* the uppercase variant (.t-caps) of label/link */
 }
 @media (min-width: 768px) {
@@ -234,15 +235,15 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .btn--block { width: 100%; }
 @media (min-width: 1200px) { .btn { --btn-h: 46px; } .btn--sm { --btn-h: 38px; } .btn--lg { --btn-h: 52px; } }
 
-/* "See all" links (owner's call): navy text and an orange angle arrow, no line at rest; on hover an orange line draws in
-   under the words from the left and the arrow nudges up. .see-all gives the same look to the menu, drawer and search
-   "see all" rows and the tour page's Show all. The words sit in a <span> so the line runs under them only. */
+/* "See all" links (owner's call): navy text, an orange angle arrow, and a thin orange line under the words (not the
+   arrow) so they read as links even on phones; on hover the line thickens and the arrow nudges up. .see-all gives the
+   same look to the menu, drawer and search "see all" rows and the tour page's Show all. */
 .link-more {
   display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--ink); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); white-space: nowrap;
 }
 .see-all { color: var(--ink); text-decoration: none; }
 :is(.link-more, .see-all) .icon { font-size: .8em; color: var(--p-500); transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out); }
-:is(.link-more, .see-all) > span { padding-bottom: 3px; background: linear-gradient(var(--p-500), var(--p-500)) 0 100% / 0 2px no-repeat; transition: background-size var(--dur-3) var(--ease-out); }
+:is(.link-more, .see-all) > span { padding-bottom: 3px; background: linear-gradient(var(--p-500), var(--p-500)) 0 100% / 100% 1px no-repeat; transition: background-size var(--dur-2) var(--ease-out); }
 :is(.link-more, .see-all):is(:focus-visible, :active) > span { background-size: 100% 2px; }
 /* Mobile-only "see all" link under a row whose header link is hidden on phones (after .link-more so display:none wins) */
 .m-only { margin-top: var(--space-4); }
@@ -499,8 +500,26 @@ img.is-arriving { animation: fade var(--dur-3) var(--ease-out); }
 .cookie { position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--r-lg); background: #fff; box-shadow: var(--sh-lg); }
 .cookie[hidden] { display: none; }
 .cookie p { margin: 0; }
-.cookie__act { display: flex; gap: var(--space-3); margin-top: var(--space-1); }
+.cookie__head { display: flex; align-items: center; gap: var(--space-2); }
+.cookie__head .icon { font-size: 22px; color: var(--p-500); }
+.cookie__head .t-title { color: var(--ink); }
+.cookie__act { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-1); }
+.cookie__act[hidden], .cookie__prefs[hidden] { display: none; }
 .cookie__act .btn { flex: 1 1 0; padding-inline: var(--space-3); }
+/* Customise: a quiet text button on its own line under the two equal choices */
+.cookie__more { flex-basis: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+@media (hover: hover) { .cookie__more:hover { text-decoration-thickness: 2px; } }
+/* Categories: hairline rows, the name and a line under it, the switch on the right */
+.cookie__prefs { display: grid; border-top: 1px solid var(--border); }
+.cookie__cat { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-3); border-bottom: 1px solid var(--border); cursor: pointer; }
+.cookie__cat span { display: grid; }
+.cookie__cat .t-label { color: var(--ink); }
+.cookie__always { flex: none; }
+/* A native checkbox drawn as a switch (role="switch"): navy when on */
+.switch { appearance: none; flex: none; position: relative; width: 44px; height: 26px; margin: 0; border-radius: var(--r-full); background: var(--border-dark); cursor: pointer; transition: background-color var(--dur-2); }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(12 25 37 / .2); transition: translate var(--dur-2) var(--ease-out); }
+.switch:checked { background: var(--s-500); }
+.switch:checked::after { translate: 18px 0; }
 @media (min-width: 768px) { .cookie { left: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom)); width: 400px; padding: var(--card-pad); } }
 @media (prefers-reduced-motion: no-preference) { .cookie:not([hidden]) { --rise: 12px; animation: rise var(--dur-3) var(--ease-out); } }
 @media (prefers-reduced-motion: reduce) {

@@ -6,9 +6,10 @@ import Social from './Social.astro';
 import { SITE, tel, wa } from '../config';
 import { TOURS, DESTINATIONS, catPath } from '../utils';
 
-// Left: who we are and how to reach us. Right: four short link columns under small orange uppercase headings.
-// Bottom bar: copyright on the left; sitemap, policies and cookie preferences on the right. Everything in the footer runs
-// one step smaller than the page (15px, --fs-small: owner's call).
+// Like the big travel sites' footers: left, the logo, one line about us and the social circles; then three link columns
+// (About and Quick links share the third) and Get in touch: the office, its hours and every way to reach us. Bottom bar: copyright on the
+// left; sitemap, policies and cookie preferences on the right. Footer text is 14px, titles and the bottom bar 13px
+// (--fs-small / --fs-xs: owner's call, footers run smaller than the page).
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const columns: { title: string; links: [string, string][]; external?: boolean }[] = [
   { title: 'Tours', links: [...cats.map((c): [string, string] => [c.data.menuTitle, catPath(c.id)]), ['All tours', TOURS]] },
@@ -28,30 +29,37 @@ const columns: { title: string; links: [string, string][]; external?: boolean }[
   <div class="container footer__main">
     <div class="footer__us">
       <a class="footer__logo" href="/" aria-label="Bhutanova Travels home"><Logo light /></a>
-      <ul class="footer__contact t-label">
-        <li>WhatsApp: <a href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener">{SITE.phone}<span class="sr-only"> (opens in a new tab)</span></a></li>
-        <li>Phone: <a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></li>
-        <li>Email: <a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
-        <li>Address: {SITE.address}</li>
-        <li>Licence: Department of Tourism, no. {SITE.licence}</li>
-      </ul>
-      <p class="footer__h t-label t-caps">Connect with us</p>
+      <p class="footer__about t-label">Private tours, treks and festival trips across Bhutan, planned and run by a licensed operator in Thimphu.</p>
       <Social />
     </div>
 
-    <div class="footer__cols">
-      {columns.map((c, i) => (
-        <nav aria-labelledby={`f-${i}`}>
-          <p id={`f-${i}`} class="footer__h t-label t-caps">{c.title}</p>
-          <ul class="t-label">
-            {c.links.map(([t, u]) => (
-              <li>{c.external
-                ? <a href={u} target="_blank" rel="noopener">{t.slice(0, t.lastIndexOf(' ') + 1)}<span class="ext">{t.slice(t.lastIndexOf(' ') + 1)}<Icon name="arrow-up-right" /></span><span class="sr-only"> (opens in a new tab)</span></a>
-                : <a href={u}>{t}</a>}</li>
-            ))}
-          </ul>
-        </nav>
-      ))}
+    {[[columns[0]], [columns[1]], [columns[2], columns[3]]].map((stack) => (
+      <div class:list={['footer__col', { 'footer__col--two': stack.length > 1 }]}>
+        {stack.map((c) => (
+          <nav aria-labelledby={`f-${columns.indexOf(c)}`}>
+            <p id={`f-${columns.indexOf(c)}`} class="footer__h t-caps">{c.title}</p>
+            <ul class="t-label">
+              {c.links.map(([t, u]) => (
+                <li>{c.external
+                  ? <a href={u} target="_blank" rel="noopener">{t.slice(0, t.lastIndexOf(' ') + 1)}<span class="ext">{t.slice(t.lastIndexOf(' ') + 1)}<Icon name="arrow-up-right" /></span><span class="sr-only"> (opens in a new tab)</span></a>
+                  : <a href={u}>{t}</a>}</li>
+              ))}
+            </ul>
+          </nav>
+        ))}
+      </div>
+    ))}
+
+    <div class="footer__office">
+      <p class="footer__h t-caps">Get in touch</p>
+      <ul class="footer__contact t-label">
+        <li>{SITE.address}</li>
+        <li>Mon–Sat, 9am–6pm Bhutan time (GMT+6)</li>
+        <li>WhatsApp <a href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener">{SITE.phone}<span class="sr-only"> (opens in a new tab)</span></a></li>
+        <li>Phone <a href={tel(SITE.phoneAlt)}>{SITE.phoneAlt}</a></li>
+        <li><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
+        <li>Licence no. {SITE.licence}, Department of Tourism</li>
+      </ul>
     </div>
   </div>
 
@@ -72,44 +80,47 @@ const columns: { title: string; links: [string, string][]; external?: boolean }[
   .footer { --fs-label: var(--fs-small); --fs-caption: var(--fs-small); background: var(--s-500); color: var(--on-dark-2); -webkit-font-smoothing: antialiased; }
   .footer :is(a, button) { color: inherit; text-decoration: underline 1px transparent; text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
   @media (hover: hover) { .footer :is(a, button):hover { color: #fff; text-decoration-color: var(--p-500); } }
-  .footer ul { list-style: none; padding: 0; }
+  .footer ul { list-style: none; margin: 0; padding: 0; }
 
-  .footer__main { display: grid; gap: var(--space-12); padding-block: var(--space-16) var(--space-12); }
-
-  /* Left: logo, one line, contact details, social */
-  .footer__us { display: grid; justify-items: start; align-content: start; }
+  /* Phones: two columns, the about block and the office on full rows. 768px: the about block on its own row, then four
+     columns. 1024px: all five side by side. */
+  .footer__main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10) var(--space-6); padding-block: var(--space-16) var(--space-12); }
+  .footer__us, .footer__office { grid-column: 1 / -1; }
+  .footer__us { display: grid; justify-items: start; align-content: start; gap: var(--space-6); }
   .footer__logo { display: block; }
-  .footer__logo :global(.logo) { width: 200px; }
-  .footer__contact { display: grid; gap: var(--space-2); margin-top: var(--space-8); }
-  .footer__contact a { color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1); }
-  @media (hover: hover) { .footer__contact a:hover { text-decoration-color: var(--p-500); } }
-  .footer__us > .footer__h { margin: var(--space-8) 0 0; }
-  /* Social icons in outlined circles, 12px under their title */
-  .footer__us :global(.social) { gap: var(--space-3); margin: var(--space-3) 0 0; }
-  .footer__us :global(.social a) { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: var(--r-full); background: rgb(255 255 255 / .08); font-size: 18px; color: #fff; transition: background-color var(--dur-1); }
+  .footer__logo :global(.logo) { width: 180px; }
+  .footer__about { max-width: 34ch; margin: 0; }
+  .footer__us :global(.social) { gap: var(--space-3); margin: 0; }
+  .footer__us :global(.social a) { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border-radius: var(--r-full); background: rgb(255 255 255 / .08); font-size: 16px; color: #fff; transition: background-color var(--dur-1); }
   @media (hover: hover) { .footer__us :global(.social a:not([aria-disabled]):hover) { background: rgb(255 255 255 / .16); } }
 
-  /* Right: four columns (two by two on phones) */
-  .footer__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10) var(--space-6); }
-  .footer__h { margin-bottom: var(--space-4); color: var(--p-500); }  /* orange reads well on navy (7:1) */
-  .footer__cols ul { display: grid; }
-  .footer__cols a { display: inline-block; padding-block: var(--space-2); }
+  /* Column titles: small orange capitals (orange reads well on navy, 7:1) */
+  .footer__h { margin: 0 0 var(--space-3); font-family: var(--ff); font-size: var(--fs-xs); line-height: var(--lh-label); font-weight: 600; color: var(--p-500); }
+  .footer__col { display: grid; align-content: start; gap: var(--space-8); }
+  .footer__col a { display: inline-block; padding-block: var(--space-2); }
+  /* Phones: About and Quick links share a full row side by side, so no half row stands empty */
+  @media (max-width: 767px) { .footer__col--two { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-6); } }
   /* The outside-link arrow stays with the last word when a name wraps */
   .ext { white-space: nowrap; }
-  .ext :global(.icon) { display: inline-block; margin-left: var(--space-1); font-size: 11px; opacity: .7; }
+  .ext :global(.icon) { display: inline-block; margin-left: var(--space-1); font-size: 10px; opacity: .7; }
+  .footer__contact { display: grid; gap: var(--space-2); }
+  .footer__contact a { color: #fff; text-decoration-color: rgb(255 255 255 / .4); }
 
-  /* Bottom bar: copyright left, policies right */
-  .footer__bar { background: var(--s-800); }
-  .footer__bar .container { display: grid; gap: var(--space-2); padding-block: var(--space-4) calc(var(--space-4) + env(safe-area-inset-bottom)); }
-  .footer__legal { display: flex; flex-wrap: wrap; gap: 0 var(--space-6); list-style: none; margin: 0; padding: 0; }
-  .footer__legal :is(a, button) { display: inline-block; padding-block: var(--space-2); border: 0; background: none; font: inherit; cursor: pointer; }
+  /* Bottom bar: copyright left, sitemap, policies and cookies right; 13px */
+  .footer__bar { --fs-label: var(--fs-xs); background: var(--s-800); }
+  .footer__bar .container { display: grid; gap: var(--space-1); padding-block: var(--space-2) calc(var(--space-2) + env(safe-area-inset-bottom)); }
+  .footer__bar p { margin: 0; }
+  .footer__legal { display: flex; flex-wrap: wrap; gap: 0 var(--space-6); }
+  .footer__legal :is(a, button) { display: inline-block; padding-block: var(--space-1); border: 0; background: none; font: inherit; cursor: pointer; }
 
   @media (min-width: 768px) {
-    .footer__cols { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .footer__main { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .footer__office { grid-column: auto; }
     .footer__bar .container { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
   }
   @media (min-width: 1024px) {
-    .footer__main { grid-template-columns: 4fr 8fr; column-gap: var(--space-16); padding-block: var(--space-20) var(--space-16); }
-    .footer__cols a { padding-block: var(--space-1); }
+    .footer__main { grid-template-columns: 3fr 2fr 2fr 2fr 3fr; column-gap: var(--space-10); padding-block: var(--space-20) var(--space-16); }
+    .footer__us { grid-column: auto; }
+    .footer__col a { padding-block: var(--space-1); }
   }
 </style>

@@ -230,7 +230,8 @@ const searchIndex = [
     // preventScroll: without it, focusing an element inside a position:sticky header can make the browser
     // scroll to where that element WOULD sit in normal document flow (the very top of the page) — it doesn't
     // account for sticky already having pinned it on-screen wherever you are.
-    if (open) { searchQ.value = ''; render(''); requestAnimationFrame(() => searchQ.focus({ preventScroll: true })); }
+    // Focus inside the tap itself (not a frame later): iPhone only opens the keyboard for focus that comes straight from a tap
+    if (open) { searchQ.value = ''; render(''); searchQ.focus({ preventScroll: true }); }
     else { panel.hidden = true; toggle.focus({ preventScroll: true }); }
   };
   toggle.addEventListener('click', () => setOpen(!nav.classList.contains('is-searching')));
@@ -252,13 +253,14 @@ const searchIndex = [
   .nav {
     position: sticky; top: 0; z-index: 50; color: var(--ink);
     background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
+    box-shadow: inset 0 -1px 0 var(--border);  /* a hairline along the bottom (owner's call); inset, so the bar keeps its height */
     transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
     view-transition-name: site-header;  /* stays put while the page underneath cross-fades */
   }
   /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
-  .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
+  .nav.is-stuck { box-shadow: inset 0 -1px 0 var(--border), 0 8px 24px -16px rgb(12 25 37 / .2); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
-    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff; --focus: #fff;
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 -1px 0 rgb(255 255 255 / .18); color: #fff; --focus: #fff;
   }
   /* White panels inside the bar keep the navy focus ring */
   .sub__list, .search-panel { --focus: var(--s-500); }
@@ -278,8 +280,8 @@ const searchIndex = [
   .nav.is-searching .menu { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-2) var(--ease-out), visibility 0s var(--dur-2); }
   .nav__cta { flex: none; display: flex; align-items: center; gap: var(--space-2); }
   .burger, .icon-btn {
-    display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
-    background: var(--icon-bg); color: inherit; font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+    display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%;
+    background: var(--icon-bg); color: inherit; font-size: 22px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
   }
   @media (hover: hover) { .burger:hover, .icon-btn:hover { background: var(--icon-bg-hover); } }
@@ -386,6 +388,7 @@ const searchIndex = [
 
   /* Desktop */
   @media (min-width: 1024px) {
+    .icon-btn { width: 44px; height: 44px; font-size: 18px; }  /* desktop: the smaller round button beside the menu */
     .burger, .drawer { display: none; }
     .nav__book { display: inline-flex; }
     .menu { display: block; }

@@ -1,21 +1,47 @@
 ---
 // Cookie choice, built in (free, no third-party service). The site sets no tracking cookies of its own; the only cookies
 // come from embedded Google Maps, YouTube and Vimeo frames, so those frames wait (a grey panel with a Show button,
-// .frame / .frame__gate) until the visitor accepts. The choice is kept in one first-party cookie for a year, and
-// "Cookie preferences" in the footer ([data-cookie-prefs]) brings this card back.
+// .frame / .frame__gate) until the visitor allows them. Accept all and Reject all carry the same weight (as the GDPR
+// guidance asks); Customise opens the categories with a switch each. The choice is kept in one first-party cookie for a
+// year, and "Cookie preferences" in the footer ([data-cookie-prefs]) brings the card back.
+import Icon from './Icon.astro';
 ---
-<div class="cookie" role="region" aria-label="Cookie choice" data-cookie hidden>
-  <p class="t-title">Cookies</p>
-  <p class="t-caption muted">We don't track you. Maps and videos from Google, YouTube and Vimeo set their own cookies once they load. <a href="/privacy/#cookies">Privacy policy</a></p>
-  <div class="cookie__act">
+<div class="cookie" role="region" aria-labelledby="cookie-title" data-cookie hidden>
+  <div class="cookie__head">
+    <Icon name="shield-check" />
+    <p class="t-title" id="cookie-title">Your privacy</p>
+  </div>
+  <p class="t-caption muted">We don't use tracking or advertising cookies. Maps and videos from Google, YouTube and Vimeo set their own cookies, so they only load if you allow them. <a href="/privacy/#cookies">Privacy policy</a></p>
+
+  <div class="cookie__prefs" data-cookie-prefs-panel hidden>
+    <div class="cookie__cat">
+      <div><p class="t-label">Necessary</p><p class="t-caption muted">Keep the site working and remember this choice.</p></div>
+      <p class="t-caption muted cookie__always">Always on</p>
+    </div>
+    <label class="cookie__cat">
+      <span><span class="t-label">Maps and videos</span><span class="t-caption muted">Google Maps, YouTube and Vimeo, inside pages and articles.</span></span>
+      <input class="switch" type="checkbox" role="switch" data-cookie-media />
+    </label>
+  </div>
+
+  <div class="cookie__act" data-cookie-main>
     <button type="button" class="btn btn--primary btn--sm" data-cookie-choice="all">Accept all</button>
-    <button type="button" class="btn btn--outline btn--sm" data-cookie-choice="necessary">Necessary only</button>
+    <button type="button" class="btn btn--outline btn--sm" data-cookie-choice="necessary">Reject all</button>
+    <button type="button" class="cookie__more t-link" aria-expanded="false" data-cookie-customise>Customise</button>
+  </div>
+  <div class="cookie__act" data-cookie-save hidden>
+    <button type="button" class="btn btn--primary btn--sm" data-cookie-choice="save">Save my choices</button>
+    <button type="button" class="btn btn--outline btn--sm" data-cookie-choice="all">Accept all</button>
   </div>
 </div>
 
 <script>
   const KEY = 'bn_consent';
   const card = document.querySelector<HTMLElement>('[data-cookie]')!;
+  const $ = <T extends HTMLElement>(q: string) => card.querySelector<T>(q)!;
+  const prefs = $('[data-cookie-prefs-panel]');
+  const media = $<HTMLInputElement>('[data-cookie-media]');
+  const more = $('[data-cookie-customise]');
   const read = () => document.cookie.match(new RegExp(`(?:^|; )${KEY}=(all|necessary)`))?.[1];
   const load = (frame: Element) => {
     const f = frame.querySelector<HTMLIFrameElement>('iframe[data-src]');
@@ -23,19 +49,32 @@
     frame.setAttribute('data-loaded', '');
   };
   const loadAll = () => document.querySelectorAll('.frame').forEach(load);
+  const customise = (open: boolean) => {
+    prefs.hidden = !open;
+    $('[data-cookie-main]').hidden = open;
+    $('[data-cookie-save]').hidden = !open;
+    more.setAttribute('aria-expanded', String(open));
+  };
+  const show = () => {
+    media.checked = read() === 'all';
+    customise(false);
+    card.hidden = false;
+  };
 
   const choice = read();
   if (choice === 'all') loadAll();
-  if (!choice) card.hidden = false;
+  if (!choice) show();
 
   card.addEventListener('click', (e) => {
-    const b = (e.target as Element).closest<HTMLElement>('[data-cookie-choice]');
+    const t = e.target as Element;
+    if (t.closest('[data-cookie-customise]')) { customise(true); media.focus(); return; }
+    const b = t.closest<HTMLElement>('[data-cookie-choice]');
     if (!b) return;
-    const v = b.dataset.cookieChoice!;
+    const pick = b.dataset.cookieChoice === 'save' ? (media.checked ? 'all' : 'necessary') : b.dataset.cookieChoice!;
     const was = read();
-    document.cookie = `${KEY}=${v}; max-age=31536000; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+    document.cookie = `${KEY}=${pick}; max-age=31536000; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
     card.hidden = true;
-    if (v === 'all') loadAll();
+    if (pick === 'all') loadAll();
     else if (was === 'all') location.reload();  // take back frames that already loaded
   });
   document.addEventListener('click', (e) => {
@@ -43,6 +82,6 @@
     // One frame on its own ("Show the map"), without changing the site-wide choice
     const one = t.closest('[data-consent-load]');
     if (one) { load(one.closest('.frame')!); return; }
-    if (t.closest('[data-cookie-prefs]')) { card.hidden = false; card.querySelector<HTMLElement>('[data-cookie-choice]')?.focus(); }
+    if (t.closest('[data-cookie-prefs]')) { show(); customise(true); media.focus(); }
   });
 </script>
