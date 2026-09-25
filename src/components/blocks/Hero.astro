@@ -28,7 +28,8 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
 </section>
 
 <style>
-  .hero { position: relative; height: min(92svh, 800px); min-height: 600px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
+  /* ~85% of the screen (capped), so the top of the next section shows below it: a cue to scroll */
+  .hero { position: relative; height: min(85svh, 800px); min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
   .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
   .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
@@ -47,5 +48,5 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
     .hero__in { padding-bottom: var(--space-12); }
     .hero__proof { justify-self: start; }
   }
-  @media (min-width: 1200px) { .hero { height: min(92svh, 860px); } .hero__in { padding-bottom: var(--space-16); } }
+  @media (min-width: 1200px) { .hero { height: min(85svh, 860px); } .hero__in { padding-bottom: var(--space-16); } }
 </style>
