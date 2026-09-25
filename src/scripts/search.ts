@@ -1,5 +1,5 @@
 // Shared by the header's live suggestions and the full /search/ page, so both group results the same way.
-import arrowSvg from '../icons/arrow-right.svg?raw';
+import arrowSvg from '../icons/arrow-up-right.svg?raw';
 
 export type SearchItem = { t: string; k: string; u: string };
 export type Group = { key: string; label: string; items: SearchItem[] };
@@ -30,7 +30,7 @@ export function suggestionsHTML(groups: Group[], q: string, perGroup = 4): strin
       .map((r) => `<li><a href="${r.u}">${escHtml(r.t)}</a></li>`)
       .join('')}</ul></li>`)
     .join('');
-  const seeAll = total > 0 ? `<a class="search__see-all" href="/search/?q=${encodeURIComponent(q)}">${total > shown ? `See all ${total} results` : 'See full results'} for “${escHtml(q)}”${arrow}</a>` : '';
+  const seeAll = total > 0 ? `<a class="search__see-all see-all" href="/search/?q=${encodeURIComponent(q)}"><span>${total > shown ? `See all ${total} results` : 'See full results'} for “${escHtml(q)}”</span>${arrow}</a>` : '';
   return rows + seeAll;
 }
 

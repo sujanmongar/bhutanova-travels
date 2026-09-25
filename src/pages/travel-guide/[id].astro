@@ -5,6 +5,7 @@ import Icon from '../../components/Icon.astro';
 import Arrows from '../../components/Arrows.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import PlanCta from '../../components/PlanCta.astro';
+import { topicName } from '../../utils';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 export async function getStaticPaths() {
   const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
@@ -17,7 +18,7 @@ const toc = headings.filter((h) => h.depth === 2);
 const rest = guides.filter((g) => g.id !== guide.id);
 const related = [...rest.filter((g) => g.data.group === guide.data.group), ...rest.filter((g) => g.data.group !== guide.data.group)].slice(0, 3);
 ---
-<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={guide.data.group} back={['/travel-guide/', 'Travel guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
+<Article title={guide.data.title} description={guide.data.excerpt} image={guide.data.image} date={guide.data.updated} kicker={topicName(guide.data.group)} back={['/travel-guide/', 'Travel guide']} updatedLabel="Last reviewed" seo={guide.data.seo}>
   {toc.length > 1 && (
     <details class="toc toc-m">
       <summary class="t-label">On this page<Icon name="chevron-up" /></summary>
@@ -40,10 +41,10 @@ const related = [...rest.filter((g) => g.data.group === guide.data.group), ...re
     <div class="container">
       <div class="sh sh--row" data-reveal>
         <h2>More travel guides</h2>
-        <div class="sh__act"><a class="link-more" href="/travel-guide/">All guides<Icon name="arrow-right" /></a><Arrows target="rail-guides" label="guides" /></div>
+        <div class="sh__act"><a class="link-more" href="/travel-guide/"><span>All guides</span><Icon name="arrow-up-right" /></a><Arrows target="rail-guides" label="guides" /></div>
       </div>
       <div class="rail" id="rail-guides" data-reveal="stagger">{related.map((g) => <BlogCard post={g} base="/travel-guide/" rail />)}</div>
-      <a class="link-more m-only" href="/travel-guide/">All guides<Icon name="arrow-right" /></a>
+      <a class="link-more m-only" href="/travel-guide/"><span>All guides</span><Icon name="arrow-up-right" /></a>
     </div>
   </section>
   <WhatsAppCta slot="after" about={guide.data.title} />

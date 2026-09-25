@@ -11,7 +11,7 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) =>
 const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
 const hero = 'photo-1585904194096-15ef66ccd234';
 ---
-<Base title="Blog – Stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
+<Base title="Blog – stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
   <section class="banner">
     <BannerImg src={hero} alt="Masked dancers at a Bhutanese tshechu" />
     <div><Breadcrumbs items={[['Blog']]} light /><h1>Stories from Bhutan</h1><p class="banner__line">Stories, festival notes and practical advice from our team in Thimphu.</p></div>

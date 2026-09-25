@@ -106,7 +106,10 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
           const { src, kind } = e;
           if (kind === 'link') return `<p><a href="${attr(src)}" target="_blank" rel="noopener">${esc(value.title ?? src)}<span class="sr-only"> (opens in a new tab)</span></a></p>`;
           const extra = kind === 'page' ? ' sandbox="allow-scripts allow-same-origin allow-popups"' : ' allow="accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen';
-          return `<figure class="embed embed--${kind}"><iframe src="${attr(src)}" title="${attr(value.title ?? 'Embedded content')}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"${extra}></iframe>${caption(value.caption)}</figure>`;
+          // The frame waits for cookie consent (CookieNotice.astro); until then a panel says who it's from, with a Show button
+          const from = kind === 'map' ? ['Google Maps', 'map'] : /vimeo/.test(src) ? ['Vimeo', 'video'] : kind === 'video' ? ['YouTube', 'video'] : [new URL(src).hostname.replace(/^www\./, ''), 'content'];
+          const gate = `<div class="frame__gate"><p>This ${from[1]} is from ${esc(from[0])}, which may set cookies when it loads.</p><button type="button" class="btn btn--outline" data-consent-load>Show the ${from[1]}</button></div>`;
+          return `<figure class="embed embed--${kind}"><div class="frame"><iframe data-src="${attr(src)}" title="${attr(value.title ?? 'Embedded content')}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"${extra}></iframe>${gate}</div>${caption(value.caption)}</figure>`;
         },
         tourCard: ({ value }: any) => {
           const t = value?.tour;
@@ -119,7 +122,8 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
           const [head, ...rows] = value.rows ?? [];
           // Short cells (codes, places, days, times) stay on one line so a wide table scrolls instead of stacking words;
           // long cells still wrap.
-          const cell = (c: string, tag: string) => `<${tag}${(c ?? '').length <= 24 ? ' class="nw"' : ''}>${esc(c ?? '')}</${tag}>`;
+          // **bold** in a cell (e.g. a Total row) renders bold instead of showing the asterisks
+          const cell = (c: string, tag: string) => `<${tag}${(c ?? '').length <= 24 ? ' class="nw"' : ''}>${esc(c ?? '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</${tag}>`;
           const tr = (r: any, tag: string) => `<tr>${(r.cells ?? []).map((c: string) => cell(c, tag)).join('')}</tr>`;
           return `<table>${head ? `<thead>${tr(head, 'th')}</thead>` : ''}<tbody>${rows.map((r: any) => tr(r, 'td')).join('')}</tbody></table>`;
         },

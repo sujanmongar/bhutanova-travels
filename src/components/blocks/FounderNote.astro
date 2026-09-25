@@ -26,7 +26,7 @@ const photo = person?.photo;
           <p><span class="t-card">{person.name}</span><span class="t-label muted">{person.role}, Bhutanova Travels</span></p>
         </div>
       )}
-      {linkLabel && linkHref && <a class="link-more" href={linkHref}>{linkLabel}<Icon name="arrow-right" /></a>}
+      {linkLabel && linkHref && <a class="link-more" href={linkHref}><span>{linkLabel}</span><Icon name="arrow-up-right" /></a>}
     </div>
   </div>
 </section>

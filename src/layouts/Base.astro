@@ -4,6 +4,7 @@ import serifUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-no
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import TripPlanner from '../components/TripPlanner.astro';
+import CookieNotice from '../components/CookieNotice.astro';
 import { getCollection } from 'astro:content';
 import { SITE, img, ldJson, type Seo } from '../config';
 
@@ -83,6 +84,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <Footer />
     {/* The one short enquiry form: every Enquire / Plan / Customise button on the site opens it */}
     <TripPlanner tours={await getCollection('tours')} />
+    <CookieNotice />
     <script>
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 

@@ -46,8 +46,11 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
 
   <section class="section section--grey">
     <div class="container">
-      <iframe class="map" title="Map of Babesa, Thimphu" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-        src="https://www.google.com/maps?q=Babesa,Thimphu,Bhutan&z=14&output=embed"></iframe>
+      <div class="frame">
+        <iframe class="map" title="Map of Babesa, Thimphu" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          data-src="https://www.google.com/maps?q=Babesa,Thimphu,Bhutan&z=14&output=embed"></iframe>
+        <div class="frame__gate"><p>This map is from Google Maps, which may set cookies when it loads.</p><button type="button" class="btn btn--outline" data-consent-load>Show the map</button></div>
+      </div>
     </div>
   </section>
 
@@ -57,7 +60,7 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
         <h2>Questions before you write?</h2>
         <p>Visas, the nightly fee, altitude, what a trip costs — all answered in our travel FAQs, or just ask us directly above.</p>
       </div>
-      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>
+      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal><span>Read the Bhutan travel FAQs</span><Icon name="arrow-up-right" /></a>
     </div>
   </section>
 </Base>
@@ -77,6 +80,7 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
   @media (hover: hover) { .info a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
   .contact :global(.form) { display: grid; gap: var(--space-6); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: #fff; }
   @media (min-width: 768px) { .contact :global(.form) { padding: var(--space-8); } }
-  .map { width: 100%; height: 320px; border: 0; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
+  .map { display: block; width: 100%; height: 320px; border: 0; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   @media (min-width: 768px) { .map { height: 420px; } }
+  .frame__gate { border-radius: var(--radius); corner-shape: squircle; }
 </style>

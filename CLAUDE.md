@@ -19,7 +19,7 @@ The user's chosen scale (typescale.com, 18px, 1.200). Desktop ≥768px: h1–h6 
 (53.7 · 44.8 · 37.3 · 31.1 · 25.9 · 21.6px). Phones: same 18px base on Major Second (1.125): 32.4 · 28.8 · 25.6 · 22.8 · 20.3 · 18px.
 h1–h6 tokens keep these default sizes — never shift them.
 Tokens are written as `calc(var(--fs-base) * ratio)` so the scale stays exact. Headings: line height 1.15, tracking −0.022em,
-serif 400. Body: 18px, line height 1.6. **Floor 16px**: UI controls and small text are 16 (the scale's 0.833 step = 15px is not used).
+serif 400. Body: 18px, line height 1.6. **Floor 16px**: UI controls and small text are 16. The one exception is the footer, which runs one step smaller at the scale's 0.833 step (`--fs-small`, 15px; owner's call).
 Headings run in strict order h1 > … > h6. A heading element uses its own level's style — never another LEVEL's class
 (no `<h2 class="t-h1">`); `.t-card` / `.t-title` may go on any heading. Chrome titles that aren't content sections
 (footer columns, sidebar widgets, dialog titles) are styled `<p>`, not `<h2>`, so they can't break the heading order.
@@ -67,7 +67,7 @@ Editorial, not template: left-aligned sentence-case headings, hairline rules ins
 illustration.
 Sections alternate white and light grey (`.section--grey`), set per block in Sanity.
 Buttons: `.btn` variants only (primary navy, light, outline, soft, on-dark), pill, 16/600 text, **no arrow icons inside
-buttons** (text links `.link-more` keep their small arrow). Mobile first: design at 375px, then 768, then 1024/1200.
+buttons** (text links `.link-more` keep their small angle arrow, the Bold arrow-up-right ↗). Mobile first: design at 375px, then 768, then 1024/1200.
 Images: sharp but right-sized — `img(src, w, h)` / `srcset(src, widths, ratio)` make the CDN return exactly the frame
 (centred crop) for fixed-aspect frames; accurate `sizes`; lazy except the LCP image; page banners use `BannerImg`.
 Corners: every card and card image uses `--radius` (36px) + `corner-shape: squircle` (Apple-style; plain rounded
@@ -90,7 +90,7 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
   Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
   flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
-  outline → navy border). "See all" text links (`.link-more`) are amber `--p-700` (the orange's legible text shade), underlined only on hover, with their small arrow. Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
+  outline → navy border). "See all" text links (`.link-more`, and the menu / drawer / search "see all" and the tour page's Show all) are navy `--ink` with an orange angle arrow (↗), no line at rest; on hover an orange `--p-500` line draws in under the words from the left (`.see-all` gives the look to the rows; the words sit in a `<span>`). Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
   primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green on hover. Everything is off for reduced motion.
 - Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
@@ -112,6 +112,13 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   then "Or send your details by email": Full name *, Email *, Phone (optional), Travellers *, Days *, When, Anything
   else. Tour pages: Send an enquiry + a round WhatsApp button. The contact page shows the same form inline (trip optional).
   Keep it short: the planner settles places, hotels and price in the conversation.
+- Footer (navy): logo, contact details and social circles on the left; four link columns under orange uppercase titles; a
+  darker bottom bar with the copyright on the left and Sitemap (/sitemap/, every page listed), Privacy policy, Cancellation
+  policy and Cookie preferences on the right. All footer text is 15px.
+- Cookies: built in (CookieNotice.astro, free, no service). The site sets no tracking cookies of its own; third-party
+  frames (Google Maps, YouTube, Vimeo) wait behind a grey panel with a Show button until the visitor accepts
+  (`.frame` + `iframe data-src` + `.frame__gate`; pt.ts does it for article embeds). The choice lives in the `bn_consent`
+  cookie for a year; the footer's Cookie preferences brings the card back. Any future analytics must wait for it too.
 - Every page closes with the same contact section (WhatsAppCta; Sanity's Call to action and WhatsApp card blocks render
   it too): heading + line, the trip planner picked in the homepage's Plan your trip, WhatsApp + one button, phone, email.
   Filters are text tabs (orange underline), like the blog topics — no pill chips.

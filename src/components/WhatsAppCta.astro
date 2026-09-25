@@ -5,7 +5,7 @@
 import { getEntry } from 'astro:content';
 import Icon from './Icon.astro';
 import { SITE, img, wa, tel } from '../config';
-interface Props { title?: string; text?: string; about?: string; id?: string; cta?: string; href?: string }
+interface Props { title?: string; text?: string; about?: string; id?: string; cta?: string; href?: string; customise?: string }
 const {
   title = 'Not sure which trip fits?',
   text = 'Message a planner in Thimphu on WhatsApp. We usually reply within the hour.',
@@ -13,6 +13,7 @@ const {
   id = 'whatsapp',
   cta = 'Send an enquiry',
   href = '/contact/',
+  customise,  // a tour id: the enquiry form opens with that tour filled in
 } = Astro.props;
 // The chat opens with this page's link (and this section's anchor) already in the message.
 const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#${id}`, about);
@@ -38,7 +39,7 @@ const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps')
         )}
         <div class="wa__act">
           <a class="btn btn--on-dark btn--wa" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-          <a class="btn btn--light" href={href} data-open-plan={href === '/contact/' ? '' : undefined}>{cta}</a>
+          <a class="btn btn--light" href={href} data-open-plan={href === '/contact/' && !customise ? '' : undefined} data-customise={customise} data-plan-title={customise ? 'Enquire about this tour' : undefined}>{cta}</a>
         </div>
         <p class="wa__alt t-label"><span>Or call <a href={tel(SITE.phone)}>{SITE.phone}</a></span><span class="wa__dot" aria-hidden="true"> · </span><span><a href={`mailto:${SITE.email}`}>{SITE.email}</a></span></p>
       </div>

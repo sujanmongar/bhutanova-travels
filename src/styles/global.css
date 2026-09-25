@@ -93,6 +93,7 @@
   --fs-button: 1rem;   --lh-button: 1.6;   --ls-button: 0;   --fw-button: 600;   /* 16 — every button… */
   --fs-link: 1rem;     --lh-link: 1.6;     --ls-link: 0;     --fw-link: 600;     /* 16 — …and every text CTA, identical */
   --fs-price: var(--fs-h5); --lh-price: var(--lh-h5); --ls-price: 0; --fw-price: 600; /* tour page price box and sticky bar, sans */
+  --fs-small: calc(var(--fs-base) * .833);  /* 15 — the footer only (owner's call: footers run a step smaller) */
   --ls-caps: 0.08em;   /* the uppercase variant (.t-caps) of label/link */
 }
 @media (min-width: 768px) {
@@ -233,18 +234,23 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .btn--block { width: 100%; }
 @media (min-width: 1200px) { .btn { --btn-h: 46px; } .btn--sm { --btn-h: 38px; } .btn--lg { --btn-h: 52px; } }
 
-/* "See all" links: the primary colour (the legible amber, since the bright orange is too faint for 16px text), the
-   underline only on hover */
+/* "See all" links (owner's call): navy text and an orange angle arrow, no line at rest; on hover an orange line draws in
+   under the words from the left and the arrow nudges up. .see-all gives the same look to the menu, drawer and search
+   "see all" rows and the tour page's Show all. The words sit in a <span> so the line runs under them only. */
 .link-more {
-  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--p-700); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); white-space: nowrap;
-  text-decoration: underline 1.5px transparent; text-underline-offset: 6px; transition: color var(--dur-1), text-decoration-color var(--dur-2);
+  display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--ink); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); white-space: nowrap;
 }
-.link-more .icon { font-size: .8em; transition: translate var(--dur-2) var(--ease-out); }
+.see-all { color: var(--ink); text-decoration: none; }
+:is(.link-more, .see-all) .icon { font-size: .8em; color: var(--p-500); transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out); }
+:is(.link-more, .see-all) > span { padding-bottom: 3px; background: linear-gradient(var(--p-500), var(--p-500)) 0 100% / 0 2px no-repeat; transition: background-size var(--dur-3) var(--ease-out); }
+:is(.link-more, .see-all):is(:focus-visible, :active) > span { background-size: 100% 2px; }
 /* Mobile-only "see all" link under a row whose header link is hidden on phones (after .link-more so display:none wins) */
 .m-only { margin-top: var(--space-4); }
 @media (min-width: 768px) { .m-only { display: none; } }
-@media (hover: hover) { .link-more:hover { color: var(--p-800); text-decoration-color: currentColor; } .link-more:hover .icon { translate: 3px 0; } }
-.link-more:focus-visible { text-decoration-color: currentColor; }
+@media (hover: hover) {
+  :is(.link-more, .see-all):hover > span { background-size: 100% 2px; }
+  :is(.link-more, a.see-all):hover .icon { translate: 2px -2px; }
+}
 
 
 /* Round carousel arrows */
@@ -255,7 +261,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   transition: background-color var(--dur-1), color var(--dur-1), border-color var(--dur-1), opacity var(--dur-2), scale var(--dur-1) var(--ease-out);
 }
 @media (hover: hover) { .arrow:not(:disabled):hover { background: var(--s-500); border-color: var(--s-500); color: #fff; } }
-.arrow:not(:disabled):active { scale: .96; }
+.arrow:not(:disabled):active { scale: .98; }
 .arrow:disabled { opacity: .35; box-shadow: none; cursor: default; }
 
 /* Horizontal rail: swipe on mobile, 2-up tablet, 3-up desktop. Block padding gives hover lift/shadow room. */
@@ -331,8 +337,8 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .prose :is(h2, h3) + * { margin-top: var(--space-3); }
 /* In-text links look the same everywhere on light pages: in articles and in any running text (a plain <a> inside a body or
    caption paragraph). Navy panels (footer, WhatsApp card) keep their own light link colour. */
-.prose a, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
-.prose a:hover, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]):hover, .search__empty > a:hover { color: var(--p-800); text-decoration-color: currentColor; text-decoration-thickness: 2px; }
+.prose a, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
+.prose a:hover, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]):hover, .search__empty > a:hover, .cookie p > a:hover { color: var(--p-800); text-decoration-color: var(--p-500); text-decoration-thickness: 2px; }
 .prose ul, .prose ol { padding-left: var(--space-6); }
 .prose li + li { margin-top: var(--space-2); }
 .prose li::marker { color: var(--p-500); }
@@ -350,12 +356,19 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
   margin-top: var(--space-3); color: var(--text-2);
   font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption);
 }
-.prose figcaption a { color: inherit; text-decoration-color: var(--border-dark); }
+.prose figcaption a { color: inherit; text-decoration-color: var(--border-dark); text-underline-offset: 4px; }
+@media (hover: hover) { .prose figcaption a:hover { color: var(--ink); text-decoration-color: var(--p-500); text-decoration-thickness: 1px; } }
 .prose .gallery > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .prose .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
 .prose .gallery--3 img:first-child { grid-column: 1 / -1; }
 .prose .embed iframe { aspect-ratio: 16 / 9; }
 .prose .embed--map iframe { aspect-ratio: 4 / 3; }
+/* Third-party frames (maps, videos) load only after cookies are accepted or the panel's button is pressed
+   (CookieNotice.astro). Until then a grey panel sits in their place. */
+.frame { position: relative; }
+.frame__gate { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: var(--space-4); padding: var(--card-pad); border-radius: var(--r-md); background: var(--surface); text-align: center; }
+.frame__gate p { max-width: 36ch; margin: 0; color: var(--text-2); font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); }
+.frame[data-loaded] .frame__gate { display: none; }
 /* Tour card: a row between hairlines, the whole row is the link */
 .prose .tc { position: relative; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: var(--space-4); align-items: center; margin-block: var(--space-10); padding-block: var(--space-4); border-block: 1px solid var(--border); }
 .prose .tc img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--r-sm); background: var(--surface); }
@@ -412,7 +425,8 @@ html:has(dialog[open]) { overflow: hidden; }
   flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
   background: var(--surface); color: var(--s-500); font-size: 16px; cursor: pointer; transition: background var(--dur-1), scale var(--dur-1);
 }
-.sheet__close:hover { background: var(--surface-2); }
+@media (hover: hover) { .sheet__close:hover { background: var(--surface-2); } }
+.sheet__close:active { scale: .98; }
 @media (min-width: 768px) {
   .sheet { margin: 0 0 0 auto; width: min(440px, 100%); height: 100dvh; max-height: none; border-radius: var(--r-xl) 0 0 var(--r-xl); translate: 100% 0; }
   .sheet[open] { translate: 0 0; }
@@ -479,6 +493,16 @@ html:has(dialog[open]) { overflow: hidden; }
 }
 /* Photos that load while you scroll fade in instead of popping (the class is set by Base.astro) */
 img.is-arriving { animation: fade var(--dur-3) var(--ease-out); }
+
+/* ---------- Cookie notice (CookieNotice.astro): a small card, full width at the bottom on phones, bottom right from
+   768px (clear of the hero's words and buttons, which sit on the left) ---------- */
+.cookie { position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--r-lg); background: #fff; box-shadow: var(--sh-lg); }
+.cookie[hidden] { display: none; }
+.cookie p { margin: 0; }
+.cookie__act { display: flex; gap: var(--space-3); margin-top: var(--space-1); }
+.cookie__act .btn { flex: 1 1 0; padding-inline: var(--space-3); }
+@media (min-width: 768px) { .cookie { left: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom)); width: 400px; padding: var(--card-pad); } }
+@media (prefers-reduced-motion: no-preference) { .cookie:not([hidden]) { --rise: 12px; animation: rise var(--dur-3) var(--ease-out); } }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, ::before, ::after { transition: none !important; animation: none !important; }

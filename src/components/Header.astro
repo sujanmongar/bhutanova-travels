@@ -74,7 +74,7 @@ const searchIndex = [
               {item.children.length > 0 && (
                 <ul class="sub__list">
                   {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                  {item.all && <li><a href={item.href} class="sub__all t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+                  {item.all && <li><a href={item.href} class="sub__all see-all t-link"><span>{item.all}</span><Icon name="arrow-up-right" /></a></li>}
                 </ul>
               )}
             </li>
@@ -134,7 +134,7 @@ const searchIndex = [
             {item.children.length > 0 && (
               <ul class="d-sub" id={`d-sub-${i}`} hidden={!active(item)}>
                 {item.children.map((c) => <li><a href={c.href} class="t-label" aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
-                {item.all && <li class="d-sub__all"><a href={item.href} class="t-link">{item.all}<Icon name="arrow-right" /></a></li>}
+                {item.all && <li class="d-sub__all"><a href={item.href} class="see-all t-link"><span>{item.all}</span><Icon name="arrow-up-right" /></a></li>}
               </ul>
             )}
           </li>
@@ -268,7 +268,7 @@ const searchIndex = [
     :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); color: var(--s-800); }
   }
   .nav__in { position: relative; display: flex; align-items: center; gap: var(--space-2); height: var(--header-h); }
-  .burger:active, .icon-btn:active { scale: .96; }
+  .burger:active, .icon-btn:active { scale: .98; }
   .nav__logo { flex: none; transition: opacity var(--dur-2); }
   .nav__middle { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; }
   /* The menu fades out and the field fades in over the same space, instead of one instantly vanishing
@@ -282,14 +282,14 @@ const searchIndex = [
     background: var(--icon-bg); color: inherit; font-size: 18px; cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
   }
-  .burger:hover, .icon-btn:hover { background: var(--icon-bg-hover); }
+  @media (hover: hover) { .burger:hover, .icon-btn:hover { background: var(--icon-bg-hover); } }
   /* Search toggle: one button at a fixed spot in the header, its icon swaps instead of a second button appearing. */
   .nav__search { position: relative; }
   .nav__search :global(.i-close) { display: none; }
   .nav.is-searching .nav__search :global(.i-open) { display: none; }
   .nav.is-searching .nav__search :global(.i-close) { display: block; }
   .menu { display: none; }
-  .nav__book { display: none; padding-inline: var(--space-6); --btn-h: 44px; }
+  .nav__book { display: none; }
 
   /* Search field: sits over the same space the menu just faded out of, so opening/closing is a plain
      opacity crossfade — nothing here ever animates a layout property (width, max-width, display). */
@@ -324,18 +324,16 @@ const searchIndex = [
     display: block; min-height: 48px; padding: var(--space-3); border-radius: var(--r-md);
     font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); color: var(--ink); transition: background var(--dur-1);
   }
-  :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); }
+  :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
   :global(.search__see-all) {
-    display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); padding: var(--space-3);
-    border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--p-700);
+    display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-3);
+    border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--ink);
   }
-  :global(.search__see-all:hover) { color: var(--p-800); }
-  :global(.search__see-all .icon) { font-size: .8em; }
 
   /* Mobile/tablet: Enquire floats over the page instead of squeezing into the bar. */
   .fab-enquire {
     position: fixed; right: var(--gutter); bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); z-index: 40;
-    padding-inline: var(--space-6); --btn-h: 44px; box-shadow: var(--sh-lg);
+    box-shadow: var(--sh-lg);
   }
   @media (min-width: 1024px) { .fab-enquire { display: none; } }
   /* Hidden over the hero and the footer (see the script). With JS on it waits for that first check. */
@@ -354,7 +352,7 @@ const searchIndex = [
     font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--ink); /* same as the desktop menu */
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
-  .d-link:hover, .d-link:active { background: var(--surface); }
+  .d-link:hover, .d-link:active { background: var(--surface); text-decoration: underline 2px var(--p-500); text-underline-offset: 7px; }
   .d-link.is-active { text-decoration: underline 2px var(--p-500); text-underline-offset: 7px; }
   .d-toggle {
     display: grid; place-items: center; flex: none; width: 52px; height: 52px; border: 0; border-radius: var(--r-md); background: none;
@@ -371,12 +369,13 @@ const searchIndex = [
   }
   .d-sub li + li { border-top: 1px solid var(--border); }
   .d-sub a:hover, .d-sub a:active { color: var(--ink); }
+  .d-sub li:not(.d-sub__all) a:is(:hover, :active) { text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
   .d-sub a[aria-current='page'] { font-weight: 600; color: var(--ink); }
-  .d-sub__all a { color: var(--p-700); }  /* "see all" links are the primary colour, like .link-more */
-  .d-sub__all :global(.icon) { font-size: .8em; }
+  .d-sub__all a { justify-content: flex-start; color: var(--ink); }  /* the "see all" row: .see-all look (global.css), arrow beside the words */
   .drawer__foot { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--border); }
   .drawer__mail { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-bottom: var(--space-3); color: var(--text-2); }
   .drawer__mail :global(.icon) { color: var(--s-300); }
+  .drawer__mail:is(:hover, :active) { color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
   .drawer__cta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
   .drawer__cta .btn--primary { grid-column: 1 / -1; }
   .drawer__cta :global(.icon) { font-size: 18px; }
@@ -396,14 +395,13 @@ const searchIndex = [
     .menu__link {
       position: relative; display: flex; align-items: center; gap: var(--space-1); min-height: var(--header-h);
       font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: inherit;
-      transition: color var(--dur-1), opacity var(--dur-1);
+      transition: color var(--dur-1);
     }
     .menu__link::after {
       content: ''; position: absolute; left: 0; right: 0; bottom: var(--space-6); height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500);
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
     .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link::after { scale: 1 1; }
-    .menu__link:hover { opacity: .75; }
     .menu :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
     .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link :global(.chev) { rotate: 0deg; }
     .sub__list {
@@ -419,10 +417,8 @@ const searchIndex = [
       display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--r-sm);
       color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
-    .sub__list a:hover { background: var(--surface); color: var(--ink); }
+    .sub__list a:not(.sub__all):hover { background: var(--surface); color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
     .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; }
-    .sub__all { color: var(--p-700) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: var(--space-1); }
-    .sub__all:hover { color: var(--p-800) !important; }
-    .sub__all :global(.icon) { font-size: .8em; }
+    .sub__list a.sub__all { justify-content: flex-start; gap: var(--space-2); color: var(--ink); border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm); margin-top: var(--space-1); }
   }
 </style>

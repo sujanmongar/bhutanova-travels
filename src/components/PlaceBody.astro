@@ -22,7 +22,8 @@ const { facts, credit } = Astro.props;
   /* Icon centred on the first line, so a fact that wraps keeps its icon at the top */
   .facts :global(.icon) { flex: none; margin-top: calc((var(--lh-label) * var(--fs-label) - 18px) / 2); font-size: 18px; color: var(--text-3); }
   .credit { margin-top: var(--space-8); }
-  .credit a { color: inherit; text-decoration: underline 1px var(--border-dark); text-underline-offset: 3px; }
+  .credit a { color: inherit; text-decoration: underline 1px var(--border-dark); text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
+  @media (hover: hover) { .credit a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
   /* The plan card is a desktop sidebar only; below 1200px the closing WhatsApp section is the page's one CTA. */
   .side { display: none; }
   @media (min-width: 1200px) { .side { display: grid; gap: var(--space-4); align-content: start; position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start; } }

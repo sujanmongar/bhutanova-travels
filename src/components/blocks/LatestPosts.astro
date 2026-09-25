@@ -15,12 +15,12 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) =>
     <div class="sh sh--row" data-reveal>
       <h2>{heading}</h2>
       <div class="sh__act">
-        <a class="link-more" href="/blog/">All articles<Icon name="arrow-right" /></a>
+        <a class="link-more" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
         <Arrows target="rail-posts" label="articles" />
       </div>
     </div>
     <div class="rail" id="rail-posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} rail />)}</div>
-    <a class="link-more m-only" href="/blog/">All articles<Icon name="arrow-right" /></a>
+    <a class="link-more m-only" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
   </div>
 </section>
 )}

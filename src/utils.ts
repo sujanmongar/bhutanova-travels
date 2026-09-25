@@ -1,4 +1,6 @@
 export const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+// Guide topics are stored as 'Plan & Book' etc.; shown in sentence case: 'Plan and book', 'On the ground'
+export const topicName = (g: string) => g[0] + g.slice(1).toLowerCase().replace(' & ', ' and ');
 
 // Tours sit under their category, with the trip length in the slug:
 // /bhutan-tours/cultural-tours/8-days-bhutan-cultural-extravaganza/

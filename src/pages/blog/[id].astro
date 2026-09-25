@@ -93,7 +93,7 @@ const schema = {
                 <span><span class="t-title">{p.data.title}</span><time class="t-label" datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
               </a></li>
             ))}</ul>
-            <a class="link-more" href="/blog/">All articles<Icon name="arrow-right" /></a>
+            <a class="link-more" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
           </aside>
         )}
       </div>
@@ -104,10 +104,10 @@ const schema = {
     <div class="container">
       <div class="sh sh--row" data-reveal>
         <h2>Tours to consider</h2>
-        <div class="sh__act"><a class="link-more" href={allHref}>{allText}<Icon name="arrow-right" /></a><Arrows target="rail-tours" label="tours" /></div>
+        <div class="sh__act"><a class="link-more" href={allHref}><span>{allText}</span><Icon name="arrow-up-right" /></a><Arrows target="rail-tours" label="tours" /></div>
       </div>
       <div class="rail" id="rail-tours" data-reveal="stagger">{tours.map((r) => <TourCard tour={r} rail />)}</div>
-      <a class="link-more m-only" href={allHref}>{allText}<Icon name="arrow-right" /></a>
+      <a class="link-more m-only" href={allHref}><span>{allText}</span><Icon name="arrow-up-right" /></a>
     </div>
   </section>
 

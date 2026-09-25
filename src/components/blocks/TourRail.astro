@@ -19,11 +19,11 @@ const rail = `rail-${_key}`;
       <h2>{heading}</h2>
       {text && <p>{text}</p>}
       <div class="sh__act">
-        {more && <a class="link-more" href="/bhutan-tours/">All tours<Icon name="arrow-right" /></a>}
+        {more && <a class="link-more" href="/bhutan-tours/"><span>All tours</span><Icon name="arrow-up-right" /></a>}
         <Arrows target={rail} label="tours" />
       </div>
     </div>
     <div class="rail" id={rail} data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
-    {more && <a class="link-more m-only" href="/bhutan-tours/">All tours<Icon name="arrow-right" /></a>}
+    {more && <a class="link-more m-only" href="/bhutan-tours/"><span>All tours</span><Icon name="arrow-up-right" /></a>}
   </div>
 </section>

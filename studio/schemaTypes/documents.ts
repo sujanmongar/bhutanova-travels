@@ -289,7 +289,7 @@ export const guide = defineType({
       title: 'Section',
       type: 'string',
       group: 'content',
-      options: {list: ['Plan & Book', 'Entry & Visa', 'Money & Costs', 'On the Ground'], layout: 'radio'},
+      options: {list: [{title: 'Plan and book', value: 'Plan & Book'}, {title: 'Entry and visa', value: 'Entry & Visa'}, {title: 'Money and costs', value: 'Money & Costs'}, {title: 'On the ground', value: 'On the Ground'}], layout: 'radio'},  // stored values stay; the site shows them in sentence case
       validation: (r) => r.required(),
     }),
     defineField({name: 'order', title: 'Position', type: 'number', group: 'content', initialValue: 99, description: 'Lower numbers appear first.'}),

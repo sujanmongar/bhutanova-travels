@@ -1,0 +1,48 @@
+---
+// Cookie choice, built in (free, no third-party service). The site sets no tracking cookies of its own; the only cookies
+// come from embedded Google Maps, YouTube and Vimeo frames, so those frames wait (a grey panel with a Show button,
+// .frame / .frame__gate) until the visitor accepts. The choice is kept in one first-party cookie for a year, and
+// "Cookie preferences" in the footer ([data-cookie-prefs]) brings this card back.
+---
+<div class="cookie" role="region" aria-label="Cookie choice" data-cookie hidden>
+  <p class="t-title">Cookies</p>
+  <p class="t-caption muted">We don't track you. Maps and videos from Google, YouTube and Vimeo set their own cookies once they load. <a href="/privacy/#cookies">Privacy policy</a></p>
+  <div class="cookie__act">
+    <button type="button" class="btn btn--primary btn--sm" data-cookie-choice="all">Accept all</button>
+    <button type="button" class="btn btn--outline btn--sm" data-cookie-choice="necessary">Necessary only</button>
+  </div>
+</div>
+
+<script>
+  const KEY = 'bn_consent';
+  const card = document.querySelector<HTMLElement>('[data-cookie]')!;
+  const read = () => document.cookie.match(new RegExp(`(?:^|; )${KEY}=(all|necessary)`))?.[1];
+  const load = (frame: Element) => {
+    const f = frame.querySelector<HTMLIFrameElement>('iframe[data-src]');
+    if (f && !f.src) f.src = f.dataset.src!;
+    frame.setAttribute('data-loaded', '');
+  };
+  const loadAll = () => document.querySelectorAll('.frame').forEach(load);
+
+  const choice = read();
+  if (choice === 'all') loadAll();
+  if (!choice) card.hidden = false;
+
+  card.addEventListener('click', (e) => {
+    const b = (e.target as Element).closest<HTMLElement>('[data-cookie-choice]');
+    if (!b) return;
+    const v = b.dataset.cookieChoice!;
+    const was = read();
+    document.cookie = `${KEY}=${v}; max-age=31536000; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
+    card.hidden = true;
+    if (v === 'all') loadAll();
+    else if (was === 'all') location.reload();  // take back frames that already loaded
+  });
+  document.addEventListener('click', (e) => {
+    const t = e.target as Element;
+    // One frame on its own ("Show the map"), without changing the site-wide choice
+    const one = t.closest('[data-consent-load]');
+    if (one) { load(one.closest('.frame')!); return; }
+    if (t.closest('[data-cookie-prefs]')) { card.hidden = false; card.querySelector<HTMLElement>('[data-cookie-choice]')?.focus(); }
+  });
+</script>

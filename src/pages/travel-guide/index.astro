@@ -7,7 +7,7 @@ import BlogCard from '../../components/BlogCard.astro';
 import Icon from '../../components/Icon.astro';
 import TabBar from '../../components/TabBar.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
-import { slug } from '../../utils';
+import { slug, topicName } from '../../utils';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const groups = [...new Set(guides.map((g) => g.data.group))];
 const hero = 'photo-1532918235359-7671f525386d';
@@ -21,12 +21,12 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
     <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1><p class="banner__line">Visas, costs, seasons and what to expect: everything to plan a trip to Bhutan.</p></div>
   </section>
 
-  <TabBar label="Guide topics" links={groups.map((g) => [g, `#${slug(g)}`])} />
+  <TabBar label="Guide topics" links={groups.map((g) => [topicName(g), `#${slug(g)}`])} />
 
   {groups.map((g, i) => (
     <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(g)}>
       <div class="container">
-        <div class="sh" data-reveal><h2>{g}</h2></div>
+        <div class="sh" data-reveal><h2>{topicName(g)}</h2></div>
         <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" list />)}</div>
       </div>
     </section>
@@ -39,7 +39,7 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
           <h2>Still have a question?</h2>
           <p>{asked > 0 ? `The ${asked} questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest.` : 'The questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest.'}</p>
         </div>
-        <a class="link-more" href={`/travel-guide/${faqs.id}/`} data-reveal>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>
+        <a class="link-more" href={`/travel-guide/${faqs.id}/`} data-reveal><span>Read the Bhutan travel FAQs</span><Icon name="arrow-up-right" /></a>
       </div>
     </section>
   )}
