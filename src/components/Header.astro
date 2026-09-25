@@ -253,14 +253,13 @@ const searchIndex = [
   .nav {
     position: sticky; top: 0; z-index: 50; color: var(--ink);
     background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
-    box-shadow: inset 0 -1px 0 var(--border);  /* a hairline along the bottom (owner's call); inset, so the bar keeps its height */
     transition: background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3);
     view-transition-name: site-header;  /* stays put while the page underneath cross-fades */
   }
   /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
-  .nav.is-stuck { box-shadow: inset 0 -1px 0 var(--border), 0 8px 24px -16px rgb(12 25 37 / .2); }
+  .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
-    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 -1px 0 rgb(255 255 255 / .18); color: #fff; --focus: #fff;
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff; --focus: #fff;
   }
   /* White panels inside the bar keep the navy focus ring */
   .sub__list, .search-panel { --focus: var(--s-500); }
