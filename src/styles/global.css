@@ -265,13 +265,13 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
    Travel guide topics, destination regions (jump links) and blog topics (filters) all look and sit the same way:
    text tabs, the current one in ink with an orange bar under it. */
 .tabbar { position: sticky; top: var(--header-h); z-index: 20; background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border); }
-.tabbar__in { display: flex; gap: var(--space-6); overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; scroll-padding-inline: var(--gutter); }  /* a sideways swipe stays in the row: no page bounce, no browser back */
+.tabbar__in { display: flex; gap: var(--space-6); overflow: auto hidden; scrollbar-width: none; overscroll-behavior: none; scroll-padding-inline: var(--gutter); }  /* sideways only, no rubber-band, no browser back: on iPhone the row can't be dragged about */
 .tabbar__in::-webkit-scrollbar { display: none; }
 .tabbar__in > :is(a, button) {
   position: relative; flex: none; display: inline-flex; align-items: center; min-height: 52px; padding: 0; border: 0; background: none;
   color: var(--text-2); white-space: nowrap; cursor: pointer; transition: color var(--dur-1);
 }
-.tabbar__in > :is(a, button)::after { content: ''; position: absolute; inset: auto 0 -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
+.tabbar__in > :is(a, button)::after { content: ''; position: absolute; inset: auto 0 0;  /* inside the row, so it never makes the row scroll up and down */ height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
 .tabbar__in > :is([aria-current='true'], [aria-current='page'], [aria-pressed='true']) { color: var(--ink); }
 .tabbar__in > :is([aria-current='true'], [aria-current='page'], [aria-pressed='true'])::after { scale: 1 1; }
 .tabbar__in > :is(a, button):focus-visible { outline-offset: -2px; }  /* the scrolling bar would clip an outside ring */
