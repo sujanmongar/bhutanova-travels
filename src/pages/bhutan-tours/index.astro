@@ -1,164 +1,30 @@
 ---
-// Tours: one pinned bar with the theme tabs (Cultural first and open by default, the owner's call), the count, a
-// Duration menu and Sort (most popular, price; on the Festival tab also the festival date). The cards are the site's simple tour cards (a festival tour shows its next
-// festival), and the last card offers a trip of your own. Enquiring, customising and planning all open one short form.
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
-import TourCard from '../../components/TourCard.astro';
+import CategoryTiles from '../../components/blocks/CategoryTiles.astro';
+import TourRail from '../../components/blocks/TourRail.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
-import { nextFestival, tourPath } from '../../utils';
+import { catPath } from '../../utils';
 
-const tours = (await getCollection('tours')).sort((a, b) => a.data.popularity - b.data.popularity);
-const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order).filter((c) => tours.some((t) => t.data.category.id === c.id));
-const first = cats.find((c) => c.id === 'cultural-tours') ?? cats[0];
-const ordered = [first, ...cats.filter((c) => c !== first)];
-const DURATIONS: [string, string, (d: number) => boolean][] = [['short', 'Up to 7 days', (d) => d <= 7], ['mid', '8–10 days', (d) => d >= 8 && d <= 10], ['long', '11 days or more', (d) => d >= 11]];
-const lengths = DURATIONS.filter(([, , fits]) => tours.some((t) => fits(t.data.days)));
-const lengthOf = (d: number) => lengths.find(([, , fits]) => fits(d))?.[0] ?? '';
+// The hub leads with themes, not every package: the tour list keeps growing, and each theme page lists its own tours.
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const hero = 'photo-1578556881786-851d4b79cb73';
-const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(tourPath(t), Astro.site).href, name: t.data.title })) };
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: cats.map((c, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(catPath(c.id), Astro.site).href, name: c.data.menuTitle })) };
 ---
-<Base title="Bhutan tour packages" description="Private Bhutan tours from 6 to 10 days: cultural, festival, trekking, luxury, family and off-the-beaten-path trips, each one adjusted to your days, places and hotels." image={hero} schema={list}>
+<Base title="Bhutan tour packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
   <section class="banner">
     <BannerImg src={hero} alt="Tiger's Nest monastery in Paro" />
     <div>
       <Breadcrumbs items={[['Tours']]} light />
       <h1>Bhutan tour packages</h1>
-      <p class="banner__line">Every trip is private and planned around your days, the places you want to see and where you'd like to stay.</p>
+      <p class="banner__line">Private tours with the Sustainable Development Fee, visa, licensed guide, private vehicle and certified hotels included.</p>
     </div>
   </section>
 
-  {/* One pinned bar: theme tabs, then the count, Duration and Sort (on one line from 1024px, two lines below) */}
-  <div class="tabbar fbar">
-    <div class="container fbar__in">
-      <div class="tabbar__in" role="toolbar" aria-label="Tour themes" data-filter>
-        {ordered.map((c) => <button class="t-label" type="button" aria-pressed={String(c === first)} data-topic={c.id}>{c.data.menuTitle.replace(/ tours$/, '')}</button>)}
-      </div>
-      <div class="tools">
-        <p class="count t-label" aria-live="polite" data-count></p>
-        <select class="input t-label" data-days aria-label="Trip length">
-          <option value="">Any length</option>
-          {lengths.map(([v, text]) => <option value={v}>{text}</option>)}
-        </select>
-        <select class="input t-label" data-sort aria-label="Sort tours">
-          <option value="popular">Most popular</option>
-          <option value="price">Price: low–high</option>
-          <option value="-price">Price: high–low</option>
-          <option value="festival" data-festival hidden disabled>Festival date</option>
-        </select>
-      </div>
-    </div>
-  </div>
+  <CategoryTiles heading="Tour themes" grey grid hideHeading />
 
-  <section class="section results">
-    <div class="container">
-      <h2 class="sr-only">Tours</h2>
-      <ul class="grid-3 tours" data-reveal="stagger">
-        {tours.map((t) => (
-          <li data-theme={t.data.category.id} data-days={lengthOf(t.data.days)} data-pop={t.data.popularity} data-price={t.data.price}
-            data-fest={nextFestival(t.data.festivalDates)?.start ?? ''}>
-            <TourCard tour={t} />
-          </li>
-        ))}
-        <li class="own" data-always>
-          <p class="t-label muted">Tailor-made</p>
-          <h3 class="t-card">Want a different trip?</h3>
-          <p class="t-body muted">Tell us your days and who's coming, and a planner in Thimphu will shape a trip around you.</p>
-          <button class="btn btn--primary" type="button" data-open-plan>Plan your own trip</button>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <WhatsAppCta about="planning a Bhutan trip" />
+  <TourRail _key="popular" heading="Popular tour packages" more={false} />
+  <WhatsAppCta about="your tour packages" />
 </Base>
-
-<script>
-  // Theme tabs, Duration and Sort work together; the choices live in the address (?type=&days=&sort=) so a filtered list
-  // can be shared. The Festival tab adds "Festival date" to Sort and uses it.
-  const bar = document.querySelector<HTMLElement>('.fbar')!;
-  const tabs = [...bar.querySelectorAll<HTMLButtonElement>('[data-topic]')];
-  const list = document.querySelector<HTMLElement>('.tours')!;
-  const items = [...list.querySelectorAll<HTMLElement>(':scope > li:not([data-always])')];
-  const own = list.querySelector<HTMLElement>('[data-always]')!;
-  const daysSel = document.querySelector<HTMLSelectElement>('[data-days]')!;
-  const sortSel = document.querySelector<HTMLSelectElement>('[data-sort]')!;
-  const festOpt = sortSel.querySelector<HTMLOptionElement>('[data-festival]')!;
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const state = { type: tabs[0].dataset.topic!, days: '', sort: 'popular' };
-  const fits = (li: HTMLElement, days = state.days) => li.dataset.theme === state.type && (!days || li.dataset.days === days);
-
-  const render = (moved = false) => {
-    tabs.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.topic === state.type)));
-    const festival = state.type === 'festival-tours';
-    festOpt.hidden = festOpt.disabled = !festival;
-    if (!festival && state.sort === 'festival') state.sort = 'popular';
-    sortSel.value = state.sort;
-    // A length with no tours in this theme is greyed out
-    [...daysSel.options].forEach((o) => { if (o.value) o.disabled = !items.some((li) => fits(li, o.value)); });
-    if (state.days && !items.some((li) => fits(li))) state.days = '';
-    daysSel.value = state.days;
-    const dir = state.sort === '-price' ? -1 : 1;
-    const num = (li: HTMLElement) =>
-      state.sort === 'festival' ? Date.parse(li.dataset.fest!) || Infinity : state.sort === 'popular' ? +li.dataset.pop! : +li.dataset.price!;
-    items.sort((a, b) => dir * (num(a) - num(b)) || +a.dataset.pop! - +b.dataset.pop!).forEach((li) => list.insertBefore(li, own));
-    let shown = 0;
-    items.forEach((li) => {
-      const on = fits(li);
-      li.hidden = !on;
-      if (on) { shown++; if (moved && !still) li.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' }); }
-    });
-    document.querySelector('[data-count]')!.textContent = `${shown} ${shown === 1 ? 'tour' : 'tours'}`;
-    const url = new URL(location.href);
-    const defaults: Record<string, string> = { type: tabs[0].dataset.topic!, days: '', sort: festival ? 'festival' : 'popular' };
-    for (const k of ['type', 'days', 'sort'] as const) state[k] && state[k] !== defaults[k] ? url.searchParams.set(k, state[k]) : url.searchParams.delete(k);
-    history.replaceState(null, '', url);
-  };
-  // After a change while the tabs are pinned, bring the top of the list back up under them
-  const settle = () => {
-    render(true);
-    const gap = list.getBoundingClientRect().top - bar.getBoundingClientRect().bottom;
-    if (gap < 0) scrollBy({ top: gap - 160, behavior: still ? 'auto' : 'smooth' });
-  };
-  tabs.forEach((b) => b.addEventListener('click', () => {
-    state.type = b.dataset.topic!;
-    state.sort = state.type === 'festival-tours' ? 'festival' : state.sort === 'festival' ? 'popular' : state.sort;
-    settle();
-  }));
-  daysSel.addEventListener('change', () => { state.days = daysSel.value; settle(); });
-  sortSel.addEventListener('change', () => { state.sort = sortSel.value; render(true); });
-  const q = new URL(location.href).searchParams;
-  if (tabs.some((b) => b.dataset.topic === q.get('type'))) state.type = q.get('type')!;
-  if (state.type === 'festival-tours') state.sort = 'festival';
-  if ([...daysSel.options].some((o) => o.value && o.value === q.get('days'))) state.days = q.get('days')!;
-  if ([...sortSel.options].some((o) => o.value === q.get('sort'))) state.sort = q.get('sort')!;
-  render();
-</script>
-
-<style>
-  .results { padding-top: var(--space-8); }
-  /* The bar: tabs scroll sideways; the tools keep their place */
-  .fbar__in { display: flex; align-items: center; gap: 0 var(--space-6); }
-  .fbar__in > .tabbar__in { flex: 1 1 auto; min-width: 0; }
-  .tools { flex: none; display: flex; align-items: center; gap: var(--space-3); }
-  .count { margin-right: var(--space-2); color: var(--ink); white-space: nowrap; }
-  .tools .input { width: auto; min-height: 40px; padding-block: var(--space-1); padding-inline: var(--space-3) var(--space-6); }
-  /* Below 1024px: tabs on top, then a slim line with the count, Duration and Sort */
-  @media (max-width: 1023px) {
-    .fbar__in { flex-direction: column; align-items: stretch; }
-    .fbar__in > .tabbar__in { margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }  /* tabs run to the screen edges */
-    .tools { padding-block: var(--space-2); border-top: 1px solid var(--border); }
-    .count { margin-right: auto; }
-    .tools .input { flex: 0 1 auto; min-width: 0; }
-  }
-  /* Small phones: the two menus share the line (the count is in each tab's result anyway) */
-  @media (max-width: 479px) { .tools .input { flex: 1 1 0; } .count { display: none; } }
-  .tours { row-gap: var(--space-10); }
-  .tours > li[hidden] { display: none; }
-  /* Last card: a trip of your own */
-  .own { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); min-height: 280px; padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
-  .own .btn { margin-top: var(--space-3); }
-  @media (scripting: none) { .fbar { display: none; } }
-</style>

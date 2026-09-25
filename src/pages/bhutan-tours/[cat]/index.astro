@@ -1,24 +1,22 @@
 ---
+// A theme page (/bhutan-tours/<theme>/, opened from the Tours menu): the theme's banner, then its tours in the tour finder
+// (theme tabs to move between themes, Duration and Sort). The Tours hub (/bhutan-tours/) keeps the theme cards.
 import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import TourCard from '../../../components/TourCard.astro';
-import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import BannerImg from '../../../components/BannerImg.astro';
-import CategoryTiles from '../../../components/blocks/CategoryTiles.astro';
-import { TOURS } from '../../../utils';
+import TourFinder from '../../../components/TourFinder.astro';
+import WhatsAppCta from '../../../components/WhatsAppCta.astro';
+import { TOURS, tourPath } from '../../../utils';
 
 export async function getStaticPaths() {
-  const tours = (await getCollection('tours')).sort((a, b) => a.data.days - b.data.days);
-  const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-  return cats.map((cat) => ({
-    params: { cat: cat.id },
-    props: { cat, tours: tours.filter((t) => t.data.category.id === cat.id) },
-  }));
+  return (await getCollection('categories')).map((cat) => ({ params: { cat: cat.id }, props: { cat } }));
 }
-const { cat, tours } = Astro.props;
+const { cat } = Astro.props;
+const tours = (await getCollection('tours')).filter((t) => t.data.category.id === cat.id);
+const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(tourPath(t), Astro.site).href, name: t.data.title })) };
 ---
-<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo}>
+<Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo} schema={list}>
   <section class="banner">
     <BannerImg src={cat.data.image} />
     <div>
@@ -27,21 +25,6 @@ const { cat, tours } = Astro.props;
       <p class="banner__line">{cat.data.excerpt}</p>
     </div>
   </section>
-
-  <section class="section">
-    <div class="container">
-      <h2 class="sr-only">{cat.data.menuTitle} packages</h2>
-      {tours.length ? (
-        <>
-          <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
-        </>
-      ) : <p class="t-body muted">New packages coming soon — <a class="accent" href="/contact/" data-open-plan>ask us for a custom trip</a>.</p>}
-    </div>
-  </section>
-
-  <CategoryTiles heading="Other ways to see Bhutan" exclude={cat.id} grey />
+  <TourFinder current={cat} />
   <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>
-<style>
-  .tours { row-gap: var(--space-12); }
-</style>

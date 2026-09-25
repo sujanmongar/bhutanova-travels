@@ -270,8 +270,8 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   color: var(--text-2); white-space: nowrap; cursor: pointer; transition: color var(--dur-1);
 }
 .tabbar__in > :is(a, button)::after { content: ''; position: absolute; inset: auto 0 -1px; height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500); scale: 0 1; transition: scale var(--dur-3) var(--ease-out); }
-.tabbar__in > :is([aria-current='true'], [aria-pressed='true']) { color: var(--ink); }
-.tabbar__in > :is([aria-current='true'], [aria-pressed='true'])::after { scale: 1 1; }
+.tabbar__in > :is([aria-current='true'], [aria-current='page'], [aria-pressed='true']) { color: var(--ink); }
+.tabbar__in > :is([aria-current='true'], [aria-current='page'], [aria-pressed='true'])::after { scale: 1 1; }
 .tabbar__in > :is(a, button):focus-visible { outline-offset: -2px; }  /* the scrolling bar would clip an outside ring */
 @media (hover: hover) { .tabbar__in > :is(a, button):hover { color: var(--ink); } }
 @media (max-width: 767px) { .tabbar__in { -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 32px), transparent); } }

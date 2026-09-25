@@ -101,10 +101,11 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - Article bodies (posts, guides, destinations, sights, page Text blocks) can hold photos (caption + automatic credit),
   2–3 photos side by side, a video or map (YouTube no-cookie, Vimeo, Google Maps), a tour card and a pull quote; pt.ts
   renders them. Every blog post uses them: real licensed photos with credits, and videos checked to play when embedded.
-- Tours page (/bhutan-tours/): one pinned bar with the theme tabs (Cultural first and open by default, no "All" tab),
-  the count, Duration and Sort (Most popular from each tour's Popularity field, price; on the Festival tab also Festival
-  date). Simple tour cards (a festival tour adds "Next festival: …" from its Festival dates), and a last card "Want a
-  different trip?" that opens the enquiry form. Theme pages stay for search.
+- Tours: the hub (/bhutan-tours/, the Tours menu item) shows the theme cards and popular tours. Each theme page
+  (/bhutan-tours/<theme>/, the menu's theme links) is the tour finder: its banner, then one pinned bar with the theme
+  tabs (links to the other themes, Cultural first), the count, Duration and Sort (Most popular from each tour's
+  Popularity, price; festival themes also Festival date, the default there). Simple tour cards (festival tours add "Next
+  festival: …"), and a last card "Want a different trip?" that opens the enquiry form. No "All tour packages" menu link.
 - One enquiry form for the whole site (TripPlanner, in the layout): every Enquire / Plan / Customise button opens it
   (data-open-plan, or data-customise="<tour id>" to fill in that tour). The sheet shows the chosen tour, Chat on WhatsApp,
   then "Or send your details by email": Full name *, Email *, Phone (optional), Travellers *, Days *, When, Anything

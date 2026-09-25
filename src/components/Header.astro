@@ -14,7 +14,7 @@ const destinations = (await getCollection('destinations')).sort((a, b) => a.data
 // Tours, the country, how to plan, who we are. The drawer and the footer's Explore list follow the same order.
 // An item without children is a plain link (no dropdown).
 const nav: { href: string; label: string; all?: string; children: { href: string; label: string }[] }[] = [
-  { href: TOURS, label: 'Tours', all: 'All tour packages', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
+  { href: TOURS, label: 'Tours', children: cats.map((c) => ({ href: catPath(c.id), label: c.data.menuTitle })) },
   {
     href: '/about-bhutan/',
     label: 'Bhutan',

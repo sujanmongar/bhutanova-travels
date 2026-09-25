@@ -1,0 +1,132 @@
+---
+// A theme's tours (each theme page, /bhutan-tours/<theme>/): one pinned bar with the theme tabs (links to the other theme
+// pages, Cultural first), the count, a Duration menu and Sort (most popular, price; festival tours also by festival
+// date, the default there). Simple tour cards, then a last card for a trip of your own (opens the enquiry form).
+import { getCollection } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import TourCard from './TourCard.astro';
+import { catPath, nextFestival } from '../utils';
+
+interface Props { current: CollectionEntry<'categories'> }
+const { current } = Astro.props;
+const all = await getCollection('tours');
+const tours = all.filter((t) => t.data.category.id === current.id).sort((a, b) => a.data.popularity - b.data.popularity);
+const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order).filter((c) => all.some((t) => t.data.category.id === c.id));
+const first = cats.find((c) => c.id === 'cultural-tours');
+const ordered = first ? [first, ...cats.filter((c) => c !== first)] : cats;
+const DURATIONS: [string, string, (d: number) => boolean][] = [['short', 'Up to 7 days', (d) => d <= 7], ['mid', '8–10 days', (d) => d >= 8 && d <= 10], ['long', '11 days or more', (d) => d >= 11]];
+// The same lengths on every theme page (those any tour has); one this theme has no tour for is greyed out
+const lengths = DURATIONS.filter(([, , fits]) => all.some((t) => fits(t.data.days)));
+const lengthOf = (d: number) => lengths.find(([, , fits]) => fits(d))?.[0] ?? '';
+const festival = tours.some((t) => nextFestival(t.data.festivalDates));
+---
+<div class="tabbar fbar">
+  <div class="container fbar__in">
+    <nav class="tabbar__in" aria-label="Tour themes" data-tabs>
+      {ordered.map((c) => <a class="t-label" href={catPath(c.id)} aria-current={c.id === current.id ? 'page' : undefined}>{c.data.menuTitle.replace(/ tours$/, '')}</a>)}
+    </nav>
+    {tours.length > 0 && (
+      <div class="tools" data-tools>
+        <p class="count t-label" aria-live="polite" data-count>{tours.length} tours</p>
+        <select class="input t-label" data-days aria-label="Trip length">
+          <option value="">Any length</option>
+          {lengths.map(([v, text, fits]) => <option value={v} disabled={!tours.some((t) => fits(t.data.days))}>{text}</option>)}
+        </select>
+        <select class="input t-label" data-sort data-default={festival ? 'festival' : 'popular'} aria-label="Sort tours">
+          {festival && <option value="festival">Festival date</option>}
+          <option value="popular">Most popular</option>
+          <option value="price">Price: low–high</option>
+          <option value="-price">Price: high–low</option>
+        </select>
+      </div>
+    )}
+  </div>
+</div>
+
+<section class="section results">
+  <div class="container">
+    <h2 class="sr-only">{current.data.menuTitle}</h2>
+    <ul class="grid-3 tours" data-reveal="stagger">
+      {tours.map((t) => (
+        <li data-days={lengthOf(t.data.days)} data-pop={t.data.popularity} data-price={t.data.price} data-fest={nextFestival(t.data.festivalDates)?.start ?? ''}>
+          <TourCard tour={t} />
+        </li>
+      ))}
+      <li class="own" data-always>
+        <p class="t-label muted">Tailor-made</p>
+        <h3 class="t-card">{tours.length ? 'Want a different trip?' : 'New trips coming soon'}</h3>
+        <p class="t-body muted">Tell us your days and who's coming, and a planner in Thimphu will shape a trip around you.</p>
+        <a class="btn btn--primary" href="/contact/" data-open-plan>Plan your own trip</a>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<script>
+  // Duration and Sort work in place; the choices live in the address (?days=&sort=) so a list can be shared
+  const tools = document.querySelector<HTMLElement>('[data-tools]');
+  const tabs = document.querySelector<HTMLElement>('[data-tabs]')!;
+  // Phones: the current theme's tab is scrolled into view
+  const on = tabs.querySelector<HTMLElement>('[aria-current]');
+  if (on && on.offsetLeft + on.offsetWidth > tabs.clientWidth) tabs.scrollLeft = on.offsetLeft - 16;
+  if (tools) {
+    const list = document.querySelector<HTMLElement>('.tours')!;
+    const items = [...list.querySelectorAll<HTMLElement>(':scope > li:not([data-always])')];
+    const own = list.querySelector<HTMLElement>('[data-always]')!;
+    const daysSel = tools.querySelector<HTMLSelectElement>('[data-days]');
+    const sortSel = tools.querySelector<HTMLSelectElement>('[data-sort]')!;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const state = { days: '', sort: sortSel.dataset.default! };
+    const render = (moved = false) => {
+      if (daysSel) daysSel.value = state.days;
+      sortSel.value = state.sort;
+      const dir = state.sort === '-price' ? -1 : 1;
+      const num = (li: HTMLElement) =>
+        state.sort === 'festival' ? Date.parse(li.dataset.fest!) || Infinity : state.sort === 'popular' ? +li.dataset.pop! : +li.dataset.price!;
+      items.sort((a, b) => dir * (num(a) - num(b)) || +a.dataset.pop! - +b.dataset.pop!).forEach((li) => list.insertBefore(li, own));
+      let shown = 0;
+      items.forEach((li) => {
+        const fit = !state.days || li.dataset.days === state.days;
+        li.hidden = !fit;
+        if (fit) { shown++; if (moved && !still) li.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 240, easing: 'ease-out' }); }
+      });
+      tools.querySelector('[data-count]')!.textContent = `${shown} ${shown === 1 ? 'tour' : 'tours'}`;
+      const url = new URL(location.href);
+      state.days ? url.searchParams.set('days', state.days) : url.searchParams.delete('days');
+      state.sort !== sortSel.dataset.default ? url.searchParams.set('sort', state.sort) : url.searchParams.delete('sort');
+      history.replaceState(null, '', url);
+    };
+    daysSel?.addEventListener('change', () => { state.days = daysSel.value; render(true); });
+    sortSel.addEventListener('change', () => { state.sort = sortSel.value; render(true); });
+    const q = new URL(location.href).searchParams;
+    if (daysSel && [...daysSel.options].some((o) => o.value && !o.disabled && o.value === q.get('days'))) state.days = q.get('days')!;
+    if ([...sortSel.options].some((o) => o.value === q.get('sort'))) state.sort = q.get('sort')!;
+    render();
+  }
+</script>
+
+<style>
+  .results { padding-top: var(--space-8); }
+  /* The bar: tabs scroll sideways; the tools keep their place */
+  .fbar__in { display: flex; align-items: center; gap: 0 var(--space-6); }
+  .fbar__in > .tabbar__in { flex: 1 1 auto; min-width: 0; }
+  .tools { flex: none; display: flex; align-items: center; gap: var(--space-3); }
+  .count { margin-right: var(--space-2); color: var(--ink); white-space: nowrap; }
+  .tools .input { width: auto; min-height: 40px; padding-block: var(--space-1); padding-inline: var(--space-3) var(--space-6); }
+  /* Below 1024px: tabs on top, then a slim line with the count, Duration and Sort */
+  @media (max-width: 1023px) {
+    .fbar__in { flex-direction: column; align-items: stretch; }
+    .fbar__in > .tabbar__in { margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }  /* tabs run to the screen edges */
+    .tools { padding-block: var(--space-2); border-top: 1px solid var(--border); }
+    .count { margin-right: auto; }
+    .tools .input { flex: 0 1 auto; min-width: 0; }
+  }
+  /* Small phones: the two menus share the line */
+  @media (max-width: 479px) { .tools .input { flex: 1 1 0; } .count { display: none; } }
+  .tours { row-gap: var(--space-10); }
+  .tours > li[hidden] { display: none; }
+  /* Last card: a trip of your own */
+  .own { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); min-height: 280px; padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
+  .own .btn { margin-top: var(--space-3); }
+  @media (scripting: none) { .tools { display: none; } }
+</style>
