@@ -68,11 +68,14 @@ const schema = {
       </header>
 
       {/* Wider than the text: 16:10 on phones, 2:1 from 768px */}
-      <picture>
-        <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(d.image, [480, 800, 1200], 16 / 10)} />
-        <img class="cover" src={img(d.image, 1200, 600)} srcset={srcset(d.image, [800, 1200, 1600, 2000, 2400], 2)}
-          sizes="(min-width:1264px) 1200px, calc(100vw - 64px)" alt="" width="1200" height="600" fetchpriority="high" />
-      </picture>
+      {/* The cover opens the photo viewer too, as the article's first photo (full size, uncropped) */}
+      <button type="button" class="lb-open lb-open--cover" data-lb-item data-src={img(d.image, 1600)} data-srcset={srcset(d.image, [800, 1200, 1600, 2400])} data-alt={d.title} aria-label={`View photo: ${d.title}`}>
+        <picture>
+          <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(d.image, [480, 800, 1200], 16 / 10)} />
+          <img class="cover" src={img(d.image, 1200, 600)} srcset={srcset(d.image, [800, 1200, 1600, 2000, 2400], 2)}
+            sizes="(min-width:1264px) 1200px, calc(100vw - 64px)" alt="" width="1200" height="600" fetchpriority="high" />
+        </picture>
+      </button>
 
       <div class="post__body">
         <div class="prose body t-body"><Content /></div>

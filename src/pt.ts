@@ -29,6 +29,10 @@ const photoImg = (p: Photo, sizes: string, ratio?: number) => {
   return `<img src="${attr(img(p.url!, 1200, ratio && h, p.hotspot))}" srcset="${attr(srcset(p.url!, [480, 800, 1200, 1600], ratio, p.hotspot) ?? '')}" sizes="${sizes}" alt="${attr(p.alt ?? '')}" width="1200" height="${h}" loading="lazy" decoding="async">`;
 };
 const COLUMN = '(min-width: 700px) 724px, calc(100vw - 32px)';  // the widest prose column (guides); blog is 612
+// Every article photo is a button that opens the site's photo viewer (Lightbox.astro), which shows it full size and
+// uncropped (a gallery tile is cropped to 4:3 here), with the figure's caption and credit
+const openable = (p: Photo, inner: string) =>
+  `<button type="button" class="lb-open" data-lb-item data-src="${attr(img(p.url!, 1600))}" data-srcset="${attr(srcset(p.url!, [800, 1200, 1600, 2400]) ?? '')}" aria-label="${attr(`View photo${p.alt ? `: ${p.alt}` : ''}`)}">${inner}</button>`;
 
 // A YouTube or Vimeo link (video or playlist) plays in place, YouTube in its no-cookie player. A Google map needs its
 // embed address, so a maps link with a query, a place, a search or coordinates is turned into one. Google's short share
@@ -89,12 +93,12 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
       },
       types: {
         photo: ({ value }: { value: Photo }) =>
-          value.url ? `<figure class="photo">${photoImg(value, COLUMN)}${caption(value.caption, [credit(value.credit)])}</figure>` : '',
+          value.url ? `<figure class="photo">${openable(value, photoImg(value, COLUMN))}${caption(value.caption, [credit(value.credit)])}</figure>` : '',
         gallery: ({ value }: { value: { images?: Photo[]; caption?: string } }) => {
           const shots = (value.images ?? []).filter((p) => p.url);
           if (!shots.length) return '';
           // With three, the first runs the full width above the other two
-          const tiles = shots.map((p, i) => photoImg(p, shots.length === 3 && i === 0 ? COLUMN : '(min-width: 700px) 356px, 50vw', 4 / 3)).join('');
+          const tiles = shots.map((p, i) => openable(p, photoImg(p, shots.length === 3 && i === 0 ? COLUMN : '(min-width: 700px) 356px, 50vw', 4 / 3))).join('');
           return `<figure class="gallery gallery--${shots.length}"><div>${tiles}</div>${caption(value.caption, shots.map((p) => credit(p.credit)))}</figure>`;
         },
         embed: ({ value }: any) => {

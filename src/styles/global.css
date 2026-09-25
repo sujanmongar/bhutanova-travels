@@ -378,7 +378,11 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 @media (hover: hover) { .prose figcaption a:hover { color: var(--ink); text-decoration-color: var(--p-500); text-decoration-thickness: 1px; } }
 .prose .gallery > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .prose .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
-.prose .gallery--3 img:first-child { grid-column: 1 / -1; }
+.prose .gallery--3 > div > :first-child { grid-column: 1 / -1; }
+/* Each article photo (and the article's cover) is a button that opens the photo viewer */
+.lb-open { display: block; width: 100%; padding: 0; border: 0; border-radius: var(--r-md); background: none; cursor: zoom-in; -webkit-tap-highlight-color: transparent; }
+.lb-open--cover { border-radius: var(--radius); corner-shape: squircle; }
+.lb-open:focus-visible { outline-offset: 3px; }
 .prose .embed iframe { aspect-ratio: 16 / 9; }
 .prose .embed--map iframe { aspect-ratio: 4 / 3; }
 /* Third-party frames (maps, videos) load only after cookies are accepted or the panel's button is pressed
@@ -415,6 +419,12 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .input:hover { border-color: var(--text-2); }
 .input:focus { outline: none; border-color: var(--s-500); box-shadow: var(--ring); }
 textarea.input { min-height: 120px; resize: vertical; }
+/* Dropdowns: our own chevron (Phosphor's Bold caret, the menu's chevron turned down) with room on its right. The native
+   arrow sat against the border, and on iPhone a native select ignored the field's height and padding. */
+select.input {
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  padding-right: var(--space-10); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2341515f'%3E%3Cpath transform='rotate(180 128 128)' d='M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z'/%3E%3C/svg%3E") no-repeat right var(--space-4) center / 12px 12px;
+}
 /* iOS draws date fields at a fixed native width that ignores width: 100%, so in a half-width column they spill out
    of the form. Plain appearance lets them fit like every other input (tapping still opens the date picker). */
 @supports (-webkit-touch-callout: none) {
@@ -511,6 +521,40 @@ html:has(dialog[open]) { overflow: hidden; }
 }
 /* Photos that load while you scroll fade in instead of popping (the class is set by Base.astro) */
 img.is-arriving { animation: fade var(--dur-3) var(--ease-out); }
+
+/* ---------- Photo viewer (Lightbox.astro): one for the whole site ----------
+   Fitted by default (the whole photo, with its caption and credit under it in articles); on tour pages a tap fills the
+   screen and the photo can be looked around (follows the mouse, or a thumb drags it). Phones can pinch to zoom. */
+.lb { --focus: #fff; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: rgb(8 16 24 / .96); color: #fff;
+  opacity: 0; transition: opacity var(--dur-2) var(--ease-out), overlay var(--dur-2) allow-discrete, display var(--dur-2) allow-discrete; }
+.lb[open] { opacity: 1; }
+@starting-style { .lb[open] { opacity: 0; } }  /* fades in and out instead of snapping */
+html:has(dialog.lb[open]) { overflow: hidden; scrollbar-gutter: auto; }  /* no empty scrollbar strip beside a full-screen photo */
+.lb::backdrop { background: rgb(8 16 24 / .96); }
+.lb__track { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x pinch-zoom; }
+.lb__track::-webkit-scrollbar { display: none; }
+.lb__track figure { flex: 0 0 100%; height: 100%; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; place-items: center; margin: 0; padding: var(--space-16) var(--space-4); scroll-snap-align: center; }
+.lb__track img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); }
+.lb__cap { max-width: 64ch; margin-top: var(--space-3); text-align: center; color: var(--on-dark-2); }
+.lb__cap a { color: inherit; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 3px; }
+/* Controls sit on their own dark glass with a hairline, so they read over the dark backdrop and over a bright filled photo alike */
+.lb__close, .lb__btn { position: absolute; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(8 16 24 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .2); color: #fff; font-size: 16px; cursor: pointer; }
+.lb__close { top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); right: var(--space-4); }
+.lb__btn { top: 50%; translate: 0 -50%; display: none; }
+.lb__fit { position: absolute; z-index: 2; top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); left: var(--space-4); min-height: 44px; padding: 0 var(--space-4); border: 0; border-radius: var(--r-full); background: rgb(8 16 24 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .2); color: #fff; cursor: pointer; }
+@media (hover: hover) { :is(.lb__close, .lb__btn, .lb__fit):hover { background: rgb(8 16 24 / .75); } }
+.lb__count { position: absolute; left: 50%; bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; padding: var(--space-1) var(--space-3); border-radius: var(--r-full); background: rgb(8 16 24 / .6); color: #fff; }
+.lb.is-single :is(.lb__btn, .lb__count) { display: none; }
+@media (min-width: 768px) { .lb__btn { display: grid; } .lb__btn--prev { left: var(--space-6); } .lb__btn--next { right: var(--space-6); } }
+/* In articles the caption sits over the counter's spot, so the counter goes up a little */
+.lb__track figure:has(.lb__cap) { padding-bottom: calc(var(--space-16) + var(--space-4)); }
+/* Tour pages: a tap fills the screen; the view then follows the mouse or a thumb (no swipe while filled) */
+.lb[data-fill] .lb__track img { cursor: zoom-in; -webkit-tap-highlight-color: transparent; }
+.lb.is-fill { --focus: var(--p-500); }  /* a white focus ring would vanish over sky or snow */
+.lb.is-fill .lb__track { overflow-x: hidden; touch-action: pinch-zoom; }
+.lb.is-fill .lb__track figure { padding: 0; grid-template-rows: minmax(0, 1fr); }
+.lb.is-fill .lb__track img { width: 100%; height: 100%; max-width: none; max-height: none; object-fit: cover; border-radius: 0; cursor: zoom-out; }
+.lb.is-fill .lb__cap { display: none; }
 
 /* ---------- Cookie notice (CookieNotice.astro): a small card, full width at the bottom on phones, bottom right from
    768px (clear of the hero's words and buttons, which sit on the left) ---------- */

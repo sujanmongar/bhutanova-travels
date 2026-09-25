@@ -111,14 +111,15 @@ const festival = tours.some((t) => nextFestival(t.data.festivalDates));
   .fbar__in > .tabbar__in { flex: 1 1 auto; min-width: 0; }
   .tools { flex: none; display: flex; align-items: center; gap: var(--space-3); }
   .count { margin-right: var(--space-2); color: var(--ink); white-space: nowrap; }
-  .tools .input { width: auto; min-height: 40px; padding-block: var(--space-1); padding-inline: var(--space-3) var(--space-6); }
+  /* Compact in the one desktop bar (40px, the small button height); the chevron keeps 12px of room on its right */
+  .tools .input { width: auto; min-height: 40px; padding-block: var(--space-1); padding-inline: var(--space-3) var(--space-8); background-position: right var(--space-3) center; }
   /* Below 1024px: tabs on top, then a slim line with the count, Duration and Sort */
   @media (max-width: 1023px) {
     .fbar__in { flex-direction: column; align-items: stretch; }
     .fbar__in > .tabbar__in { margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }  /* tabs run to the screen edges */
     .tools { padding-block: var(--space-2); border-top: 1px solid var(--border); }
     .count { margin-right: auto; }
-    .tools .input { flex: 0 1 auto; min-width: 0; }
+    .tools .input { flex: 0 1 auto; min-width: 0; min-height: 48px; }  /* on their own line: the standard field height */
   }
   /* Small phones: the two menus share the line */
   @media (max-width: 479px) { .tools .input { flex: 1 1 0; } .count { display: none; } }

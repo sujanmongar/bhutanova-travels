@@ -1,0 +1,129 @@
+---
+// The site's one photo viewer (in the layout, so every page shares it). It opens fitted, the whole photo showing;
+// swipe or the arrows move through the set, Esc or × closes, and phones can pinch to zoom.
+// Where the photos come from: a page's own `photos` (tour pages: opened by [data-view]="n") or, on any other page,
+// every [data-lb-item] button in page order: the article's cover, then each photo pt.ts wraps in the text. Article photos carry their caption
+// and credit into the viewer (the licences ask for the credit to stay with the photo).
+// `fill` (tour pages): a tap or click on the photo fills the screen. While filled, the photo follows the mouse, or a
+// thumb drags it, to the part you want to see; another tap fits it again. A drag never changes photo while filled.
+import Icon from './Icon.astro';
+export interface ViewerPhoto { src: string; srcset?: string; alt: string }
+interface Props { photos?: ViewerPhoto[]; label?: string; fill?: boolean }
+const { photos = [], label = 'Photos', fill = false } = Astro.props;
+---
+<dialog class="lb" aria-label={label} data-lb data-fill={fill ? '' : undefined}>
+  <button type="button" class="lb__close" aria-label="Close photos" data-lb-close><Icon name="close" /></button>
+  {fill && <button type="button" class="lb__fit t-label" data-lb-fit>Fill screen</button>}
+  <div class="lb__track" data-lb-track tabindex="-1">
+    {photos.map((p) => <figure><img src={p.src} srcset={p.srcset} sizes="100vw" alt={p.alt} loading="lazy" decoding="async" /></figure>)}
+  </div>
+  <button type="button" class="lb__btn lb__btn--prev" aria-label="Previous photo" data-lb-step="-1"><Icon name="chevron-left" /></button>
+  <button type="button" class="lb__btn lb__btn--next" aria-label="Next photo" data-lb-step="1"><Icon name="chevron-right" /></button>
+  <p class="lb__count t-label" aria-live="polite" data-lb-count></p>
+</dialog>
+
+<script>
+  const lb = document.querySelector<HTMLDialogElement>('[data-lb]')!;
+  const track = lb.querySelector<HTMLElement>('[data-lb-track]')!;
+  const count = lb.querySelector<HTMLElement>('[data-lb-count]')!;
+
+  // Article pages: the viewer's photos are built from the page's own, full size and uncropped
+  const items = [...document.querySelectorAll<HTMLButtonElement>('[data-lb-item]')];
+  if (!track.children.length) {
+    items.forEach((b) => {
+      const f = document.createElement('figure');
+      const i = document.createElement('img');
+      i.loading = 'lazy'; i.decoding = 'async';  // before src, or the browser may fetch the full-size photo right away
+      i.sizes = '100vw'; i.alt = b.dataset.alt || b.querySelector('img')?.alt || '';
+      if (b.dataset.srcset) i.srcset = b.dataset.srcset;
+      i.src = b.dataset.src!;
+      f.append(i);
+      const cap = b.closest('figure')?.querySelector('figcaption');
+      if (cap) { const c = document.createElement('figcaption'); c.className = 'lb__cap t-caption'; c.innerHTML = cap.innerHTML; f.append(c); }
+      track.append(f);
+    });
+  }
+
+  const total = track.children.length;
+  if (total) {
+    lb.classList.toggle('is-single', total < 2);
+    const at = () => Math.round(track.scrollLeft / track.clientWidth);
+    const go = (n: number, instant = false) => track.scrollTo({ left: Math.max(0, Math.min(total - 1, n)) * track.clientWidth, behavior: instant ? 'instant' : 'smooth' });
+    const closeBtn = lb.querySelector<HTMLElement>('[data-lb-close]')!;
+    // The counter, and only the photo on screen is reachable by Tab and screen readers (the others are inert); if focus
+    // was on a caption link of the photo you left, it moves to ×
+    const show = () => {
+      const n = at();
+      count.textContent = `${n + 1} / ${total}`;
+      [...track.children].forEach((f, i) => {
+        if (i !== n && f.contains(document.activeElement)) closeBtn.focus();
+        (f as HTMLElement).inert = i !== n;
+      });
+    };
+    const open = (n: number) => { lb.showModal(); go(n, true); show(); };
+    document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.addEventListener('click', () => open(Number(b.dataset.view))));
+    items.forEach((b, n) => b.addEventListener('click', () => open(n)));
+    track.addEventListener('scroll', show, { passive: true });
+    lb.querySelectorAll<HTMLElement>('[data-lb-step]').forEach((b) => b.addEventListener('click', () => go(at() + Number(b.dataset.lbStep))));
+    closeBtn.addEventListener('click', () => lb.close());
+    lb.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(at() + 1); if (e.key === 'ArrowLeft') go(at() - 1); });
+
+    // Fit / fill, and looking around a filled photo (tour pages)
+    const fitBtn = lb.querySelector<HTMLButtonElement>('[data-lb-fit]');
+    if (fitBtn) {
+      const clamp = (v: number) => Math.max(0, Math.min(100, v));
+      const photo = () => track.children[at()]?.querySelector('img');
+      const filled = () => lb.classList.contains('is-fill');
+      let drag: { x: number; y: number; p: number[] } | null = null, moved = false;
+      const place = (p: number[]) => { const i = photo(); if (i) i.style.objectPosition = `${p[0]}% ${p[1]}%`; };
+      const setFill = (fill: boolean) => {
+        const n = at();
+        lb.classList.toggle('is-fill', fill);
+        fitBtn.textContent = fill ? 'Fit to screen' : 'Fill screen';
+        // A filled photo is drawn as tall as the screen, so ask for a file that wide (sharp on phones, not the fitted size)
+        track.querySelectorAll('img').forEach((i) => {
+          i.style.objectPosition = '';
+          i.sizes = fill ? `${Math.ceil(Math.max(innerWidth, innerHeight * (i.naturalWidth / i.naturalHeight || 1.5)))}px` : '100vw';
+        });
+        go(n, true);
+      };
+      // Mouse: the view follows the pointer (at the left edge you see the photo's left side)
+      const follow = (e: MouseEvent) => {
+        const i = photo();
+        if (!i) return;
+        const r = i.getBoundingClientRect();
+        place([clamp(((e.clientX - r.left) / r.width) * 100), clamp(((e.clientY - r.top) / r.height) * 100)]);
+      };
+      // How far a filled photo reaches past the screen, across and down (px), so a drag moves it at finger speed
+      const spill = (i: HTMLImageElement) => {
+        const r = i.getBoundingClientRect(), s = Math.max(r.width / i.naturalWidth, r.height / i.naturalHeight);
+        return [i.naturalWidth * s - r.width, i.naturalHeight * s - r.height];
+      };
+      fitBtn.addEventListener('click', () => setFill(!filled()));
+      // Touch: one finger drags from wherever this photo is now; a second finger cancels the drag, so a pinch only zooms
+      track.addEventListener('pointerdown', (e) => {
+        moved = false;
+        const now = (photo()?.style.objectPosition || '50% 50%').split(' ').map(parseFloat);
+        drag = filled() && e.pointerType !== 'mouse' && e.isPrimary ? { x: e.clientX, y: e.clientY, p: now } : null;
+      });
+      track.addEventListener('pointermove', (e) => {
+        const i = photo();
+        if (!filled() || !i) return;
+        if (e.pointerType === 'mouse') return follow(e);
+        if (!drag || !e.isPrimary) return;
+        const [sx, sy] = spill(i), dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+        if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+        place([clamp(drag.p[0] - (sx ? (dx / sx) * 100 : 0)), clamp(drag.p[1] - (sy ? (dy / sy) * 100 : 0))]);
+      });
+      addEventListener('pointerup', () => (drag = null));
+      addEventListener('pointercancel', () => (drag = null));
+      // A tap or click on the photo switches; the end of a drag doesn't
+      track.addEventListener('click', (e) => {
+        if (moved || !(e.target as Element).closest('img')) return;
+        setFill(!filled());
+        if (filled() && (e as PointerEvent).pointerType === 'mouse') follow(e);  // fill right where the pointer is
+      });
+      lb.addEventListener('close', () => setFill(false));
+    }
+  }
+</script>

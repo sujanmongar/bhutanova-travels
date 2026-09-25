@@ -67,7 +67,8 @@ const schema = [
 ];
 const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [1200, 800];
 ---
-<Base title={`${t.title} – ${t.nights} nights / ${t.days} days Bhutan tour`} description={t.summary} image={t.image} schema={schema} seo={t.seo}>
+<Base title={`${t.title} – ${t.nights} nights / ${t.days} days Bhutan tour`} description={t.summary} image={t.image} schema={schema} seo={t.seo}
+  photos={gallery.map((g, i) => ({ src: img(g, 1600), srcset: srcset(g, [800, 1200, 1600, 2400]), alt: `${t.title} photo ${i + 1}` }))}>
   <!-- Cover: the words on solid navy, the photos beside them taking turns every 5s (phones: words, then the photo).
        A tap on the photo opens the viewer on the one showing. -->
   <section class="hero tv">
@@ -255,35 +256,9 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
     <button class="btn btn--primary" type="button" data-customise={tour.id} data-plan-title="Enquire about this tour">Enquire</button>
   </div>
 
-  <dialog class="lb" id="lb" aria-label={`${t.title} photos`}>
-    <button type="button" class="lb__close" aria-label="Close photos" data-lb-close><Icon name="close" /></button>
-    <div class="lb__track" data-lb-track>
-      {gallery.map((g, i) => <figure><img src={img(g, 1600)} srcset={srcset(g, [800, 1200, 1600, 2400])} sizes="100vw" alt={`${t.title} photo ${i + 1}`} loading="lazy" decoding="async" /></figure>)}
-    </div>
-    {gallery.length > 1 && (
-      <>
-        <button type="button" class="lb__btn lb__btn--prev" aria-label="Previous photo" data-lb-step="-1"><Icon name="chevron-left" /></button>
-        <button type="button" class="lb__btn lb__btn--next" aria-label="Next photo" data-lb-step="1"><Icon name="chevron-right" /></button>
-      </>
-    )}
-    <p class="lb__count t-label" aria-live="polite" data-lb-count>1 / {gallery.length}</p>
-  </dialog>
 </Base>
 
 <script>
-  // Photo viewer
-  const lb = document.getElementById('lb') as HTMLDialogElement;
-  const lbTrack = lb.querySelector<HTMLElement>('[data-lb-track]')!;
-  const lbCount = lb.querySelector<HTMLElement>('[data-lb-count]')!;
-  const total = lbTrack.children.length;
-  const at = () => Math.round(lbTrack.scrollLeft / lbTrack.clientWidth);
-  const go = (i: number, instant = false) => lbTrack.scrollTo({ left: Math.max(0, Math.min(total - 1, i)) * lbTrack.clientWidth, behavior: instant ? 'instant' : 'smooth' });
-  document.querySelectorAll<HTMLElement>('[data-view]').forEach((b) => b.addEventListener('click', () => { lb.showModal(); go(Number(b.dataset.view), true); }));
-  lbTrack.addEventListener('scroll', () => (lbCount.textContent = `${at() + 1} / ${total}`), { passive: true });
-  lb.querySelectorAll<HTMLElement>('[data-lb-step]').forEach((b) => b.addEventListener('click', () => go(at() + Number(b.dataset.lbStep))));
-  lb.querySelector('[data-lb-close]')!.addEventListener('click', () => lb.close());
-  lb.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') go(at() + 1); if (e.key === 'ArrowLeft') go(at() - 1); });
-
   // Cover photo: the tour's photos take turns every 5s while the cover is on screen (paused on hover, off for reduced
   // motion); the viewer opens on whichever photo is showing
   const slides = document.querySelector<HTMLElement>('[data-slides]');
@@ -500,20 +475,4 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .bar.is-off { translate: 0 110%; }
   @media (min-width: 768px) { .bar { display: none; } }
 
-  /* Full-screen photo viewer (same as the live tour page) */
-  .lb { --focus: #fff; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: rgb(8 16 24 / .96); color: #fff;
-    opacity: 0; transition: opacity var(--dur-2) var(--ease-out), overlay var(--dur-2) allow-discrete, display var(--dur-2) allow-discrete; }
-  .lb[open] { opacity: 1; }
-  @starting-style { .lb[open] { opacity: 0; } }  /* the viewer fades in and out instead of snapping */
-  :global(html:has(dialog.lb[open])) { overflow: hidden; }
-  .lb::backdrop { background: rgb(8 16 24 / .96); }
-  .lb__track { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x; }
-  .lb__track::-webkit-scrollbar { display: none; }
-  .lb__track figure { flex: 0 0 100%; height: 100%; min-height: 0; display: grid; place-items: center; margin: 0; padding: var(--space-16) var(--space-4); scroll-snap-align: center; }
-  .lb__track img { width: auto; height: auto; max-width: 100%; max-height: calc(100dvh - var(--space-16) * 2); object-fit: contain; border-radius: var(--r-sm); }
-  .lb__close, .lb__btn { position: absolute; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(255 255 255 / .14); color: #fff; font-size: 16px; cursor: pointer; }
-  .lb__close { top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); right: var(--space-4); }
-  .lb__btn { top: 50%; translate: 0 -50%; display: none; }
-  .lb__count { position: absolute; left: 50%; bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; color: var(--on-dark-2); }
-  @media (min-width: 768px) { .lb__btn { display: grid; } .lb__btn--prev { left: var(--space-6); } .lb__btn--next { right: var(--space-6); } }
 </style>

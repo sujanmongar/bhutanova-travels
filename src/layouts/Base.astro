@@ -5,6 +5,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import TripPlanner from '../components/TripPlanner.astro';
 import CookieNotice from '../components/CookieNotice.astro';
+import Lightbox, { type ViewerPhoto } from '../components/Lightbox.astro';
 import { getCollection } from 'astro:content';
 import { SITE, img, ldJson, type Seo } from '../config';
 
@@ -17,8 +18,10 @@ interface Props {
   schema?: Record<string, unknown> | Record<string, unknown>[];
   noindex?: boolean;
   seo?: Seo;
+  /** Tour pages: the photos for the viewer, with fit / fill. Other pages build it from their article photos. */
+  photos?: ViewerPhoto[];
 }
-const { title, type = 'website', published, schema, seo = {} } = Astro.props;
+const { title, type = 'website', published, schema, seo = {}, photos } = Astro.props;
 const description = seo.description || Astro.props.description || SITE.description;
 const image = seo.image || Astro.props.image || 'photo-1578556881786-851d4b79cb73';
 const noindex = Astro.props.noindex || seo.noindex;
@@ -85,6 +88,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     {/* The one short enquiry form: every Enquire / Plan / Customise button on the site opens it */}
     <TripPlanner tours={await getCollection('tours')} />
     <CookieNotice />
+    <Lightbox photos={photos} fill={!!photos?.length} label={photos?.length ? `${title} photos` : 'Photos'} />
     <script>
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 

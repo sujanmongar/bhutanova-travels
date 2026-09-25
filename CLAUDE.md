@@ -108,7 +108,9 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   the text from 1200px (after the share buttons below that). Then tours matched to the post, then the contact card.
 - Article bodies (posts, guides, destinations, sights, page Text blocks) can hold photos (caption + automatic credit),
   2–3 photos side by side, a video or map (YouTube no-cookie, Vimeo, Google Maps), a tour card and a pull quote; pt.ts
-  renders them. Every blog post uses them: real licensed photos with credits, and videos checked to play when embedded.
+  renders them. Every article photo opens the site's one photo viewer (Lightbox.astro, in the layout): fitted, with its
+  caption and credit, swipe or arrows, pinch to zoom; tour pages add fill (tap the photo) and looking around a filled
+  photo (follows the mouse, or a thumb drags it). Every blog post uses them: real licensed photos with credits, and videos checked to play when embedded.
 - Tours: the hub (/bhutan-tours/, the Tours menu item) shows the theme cards and popular tours. Each theme page
   (/bhutan-tours/<theme>/, the menu's theme links) is the tour finder: its banner, then one pinned bar with the theme
   tabs (links to the other themes, Cultural first), the count, Duration and Sort (Most popular from each tour's
@@ -127,6 +129,11 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   frames (Google Maps, YouTube, Vimeo) wait behind a grey panel with a Show button until the visitor accepts
   (`.frame` + `iframe data-src` + `.frame__gate`; pt.ts does it for article embeds). The card offers Accept all and Reject all with equal weight, and
   Customise (Necessary always on; Maps and videos as a switch). The choice lives in the `bn_consent` cookie for a year; the footer's Cookie preferences brings the card back. Any future analytics must wait for it too.
+- Phone menu (the drawer, a sheet rising from the bottom so links sit in thumb reach): main links sans at the card-title
+  size (20.3), 64px rows; their sub-links Body 18, 52px rows; a section's whole row opens its list (no separate chevron target), and the section's own
+  page is a link inside it: "All tours" and "All guides" last with their arrow, as on desktop; the section's own page first as a plain link under
+  Bhutan ("Overview") and About ("Bhutanova Travels", reading "About › Bhutanova Travels"), on phones and desktop; sections open closed; Call / WhatsApp /
+  Enquire pinned to the sheet's foot; a tap on the backdrop closes it.
 - Every page closes with the same contact section (WhatsAppCta; Sanity's Call to action and WhatsApp card blocks render
   it too): heading + line, the trip planner picked in the homepage's Plan your trip, WhatsApp + one button, phone, email.
   Filters are text tabs (orange underline), like the blog topics — no pill chips.

@@ -25,13 +25,15 @@ const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', ye
         <p class="meta t-label">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · <b>{author}</b></p>
       </header>
       {/* The CDN crops to the frame at each breakpoint: 16:10 phones, 2:1 from 768px, 16:9 beside the sidebar */}
-      <picture>
-        <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(image, [480, 800, 1200], 16 / 10)} />
-        {hasAside && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
-        <img class="cover" src={img(image, 1200, 600)} srcset={srcset(image, [800, 1200, 1600, 2000, 2400], 2)}
-          sizes={hasAside ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
-          alt="" width="1200" height="600" fetchpriority="high" />
-      </picture>
+      <button type="button" class="lb-open lb-open--cover" data-lb-item data-src={img(image, 1600)} data-srcset={srcset(image, [800, 1200, 1600, 2400])} data-alt={title} aria-label={`View photo: ${title}`}>
+        <picture>
+          <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(image, [480, 800, 1200], 16 / 10)} />
+          {hasAside && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
+          <img class="cover" src={img(image, 1200, 600)} srcset={srcset(image, [800, 1200, 1600, 2000, 2400], 2)}
+            sizes={hasAside ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
+            alt="" width="1200" height="600" fetchpriority="high" />
+        </picture>
+      </button>
       <div class="prose body t-body"><slot /></div>
     </article>
     {hasAside && <aside class="post__aside" aria-label="Related"><slot name="aside" /></aside>}
