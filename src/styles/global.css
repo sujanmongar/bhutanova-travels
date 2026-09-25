@@ -49,6 +49,7 @@
   --gutter: var(--space-4);     /* page edge */
   --stack: var(--space-8);      /* section title → its content */
   --section: var(--space-16);   /* between sections */
+  --hero-gap: var(--space-24);  /* least photo between the header and the hero's title: 96 on phones, 128 from 768px */
   --card-pad: var(--space-6);   /* inside cards and panels */
   /* Frosted glass for everything pinned to the top (header, tab bars, the tour details bar), so they read as one strip */
   --icon-bg: rgb(12 25 37 / .06); --icon-bg-hover: rgb(12 25 37 / .1);  /* round icon buttons: header search/menu, WhatsApp */
@@ -100,7 +101,7 @@
 }
 @media (min-width: 768px) {
   :root {
-    --gutter: var(--space-8); --stack: var(--space-12); --section: var(--space-24);
+    --gutter: var(--space-8); --stack: var(--space-12); --section: var(--space-24); --hero-gap: var(--space-32);
     --header-h: 80px;
     --card-photo: 270px;
     --radius: var(--r-2xl);  /* 36px, the desktop card corner */

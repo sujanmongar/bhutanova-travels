@@ -37,8 +37,9 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
   .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
   .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
     background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
-  /* Words and buttons sit at the foot; the top padding keeps them clear of the header (72px on phones) */
-  .hero__in { position: relative; z-index: 1; display: grid; align-content: end; row-gap: var(--space-6); padding-block: calc(var(--header-h) + var(--space-16)) max(var(--space-8), env(safe-area-inset-bottom)); }
+  /* Words and buttons sit at the foot; the top padding keeps at least --hero-gap of photo between them and the header
+     (96px on phones, 128px from 768px): on a short laptop window the hero grows instead of crowding the header */
+  .hero__in { position: relative; z-index: 1; display: grid; align-content: end; row-gap: var(--space-6); padding-block: calc(var(--header-h) + var(--hero-gap)) max(var(--space-8), env(safe-area-inset-bottom)); }
   .hero__line { max-width: 48ch; color: #fff; }
   .hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-4); }
   /* Proof line: a hairline above, each fact with an orange icon, figures in white bold */
@@ -51,7 +52,7 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
   @media (min-width: 768px) {
     .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
     .hero { min-height: max(560px, min(85svh, 800px)); }
-    .hero__in { padding-block: calc(var(--header-h) + var(--space-16)) var(--space-12); }  /* at least 64px under the header, even in a short laptop window (the hero grows instead) */
+    .hero__in { padding-bottom: var(--space-12); }
     .hero__proof { justify-self: start; }
   }
   @media (min-width: 1200px) { .hero { min-height: max(560px, min(85svh, 860px)); } .hero__in { padding-bottom: var(--space-16); } }
