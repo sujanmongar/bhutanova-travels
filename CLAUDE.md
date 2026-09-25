@@ -90,7 +90,7 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
   Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
   flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
-  outline → navy border). Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
+  outline → navy border). "See all" text links (`.link-more`) are amber `--p-700` (the orange's legible text shade), underlined only on hover, with their small arrow. Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
   primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green on hover. Everything is off for reduced motion.
 - Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts

@@ -18,7 +18,7 @@ const attr = (s: string) => esc(s).replace(/"/g, '&quot;');
 // Rich blocks in articles. Photos keep their own shape at the column width; side-by-side photos are cropped to 4:3
 // around the editor's focal point. Credits come from the image's credit line (Wikimedia licences need one).
 type Photo = { url?: string; alt?: string; caption?: string; ratio?: number; hotspot?: { x: number; y: number }; credit?: { text?: string; url?: string } };
-const credit = (c?: Photo['credit']) => (c?.text ? (c.url ? `<a href="${attr(c.url)}" target="_blank" rel="noopener">${esc(c.text)}</a>` : esc(c.text)) : '');
+const credit = (c?: Photo['credit']) => (c?.text ? (c.url ? `<a href="${attr(c.url)}" target="_blank" rel="noopener">${esc(c.text)}<span class="sr-only"> (opens in a new tab)</span></a>` : esc(c.text)) : '');
 const caption = (text?: string, credits: string[] = []) => {
   const who = credits.filter(Boolean);
   if (!text && !who.length) return '';

@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
+import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import BannerImg from '../../components/BannerImg.astro';
@@ -28,6 +29,7 @@ const hero = 'photo-1585904194096-15ef66ccd234';
       </ul>
     </div>
   </section>
+  <WhatsAppCta />
 </Base>
 <script>
   // Filter in place; the chosen topic lives in ?topic= so a filtered view can be shared.

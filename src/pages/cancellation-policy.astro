@@ -2,6 +2,7 @@
 // Draft — see the note in the body. The deposit/refund figures are placeholders; replace them with
 // your real terms before this page goes live (Studio has no field for this yet, so it's hardcoded here).
 import Base from '../layouts/Base.astro';
+import WhatsAppCta from '../components/WhatsAppCta.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { SITE } from '../config';
 ---
@@ -48,6 +49,7 @@ import { SITE } from '../config';
       </div>
     </div>
   </section>
+  <WhatsAppCta />
 </Base>
 <style>
   .container > :global(.crumbs) { margin-bottom: var(--space-4); }

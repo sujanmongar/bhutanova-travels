@@ -9,12 +9,9 @@ const { heading, text, grey = true } = Astro.props;
     <Faq>
       <div class="sh" data-reveal>
         <h2>{heading}</h2>
-        {ptParagraphs(text).map((p) => <p set:html={p} />)}
+        {ptParagraphs(text).map((p) => <p class="t-body" set:html={p} />)}
       </div>
     </Faq>
   </div>
 </section>
-<style>
-  .sh :global(a) { white-space: nowrap; color: var(--ink); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
-  .sh :global(a:hover) { color: var(--p-800); }
-</style>
+

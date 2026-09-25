@@ -7,7 +7,7 @@ interface Props { title?: string; text?: string; action?: { href: string; label:
 const {
   title = 'Plan your Bhutan trip',
   text = 'Tell us your dates and interests. A local expert replies within 24 hours.',
-  action = { href: '/contact/', label: 'Enquire' },
+  action = { href: '/contact/', label: 'Send an enquiry' },
   topic = 'a trip',
 } = Astro.props;
 const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#w-plan`, topic);
@@ -15,6 +15,6 @@ const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#w-plan`, topic)
 <section class="widget widget--cta" aria-labelledby="w-plan">
   <p class="widget__h" id="w-plan">{title}</p>
   <p>{text}</p>
-  <a class="btn btn--light btn--block" href={action.href} data-open-plan={action.href === '/contact/' ? '' : undefined}>{action.icon && <Icon name={action.icon} />}{action.label}</a>
   <a class="btn btn--on-dark btn--wa btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
+  <a class="btn btn--light btn--block" href={action.href} data-open-plan={action.href === '/contact/' ? '' : undefined}>{action.icon && <Icon name={action.icon} />}{action.label}</a>
 </section>

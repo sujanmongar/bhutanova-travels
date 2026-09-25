@@ -101,11 +101,10 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
         <ul>
           {reviews.platforms.map((p) => (
             <li>
-              <a class="rv__site t-label" href={p.url} target="_blank" rel="noopener">
+              <a class="btn btn--outline btn--block rv__site" href={p.url} target="_blank" rel="noopener">
                 <Icon name={logo[p.name] ?? 'star'} class="rv__logo" />
                 {!reviews.sample && <b class="num">{p.rating.toFixed(1)}</b>}
                 {p.name}<span class="sr-only"> (opens in a new tab)</span>
-                <Icon name="arrow-up-right" class="rv__ext" />
               </a>
             </li>
           ))}
@@ -169,13 +168,8 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   .quotes + .rv__more { margin-top: var(--space-8); }
   .rv__more > p { color: var(--text-3); }
   .rv__more ul { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
-  .rv__site {
-    display: flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: 52px; padding: 0 var(--space-3);
-    border: 1px solid var(--border-dark); border-radius: var(--r-full); background: #fff; color: var(--ink);
-  }
+  .rv__site { padding-inline: var(--space-3); }
   .rv__site :global(.rv__logo) { font-size: 22px; }
-  .rv__site :global(.rv__ext) { font-size: 12px; color: var(--text-3); }
-  .rv__site:active { background: var(--surface); }
 
   @media (min-width: 768px) {
     .quotes { display: block; columns: 2; column-gap: var(--space-12); margin-inline: 0; padding-inline: 0; overflow: visible; }

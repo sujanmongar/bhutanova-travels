@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import WhatsAppCta from '../components/WhatsAppCta.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 ---
 <Base title="Page not found" noindex>
@@ -17,6 +18,7 @@ import Breadcrumbs from '../components/Breadcrumbs.astro';
       <div class="nf-actions"><a class="btn btn--primary" href="/bhutan-tours/">Tour packages</a><a class="btn btn--outline" href="/contact/">Contact us</a></div>
     </div>
   </section>
+  <WhatsAppCta />
 </Base>
 <style>
   .container > :global(.crumbs) { margin-bottom: var(--space-4); }

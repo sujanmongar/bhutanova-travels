@@ -30,7 +30,7 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
             <li>
               <Icon name={i} />
               <div><h3 class="t-card">{t}</h3><div class="info__v">{v.map(([text, href]) => href
-                ? <a class="t-body" href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener">{text}</a>
+                ? <a class="t-body" href={href} target={href.startsWith('http') ? '_blank' : undefined} rel="noopener">{text}{href.startsWith('http') && <span class="sr-only"> (opens in a new tab)</span>}</a>
                 : <p class="t-body">{text}</p>)}</div></div>
             </li>
           ))}
@@ -73,10 +73,10 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
   .info__v { display: flex; flex-wrap: wrap; gap: var(--space-6); }
   .info a, .info p { color: var(--text-2); word-break: break-word; }
   .info a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); }  /* ~50px tap area, same as .crumbs a */
-  .info a:hover { color: var(--p-700); }
+  .info a { text-decoration: underline 1px var(--border-dark); text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
+  @media (hover: hover) { .info a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
   .contact :global(.form) { display: grid; gap: var(--space-6); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: #fff; }
   @media (min-width: 768px) { .contact :global(.form) { padding: var(--space-8); } }
-  .note a { text-decoration: underline; }
   .map { width: 100%; height: 320px; border: 0; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   @media (min-width: 768px) { .map { height: 420px; } }
 </style>

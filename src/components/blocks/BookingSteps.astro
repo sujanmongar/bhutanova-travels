@@ -37,7 +37,7 @@ const first = person?.name.split(' ')[0];
         <a class="btn btn--on-dark btn--wa btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
         <a class="btn btn--light btn--block" href="/contact/" data-open-plan>Send an enquiry</a>
       </div>
-      <ul class="talk__lines t-body">
+      <ul class="talk__lines t-label">
         <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
         <li><Icon name="phone" /><a href={tel(SITE.phone)}>{SITE.phone}</a></li>
       </ul>
@@ -67,7 +67,7 @@ const first = person?.name.split(' ')[0];
   .talk__lines { display: grid; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
   .talk__lines li { display: flex; align-items: center; gap: var(--space-3); }
   .talk__lines :global(.icon) { flex: none; font-size: 20px; color: var(--on-dark-2); }
-  .talk__lines a { color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 4px; overflow-wrap: anywhere; }
+  .talk__lines a { display: inline-flex; align-items: center; min-height: 44px; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 4px; overflow-wrap: anywhere; }
   @media (hover: hover) { .talk__lines a:hover { text-decoration-color: var(--p-500); } }
   @media (min-width: 1024px) {
     .plan__in { grid-template-columns: 7fr 5fr; gap: var(--space-16); align-items: start; }

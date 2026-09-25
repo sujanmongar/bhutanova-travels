@@ -94,7 +94,7 @@ const searchIndex = [
       <button class="icon-btn nav__search" type="button" aria-expanded="false" aria-controls="search-q" data-search-toggle>
         <Icon name="search" class="i-open" /><Icon name="close" class="i-close" /><span class="sr-only" data-search-label>Search</span>
       </button>
-      <a href="/contact/" class="btn btn--primary btn--accent btn--sm nav__book" data-open-plan>Enquire</a>
+      <a href="/contact/" class="btn btn--primary btn--accent nav__book" data-open-plan>Enquire</a>
       <button class="burger" type="button" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false" data-burger>
         <Icon name="bars" /><span class="sr-only">Menu</span>
       </button>
@@ -145,7 +145,7 @@ const searchIndex = [
       <a class="drawer__mail t-caption" href={`mailto:${SITE.email}`}><Icon name="envelope" />{SITE.email}</a>
       <div class="drawer__cta">
         <a class="btn btn--soft" href={tel}><Icon name="phone" />Call us</a>
-        <a class="btn btn--soft btn--wa" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp</a>
+        <a class="btn btn--soft btn--wa" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
         <a class="btn btn--primary btn--lg" href="/contact/" data-open-plan>Enquire</a>
       </div>
     </div>
@@ -262,7 +262,7 @@ const searchIndex = [
   }
   /* White panels inside the bar keep the navy focus ring */
   .sub__list, .search-panel { --focus: var(--s-500); }
-  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--s-800); }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--ink); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) :is(.burger, .icon-btn) { background: rgb(255 255 255 / .16); color: #fff; }
   @media (hover: hover) {
     :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); color: var(--s-800); }
@@ -314,7 +314,6 @@ const searchIndex = [
   .search-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1; background: #fff; border-top: 1px solid var(--border); box-shadow: var(--sh-lg); max-height: 70vh; overflow-y: auto; }
   .search-panel[hidden] { display: none; }
   .search__empty { padding: var(--space-4) var(--gutter); color: var(--text-2); }
-  .search__empty a { color: var(--s-500); font-weight: 600; text-decoration: underline 1px; text-underline-offset: 3px; }
   .search__suggestions { list-style: none; margin: 0; padding: var(--space-1) calc(var(--gutter) - var(--space-1)) var(--space-2); }
   /* :global — these rows are built with innerHTML at runtime, so Astro's per-component scoping never
      stamps them; an un-global'd selector here would silently match nothing. */
@@ -328,10 +327,10 @@ const searchIndex = [
   :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); }
   :global(.search__see-all) {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); margin-top: var(--space-2); padding: var(--space-3);
-    border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--s-500);
+    border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--p-700);
   }
-  :global(.search__see-all:hover) { color: var(--s-800); }
-  :global(.search__see-all .icon) { font-size: 11px; color: var(--p-700); }
+  :global(.search__see-all:hover) { color: var(--p-800); }
+  :global(.search__see-all .icon) { font-size: .8em; }
 
   /* Mobile/tablet: Enquire floats over the page instead of squeezing into the bar. */
   .fab-enquire {
@@ -373,14 +372,13 @@ const searchIndex = [
   .d-sub li + li { border-top: 1px solid var(--border); }
   .d-sub a:hover, .d-sub a:active { color: var(--ink); }
   .d-sub a[aria-current='page'] { font-weight: 600; color: var(--ink); }
-  .d-sub__all a { color: var(--s-500); }
-  .d-sub__all :global(.icon) { font-size: 12px; color: var(--p-700); }
+  .d-sub__all a { color: var(--p-700); }  /* "see all" links are the primary colour, like .link-more */
+  .d-sub__all :global(.icon) { font-size: .8em; }
   .drawer__foot { margin-top: var(--space-6); padding-top: var(--space-4); border-top: 1px solid var(--border); }
   .drawer__mail { display: flex; align-items: center; gap: var(--space-2); min-height: 44px; margin-bottom: var(--space-3); color: var(--text-2); }
   .drawer__mail :global(.icon) { color: var(--s-300); }
   .drawer__cta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
-  .drawer__cta .btn { --btn-h: 52px; }
-  .drawer__cta .btn--primary { grid-column: 1 / -1; --btn-h: 56px; }
+  .drawer__cta .btn--primary { grid-column: 1 / -1; }
   .drawer__cta :global(.icon) { font-size: 18px; }
   /* Drawer: the rows fade up quickly, 30ms apart */
   @media (prefers-reduced-motion: no-preference) {
@@ -401,7 +399,7 @@ const searchIndex = [
       transition: color var(--dur-1), opacity var(--dur-1);
     }
     .menu__link::after {
-      content: ''; position: absolute; left: 0; right: 0; bottom: var(--space-6); height: 2px; border-radius: 2px; background: var(--p-500);
+      content: ''; position: absolute; left: 0; right: 0; bottom: var(--space-6); height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500);
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
     .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link::after { scale: 1 1; }
@@ -422,8 +420,9 @@ const searchIndex = [
       color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
     .sub__list a:hover { background: var(--surface); color: var(--ink); }
-    .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; background: var(--p-50); }
-    .sub__all { color: var(--s-500) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: var(--space-1); }
-    .sub__all :global(.icon) { font-size: 11px; color: var(--p-700); }
+    .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; }
+    .sub__all { color: var(--p-700) !important; border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm) !important; margin-top: var(--space-1); }
+    .sub__all:hover { color: var(--p-800) !important; }
+    .sub__all :global(.icon) { font-size: .8em; }
   }
 </style>

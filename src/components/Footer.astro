@@ -75,12 +75,13 @@ const columns: { title: string; links: [string, string][]; external?: boolean }[
   .footer__logo { display: block; }
   .footer__logo :global(.logo) { width: 200px; }
   .footer__contact { display: grid; gap: var(--space-2); margin-top: var(--space-8); }
-  .footer__contact a { color: #fff; }
+  .footer__contact a { color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 3px; transition: text-decoration-color var(--dur-1); }
+  @media (hover: hover) { .footer__contact a:hover { text-decoration-color: var(--p-500); } }
   .footer__us > .footer__h { margin: var(--space-8) 0 0; }
   /* Social icons in outlined circles, 12px under their title */
   .footer__us :global(.social) { gap: var(--space-3); margin: var(--space-3) 0 0; }
   .footer__us :global(.social a) { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid rgb(255 255 255 / .32); border-radius: var(--r-full); font-size: 18px; color: #fff; transition: border-color var(--dur-1), background-color var(--dur-1); }
-  .footer__us :global(.social a:hover) { border-color: #fff; background: rgb(255 255 255 / .08); }
+  .footer__us :global(.social a:not([aria-disabled]):hover) { border-color: #fff; background: rgb(255 255 255 / .08); }
 
   /* Right: four columns (two by two on phones) */
   .footer__cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-10) var(--space-6); }

@@ -12,10 +12,10 @@ const { heading, tours, grey = false } = Astro.props;
     <div class="container">
       <div class="sh sh--row">
         <h2>{heading}</h2>
-        <div class="sh__act"><a class="link-more" href={TOURS}>All packages<Icon name="arrow-right" /></a></div>
+        <div class="sh__act"><a class="link-more" href={TOURS}>All tours<Icon name="arrow-right" /></a></div>
       </div>
       <div class="rail" data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
-      <a class="link-more m-only" href={TOURS}>All packages<Icon name="arrow-right" /></a>
+      <a class="link-more m-only" href={TOURS}>All tours<Icon name="arrow-right" /></a>
     </div>
   </section>
 )}

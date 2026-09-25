@@ -5,6 +5,7 @@ import Icon from '../../components/Icon.astro';
 import Arrows from '../../components/Arrows.astro';
 import BlogCard from '../../components/BlogCard.astro';
 import PlanCta from '../../components/PlanCta.astro';
+import WhatsAppCta from '../../components/WhatsAppCta.astro';
 export async function getStaticPaths() {
   const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
   return guides.map((guide) => ({ params: { id: guide.id }, props: { guide, guides } }));
@@ -45,6 +46,7 @@ const related = [...rest.filter((g) => g.data.group === guide.data.group), ...re
       <a class="link-more m-only" href="/travel-guide/">All guides<Icon name="arrow-right" /></a>
     </div>
   </section>
+  <WhatsAppCta slot="after" about={guide.data.title} />
 </Article>
 <script>
   // Highlight the section being read in both copies of the TOC, and keep it in view when the sidebar list scrolls
@@ -65,7 +67,8 @@ const related = [...rest.filter((g) => g.data.group === guide.data.group), ...re
   .toc ol { list-style: none; margin: 0; padding: 0; }
   .toc li + li { margin-top: 0; }
   .toc a { display: block; padding: var(--space-2) 0 var(--space-2) var(--space-3); border-left: 2px solid var(--border); color: var(--text-2); text-decoration: none; transition: color var(--dur-2), border-color var(--dur-2); }
-  .toc a:hover, .toc a[aria-current] { color: var(--ink); border-left-color: var(--p-500); }
+  .toc a[aria-current] { color: var(--ink); border-left-color: var(--p-500); }
+  @media (hover: hover) { .toc a:hover { color: var(--ink); border-left-color: var(--p-500); } }
   .toc a[aria-current] { font-weight: 600; }
   /* Below 1024px the contents fold up at the top of the article instead of sitting in the sidebar */
   .toc-m { border-block: 1px solid var(--border); }

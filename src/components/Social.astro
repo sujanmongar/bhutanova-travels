@@ -10,7 +10,7 @@ const links = Object.entries(SITE.social);
   {links.map(([k, href]) => (
     <li>{href === '#'
       ? <a href="#" aria-disabled="true" aria-label={`${names[k as keyof typeof names]} (coming soon)`} data-soon><Icon name={`social_${k}`} /></a>
-      : <a href={href} target="_blank" rel="noopener" aria-label={names[k as keyof typeof names]}><Icon name={`social_${k}`} /></a>}</li>
+      : <a href={href} target="_blank" rel="noopener" aria-label={`${names[k as keyof typeof names]} (opens in a new tab)`}><Icon name={`social_${k}`} /></a>}</li>
   ))}
 </ul>
 <script>
@@ -20,5 +20,6 @@ const links = Object.entries(SITE.social);
 <style>
   .social { display: flex; gap: 0; list-style: none; margin: 0 calc(var(--space-3) * -1); padding: 0; }
   .social a { display: block; padding: var(--space-3); font-size: 20px; color: rgb(255 255 255 / .82); transition: color var(--dur-1); }
-  .social a:hover { color: #fff; }
+  .social a:not([aria-disabled]):hover { color: #fff; }
+  .social [aria-disabled] { opacity: .4; cursor: default; }  /* not set up yet: dimmed, no hover */
 </style>
