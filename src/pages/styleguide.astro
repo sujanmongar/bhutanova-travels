@@ -101,7 +101,7 @@ const photo = 'photo-1662547150045-7a8d3a9ad0b2';
       </ul>
 
       <h2>Corners</h2>
-      <p class="t-body muted">Cards and card images take var(--radius) with corner-shape: squircle, which browsers without it draw as ordinary round corners. Fields use var(--radius-sm); buttons are pills.</p>
+      <p class="t-body muted">Cards and card images take var(--radius) with corner-shape: squircle: 28px on phones, 36px from 768px. Browsers without the squircle (Safari, so every iPhone; Firefox) get the round corner that looks the same, 16px and 20px. Fields and thumbnails use var(--radius-sm); buttons are pills.</p>
       <ul class="shapes">
         <li><div class="shape-card" data-shape><p class="t-card">Card</p><p class="t-caption muted">Hairline border, var(--card-pad) inside.</p></div><p class="t-label">Card</p><p class="t-caption subtle num" data-radius></p></li>
         <li><img class="shape-img" data-shape src={img(photo, 800, 533)} srcset={srcset(photo, [480, 800, 1200], 3 / 2)} sizes="(min-width: 1264px) 379px, (min-width: 768px) calc((100vw - 128px) / 3), calc(100vw - 32px)" alt="" width="800" height="533" loading="lazy" decoding="async" /><p class="t-label">Card image</p><p class="t-caption subtle num" data-radius></p></li>

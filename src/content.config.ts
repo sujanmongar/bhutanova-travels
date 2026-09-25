@@ -180,7 +180,7 @@ export const collections = {
   }),
   // Team members for the About page.
   team: defineCollection({
-    loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order }`),
+    loader: sanity(`*[_type == "teamMember"]{ "id": _id, name, group, role, "photo": photo${BLOCK_IMG}, bio, languages, years, order, placeholder }`),
     schema: z.object({
       name: z.string(),
       group: z.enum(['office', 'guide', 'driver']),
@@ -190,6 +190,7 @@ export const collections = {
       languages: z.string().optional(),
       years: z.number().optional(),
       order: z.number().default(99),
+      placeholder: z.boolean().nullish(),  // a sample profile (see Team.astro)
     }),
   }),
   // Page-builder pages: "home" is the homepage, everything else is served at /<slug>/.

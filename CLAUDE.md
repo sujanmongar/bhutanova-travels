@@ -19,16 +19,16 @@ The user's chosen scale (typescale.com, 18px, 1.200). Desktop ≥768px: h1–h6 
 (53.7 · 44.8 · 37.3 · 31.1 · 25.9 · 21.6px). Phones: same 18px base on Major Second (1.125): 32.4 · 28.8 · 25.6 · 22.8 · 20.3 · 18px.
 h1–h6 tokens keep these default sizes — never shift them.
 Tokens are written as `calc(var(--fs-base) * ratio)` so the scale stays exact. Headings: line height 1.15, tracking −0.022em,
-serif 400. Body: 18px, line height 1.6. **Floor 16px**: UI controls and small text are 16. The one exception is the footer (owner's call): text 14px (`--fs-small`), column titles and bottom bar 13px (`--fs-xs`).
+serif 400. Body: 18px, line height 1.6. **Floor 16px**: UI controls and small text are 16 (the scale's 0.833 step = 15px is not used), the footer included.
 Headings run in strict order h1 > … > h6. A heading element uses its own level's style — never another LEVEL's class
 (no `<h2 class="t-h1">`); `.t-card` / `.t-title` may go on any heading. Chrome titles that aren't content sections
 (footer columns, sidebar widgets, dialog titles) are styled `<p>`, not `<h2>`, so they can't break the heading order.
 
 | Role | Class | Phones | ≥768px | Use |
 |---|---|---|---|---|
-| H1 | `h1`, `.hero-title` | 32.4 | 53.7 | Hero headline and page titles |
+| H1 | `h1`, `.hero-title` | 36.5 | 53.7 | Hero headline and page titles (`--fs-display`): on phones one step above the scale's H1, 32.4 (owner's call) |
 | H2 | `.t-h2` | 28.8 | 44.8 | Scale default — kept for reference; section titles don't use it |
-| Section title | `h2` | 25.6 | 37.3 | Every section title — an `<h2>` element rendered at the **H3** size (user's call) |
+| Section title | `h2` | 28.8 | 37.3 | Every section title — an `<h2>` element (`--fs-section`): the H2 size on phones, the **H3** size from 768px (user's call) |
 | Content title | `.prose h2`, tour sections | 22.8 (h4) | 25.9 (h5) | h2 inside a content column: tour page sections, guide / blog / destination / sight text. Their h3 = card size |
 | H3 | `h3` | 25.6 | 37.3 | Sub-sections (outside content columns) |
 | H4 | `h4` | 22.8 | 31.1 | Rare |
@@ -70,8 +70,9 @@ Buttons: `.btn` variants only (primary navy, light, outline, soft, on-dark), pil
 buttons** (text links `.link-more` keep their small angle arrow, the Bold arrow-up-right ↗). Mobile first: design at 375px, then 768, then 1024/1200.
 Images: sharp but right-sized — `img(src, w, h)` / `srcset(src, widths, ratio)` make the CDN return exactly the frame
 (centred crop) for fixed-aspect frames; accurate `sizes`; lazy except the LCP image; page banners use `BannerImg`.
-Corners: every card and card image uses `--radius` (36px) + `corner-shape: squircle` (Apple-style; plain rounded
-corners where unsupported). Small things keep small radii: inputs 12, thumbnails 12, badges 16, buttons full pill. Palette navy `--s-500` #162E44 + orange `--p-500` #FFA500 (orange is for fills/icons, never small text).
+Corners: every card and card image uses `--radius` (28px on phones, 36px from 768px) + `corner-shape: squircle`
+(Apple-style). Where the squircle isn't supported (Safari, so every iPhone; Firefox) `--radius` becomes the round corner
+that looks the same: 16px on phones, 20px from 768px. Small things keep small radii: inputs 12, thumbnails 12, badges 16, buttons full pill. Palette navy `--s-500` #162E44 + orange `--p-500` #FFA500 (orange is for fills/icons, never small text).
 Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curated", no exclamation marks, no Title Case.
 
 ## Workflow
@@ -82,22 +83,26 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - `npx sanity deploy` (Studio schema only) is fine whenever a schema change needs it.
 - New CMS fields get real drafted content, never left empty.
 - One homepage section at a time; don't start the next until the user says so. The homepage order is the owner's
-  (set in Sanity): hero (about 85% of the screen, a proof line under the buttons: licensed by, licence no., years guiding, each
-  with an orange icon, figures bold; the header's Enquire stays hidden while the hero's own buttons are in view), founder
-  note (experience first: "experienced guides, now our own company", then up to four plain points, no icons), popular tours, themes, reviews, blog, FAQ, plan your trip
-  (navy: steps + named planner), partners. No "why us" icon grid, no stepper rings, no photo CTA banner on the homepage.
+  (set in Sanity): hero (on phones as tall as its content, a band of photo above the title; about 85% of the screen from 768px so the next
+  section peeks; a proof line under the buttons: licensed by, licence no., years guiding, each
+  with an orange icon, figures bold; buttons Explore tours + Chat on WhatsApp, since the header carries Enquire), founder
+  note (short: "experienced guides, now our own company", two lines, signed), why travel with us (four points with outline icons, the same
+  style as About's "What guides us"), popular tours, themes, reviews, blog, FAQ, plan your trip
+  (navy: steps + named planner), partners. No stepper rings, no photo CTA banner on the homepage.
 - Motion is quiet and quick, the same few moves everywhere (tokens in global.css): content fades in and rises 12px once
   as it enters (`data-reveal`, cards in a row 60ms apart); banner/hero photos settle from a 3% zoom and their words fade
   up; pages cross-fade (header stays put); card photos ease in 2% on hover; buttons press to 98%. No bounces, no big
   zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
   Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
   flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
-  outline → navy border). "See all" text links (`.link-more`, and the menu / drawer / search "see all" and the tour page's Show all) are navy `--ink` with an orange angle arrow (↗), a thin (1px) orange `--p-500` line under the words at rest that thickens to 2px on hover while the arrow nudges (`.see-all` gives the look to the rows; the words sit in a `<span>` so the line skips the arrow). Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
+  outline → navy border). "See all" text links (`.link-more`, and the menu / drawer / search "see all" and the tour page's Show all) are navy `--ink` with an orange angle arrow (↗), a thin (1px) orange `--p-500` line under the words at rest that thickens to 2px on hover while the arrow nudges (`.see-all` gives the look to the rows; the words sit in a `<span>` so the line skips the arrow). Only a few key buttons (.btn--accent: the hero's Explore tours and the header's Enquire) fill with the
   primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green on hover. Everything is off for reduced motion.
 - Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
   beside the tentative itinerary timeline, 5 days then "Show all"), what's included, every day in full (one entry per
   day, never "Day 2–3"), questions, more tours, contact card.
+- Naming: the section is the **Blog** (menu, /blog/, breadcrumbs, footer, "From our blog"); each piece in it is an
+  **article** ("All articles", "Recent articles", "Filter articles by topic"). Not "stories" or "posts" in visible text.
 - Blog posts are one clean reading column (`--measure`): breadcrumbs, title, dek, one meta line (topic · date · author),
   a wide cover, the text, then share buttons (each network's logo in its colour + its name). Recent posts float beside
   the text from 1200px (after the share buttons below that). Then tours matched to the post, then the contact card.
@@ -117,7 +122,7 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - Footer (navy): logo, one line about us and social circles on the left; Tours, Information, About + Quick links, then
   Get in touch (address, office hours, WhatsApp, phone, email, licence), under small orange uppercase titles; a darker bottom bar with
   the copyright on the left and Sitemap (/sitemap/, every page listed), Privacy policy, Cancellation policy and Cookie
-  preferences on the right. Text 14px, titles and bottom bar 13px.
+  preferences on the right. Text is Label 16px; column titles `.t-label .t-caps` in orange.
 - Cookies: built in (CookieNotice.astro, free, no service). The site sets no tracking cookies of its own; third-party
   frames (Google Maps, YouTube, Vimeo) wait behind a grey panel with a Show button until the visitor accepts
   (`.frame` + `iframe data-src` + `.frame__gate`; pt.ts does it for article embeds). The card offers Accept all and Reject all with equal weight, and

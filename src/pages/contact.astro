@@ -15,16 +15,16 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
   ['location-dot', 'Visit us', [[SITE.address, 'https://maps.google.com/?q=Babesa,Thimphu,Bhutan']]],
 ];
 ---
-<Base title="Contact us and plan a trip" description="Contact Bhutanova Travels to plan a Bhutan trip: WhatsApp, email, phone or the enquiry form. A planner in Thimphu replies within 24 hours." image={hero}>
+<Base title="Contact us and plan a trip" description="Contact Bhutanova Travels to plan a Bhutan trip: WhatsApp, email, phone or the enquiry form. We reply within 24 hours." image={hero}>
   <section class="banner">
     <BannerImg src={hero} alt="Paro valley" />
-    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us to plan a trip</h1><p class="banner__line">WhatsApp, email, phone or the form below: they all reach the same planner in Thimphu, and we reply within 24 hours.</p></div>
+    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us to plan a trip</h1><p class="banner__line">WhatsApp, email, phone or the form below: they all reach our team in Thimphu, and we reply within 24 hours.</p></div>
   </section>
 
   <section class="section">
     <div class="container contact" id="contact">
       <div>
-        <div class="sh" data-reveal><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. A local trip expert will reply with ideas and a clear quote.</p></div>
+        <div class="sh" data-reveal><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. We reply with a first plan and a clear price.</p></div>
         <ul class="info" data-reveal="stagger">
           {info.map(([i, t, v]) => (
             <li>

@@ -25,11 +25,11 @@ const first = person?.name.split(' ')[0];
         ))}
       </ol>
     </div>
-    <aside class="talk" data-reveal aria-label="Contact a trip planner">
+    <aside class="talk" data-reveal aria-label="Contact us">
       {person && (
         <div class="talk__who">
           {person.photo && <img src={img(person.photo.url, 128, 128, person.photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
-          <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Thimphu office</span></p>
+          <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Bhutanova Travels</span></p>
         </div>
       )}
       <p class="t-body talk__txt">{first ? `Your message comes to ${first}, who replies within 24 hours with a first plan and a price.` : 'We reply within 24 hours with a first plan and a price.'}</p>

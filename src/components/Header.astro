@@ -192,11 +192,6 @@ const searchIndex = [
   addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
-  // Desktop: the header's Enquire steps aside while the hero's own buttons are in view (below the header), so the
-  // first screen never shows two Enquire buttons; it fades back in once they scroll away.
-  const heroCta = document.querySelector('.hero__cta');
-  if (heroCta) new IntersectionObserver(([e]) => nav.classList.toggle('is-cta-shown', e.isIntersecting), { rootMargin: `-${nav.offsetHeight}px 0px 0px 0px` }).observe(heroCta);
-
   // Floating Enquire hides while the hero (it has its own Enquire button) or the footer (same navy) is on screen.
   // It stays hidden until this first check runs (.is-ready), so it never flashes over the hero on load.
   const fab = document.querySelector<HTMLAnchorElement>('.fab-enquire');
@@ -295,8 +290,7 @@ const searchIndex = [
   .nav.is-searching .nav__search :global(.i-open) { display: none; }
   .nav.is-searching .nav__search :global(.i-close) { display: block; }
   .menu { display: none; }
-  .nav__book { display: none; transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), scale var(--dur-1) var(--ease-out), opacity var(--dur-2), visibility var(--dur-2); }
-  .nav.is-cta-shown .nav__book { opacity: 0; visibility: hidden; pointer-events: none; }
+  .nav__book { display: none; }
 
   /* Search field: sits over the same space the menu just faded out of, so opening/closing is a plain
      opacity crossfade — nothing here ever animates a layout property (width, max-width, display). */

@@ -43,7 +43,7 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
       </div>
     </section>
   )}
-  <WhatsAppCta title="Ask a trip planner" text="If your question isn't answered here, message a planner in Thimphu on WhatsApp. We usually reply within the hour." about="travelling in Bhutan" />
+  <WhatsAppCta title="Ask us" text="If your question isn't answered here, message us on WhatsApp. We reply within 24 hours." about="travelling in Bhutan" />
 </Base>
 <style>
   .guides { row-gap: var(--space-10); }
@@ -51,7 +51,7 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
   @media (max-width: 767px) {
     .guides { row-gap: 0; border-top: 1px solid var(--border-dark); }
     .guides > :global(.bc) { display: grid; grid-template-columns: 88px minmax(0, 1fr); column-gap: var(--space-4); align-items: start; height: auto; padding-block: var(--space-4); border-bottom: 1px solid var(--border-dark); }
-    .guides :global(.bc__img) { grid-row: 1 / span 2; width: 88px; height: 88px; margin: 0; border-radius: var(--r-sm); }
+    .guides :global(.bc__img) { grid-row: 1 / span 2; width: 88px; height: 88px; margin: 0; --radius: var(--r-sm); corner-shape: round; }  /* a thumbnail: the 12px corner, also in Safari's clip-path fallback */
     .guides :global(.bc__meta) { display: none; }  /* the topic is already the section title */
     .guides :global(.bc h3) { margin: 0; }
     .guides :global(.bc__ex) { margin-top: var(--space-1); -webkit-line-clamp: 2; }

@@ -86,7 +86,7 @@ const schema = {
 
         {recent.length > 0 && (
           <aside class="recent" aria-labelledby="recent-h">
-            <p class="widget__h" id="recent-h">Recent posts</p>
+            <p class="widget__h" id="recent-h">Recent articles</p>
             <ul>{recent.map((p) => (
               <li><a href={`/blog/${p.id}/`}>
                 <img src={img(p.data.image, 144, 144)} srcset={srcset(p.data.image, [72, 144, 216], 1)} sizes="72px" alt="" width="72" height="72" loading="lazy" decoding="async" />

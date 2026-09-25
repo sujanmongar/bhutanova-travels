@@ -6,7 +6,7 @@ const { heading, items = [], grey = true } = Astro.props;
 <section id="why-us" class:list={['section', { 'section--grey': grey }]}>
   <div class="container">
     <div class="sh" data-reveal><h2>{heading}</h2></div>
-    <ul class="why" data-reveal="stagger">
+    <ul class="why" data-reveal="stagger" style={`--cols:${items.length % 4 === 0 ? 4 : 3}`}>
       {items.map((r) => <li>{r.icon && <Icon name={r.icon} />}<h3 class="t-card">{r.title}</h3>{r.text && <p class="t-body">{r.text}</p>}</li>)}
     </ul>
   </div>
@@ -19,5 +19,5 @@ const { heading, items = [], grey = true } = Astro.props;
   .why :global(.icon) { margin-bottom: var(--space-3); font-size: 40px; color: var(--s-500); }
   .why p { max-width: 32ch; color: var(--text-2); }
   @media (min-width: 768px) { .why { grid-template-columns: repeat(2, 1fr); row-gap: var(--space-12); } }
-  @media (min-width: 1024px) { .why { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 1024px) { .why { grid-template-columns: repeat(var(--cols), 1fr); } }  /* four across for four points */
 </style>

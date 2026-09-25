@@ -85,7 +85,7 @@ const hero = defineType({
     defineField({name: 'text', title: 'Short line', type: 'string', validation: (r) => r.max(120).warning('One short sentence works best.')}),
     photo(),
     defineField({name: 'primaryLabel', title: 'Main button text', type: 'string', initialValue: 'Explore tours', description: 'Opens the tours page.', validation: (r) => r.required()}),
-    defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Enquire', description: 'Opens the contact page.', validation: (r) => r.required()}),
+    defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Chat on WhatsApp', description: 'Opens WhatsApp with this page’s link (the header already has Enquire).', validation: (r) => r.required()}),
     defineField({
       name: 'proof',
       title: 'Proof line',
@@ -141,17 +141,6 @@ const founderNote = defineType({
     heading('A small team in Thimphu'),
     defineField({name: 'text', title: 'Note', type: 'simpleText', description: 'Two short paragraphs in the first person.', validation: (r) => r.required()}),
     defineField({name: 'person', title: 'Signed by', type: 'reference', to: [{type: 'teamMember'}], description: 'Name, role and portrait come from Team.', validation: (r) => r.required()}),
-    defineField({
-      name: 'points',
-      title: 'What it means for guests',
-      type: 'array',
-      description: 'Up to four short points under the note: a few words, then one sentence. Plain text, no icons.',
-      of: [{type: 'object', fields: [
-        {name: 'title', title: 'Point', type: 'string', validation: (r: any) => r.required()},
-        {name: 'text', title: 'One sentence', type: 'text', rows: 2, validation: (r: any) => r.required()},
-      ], preview: {select: {title: 'title', subtitle: 'text'}}}],
-      validation: (r) => r.max(4),
-    }),
     defineField({name: 'linkLabel', title: 'Link text', type: 'string', initialValue: 'More about us'}),
     defineField({name: 'linkHref', title: 'Link', type: 'url', initialValue: '/about/', hidden: ({parent}) => !parent?.linkLabel, validation: (r) => linkRules(r)}),
     grey(),
@@ -164,7 +153,7 @@ const reasons = defineType({
   title: 'Reasons to choose us',
   type: 'object',
   icon: CheckmarkCircleIcon,
-  description: 'Short, concrete reasons in a row, each with an icon.',
+  description: 'Short, concrete reasons in a row: a few words, then one sentence. Icons are optional (the homepage uses none).',
   fields: [heading('Why travel with us'), points('items', 'Reasons', 8, true), grey(true)],
   preview: preview('Reasons to choose us'),
 })

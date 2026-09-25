@@ -131,7 +131,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
       let queued = false;
       const reveal = () => {
         queued = false;
-        const line = innerHeight * 0.92;
+        const line = innerHeight;  // anything showing at all fades in now, so a heading at the screen's foot is never a blank white strip
         waiting.forEach((el) => {
           const r = el.getBoundingClientRect();
           if (r.top > line) return;

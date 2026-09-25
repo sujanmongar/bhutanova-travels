@@ -27,7 +27,7 @@
   /* Shape & depth */
   /* Cards and card images: --radius (36px) with corner-shape: squircle; sheets 28px; fields 12px */
   --r-xs: 6px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-2xl: 36px; --r-full: 999px;
-  --radius: var(--r-2xl); --radius-sm: var(--r-sm);  /* every card: 36px, Apple-style squircle where supported */
+  --radius: var(--r-xl); --radius-sm: var(--r-sm);  /* every card: 28px on phones, 36px from 768px; Apple-style squircle where supported */
   --sh-xs: 0 1px 2px rgb(12 25 37 / .06);
   --sh-sm: 0 1px 2px rgb(12 25 37 / .04), 0 4px 12px rgb(12 25 37 / .06);
   --sh-md: 0 2px 4px rgb(12 25 37 / .04), 0 12px 28px -6px rgb(12 25 37 / .14);
@@ -80,7 +80,10 @@
   --lh-h4: var(--lh-heading); --lh-h5: var(--lh-heading); --lh-h6: var(--lh-heading);
   --ls-h1: var(--ls-heading); --ls-h2: var(--ls-heading); --ls-h3: var(--ls-heading);
   --ls-h4: var(--ls-heading); --ls-h5: var(--ls-heading); --ls-h6: var(--ls-heading);
-  --fs-display: var(--fs-h1); --lh-display: var(--lh-h1); --ls-display: var(--ls-h1);   /* hero = h1 */
+  /* Phones (owner's call, option B): the hero and every page title one step above h1 (36.5), section titles at h2 (28.8),
+     so headings stand clear of the 18px body; from 768px they are h1 (53.7) and the h3 size (37.3) again */
+  --fs-display: calc(var(--fs-base) * 2.027); --lh-display: var(--lh-h1); --ls-display: var(--ls-h1);   /* hero: 18 × 1.125⁶ = 36.5 */
+  --fs-section: var(--fs-h2);   /* section titles: 28.8 on phones */
   --fs-card: var(--fs-h5);    --lh-card: var(--lh-h5);    --ls-card: var(--ls-h5);      /* card titles = h5 */
   --fs-title: var(--fs-h6);   --lh-title: var(--lh-h6);   --ls-title: var(--ls-h6);     /* item titles = h6 */
   /* content titles: h2 inside a content column (tour sections, guide / blog / destination / sight text) = h4 on phones */
@@ -93,8 +96,6 @@
   --fs-button: 1rem;   --lh-button: 1.6;   --ls-button: 0;   --fw-button: 600;   /* 16 — every button… */
   --fs-link: 1rem;     --lh-link: 1.6;     --ls-link: 0;     --fw-link: 600;     /* 16 — …and every text CTA, identical */
   --fs-price: var(--fs-h5); --lh-price: var(--lh-h5); --ls-price: 0; --fw-price: 600; /* tour page price box and sticky bar, sans */
-  --fs-small: calc(var(--fs-base) * .778);  /* 14 — footer text only (owner's call: footers run smaller) */
-  --fs-xs: calc(var(--fs-base) * .722);     /* 13 — footer column titles and bottom bar only */
   --ls-caps: 0.08em;   /* the uppercase variant (.t-caps) of label/link */
 }
 @media (min-width: 768px) {
@@ -102,11 +103,14 @@
     --gutter: var(--space-8); --stack: var(--space-12); --section: var(--space-24);
     --header-h: 80px;
     --card-photo: 270px;
+    --radius: var(--r-2xl);  /* 36px, the desktop card corner */
     /* Desktop: 18 × 1.2ⁿ — Minor Third */
     --fs-h1: calc(var(--fs-base) * 2.986); --fs-h2: calc(var(--fs-base) * 2.488); --fs-h3: calc(var(--fs-base) * 2.074);
     --fs-h4: calc(var(--fs-base) * 1.728); --fs-h5: calc(var(--fs-base) * 1.44);  --fs-h6: calc(var(--fs-base) * 1.2);
     /* Card titles take one step less on desktop (21.6); phones keep h5 (20.3) */
     --fs-card: var(--fs-h6);
+    --fs-display: var(--fs-h1);   /* hero = h1 (53.7) */
+    --fs-section: var(--fs-h3);   /* section titles at the h3 size (37.3), as before */
     /* content titles = h5 on desktop, a step under section titles (37.3) and above card titles (21.6) */
     --fs-ctitle: var(--fs-h5); --lh-ctitle: var(--lh-h5); --ls-ctitle: var(--ls-h5);
   }
@@ -137,10 +141,10 @@ b, strong { font-weight: 600; }
 /* Type roles — every text element uses exactly one, and each sets size, line height, tracking and weight together.
    Serif: h1–h6, card, title, quote (every title). Sans: body, caption, label, button, link, price (copy and UI).
    Use the class in markup; where that's impossible use the role's full --fs/--lh/--ls/--fw set, never a partial one. */
-h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-h1); line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 400; font-variant-numeric: lining-nums; }
+h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-display);  /* page titles match the hero: 36.5 on phones, 53.7 from 768px */ line-height: var(--lh-h1); letter-spacing: var(--ls-h1); font-weight: 400; font-variant-numeric: lining-nums; }
 .t-h2 { font-family: var(--ff-display); font-size: var(--fs-h2); line-height: var(--lh-h2); letter-spacing: var(--ls-h2); font-weight: 400; font-variant-numeric: lining-nums; }
 /* Section titles: <h2> for the outline, H3 size on screen (the user's call) */
-h2 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 400; font-variant-numeric: lining-nums; }
+h2 { font-family: var(--ff-display); font-size: var(--fs-section); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 400; font-variant-numeric: lining-nums; }
 h3, .t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 400; font-variant-numeric: lining-nums; }
 h4, .t-h4 { font-family: var(--ff-display); font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); font-weight: 400; font-variant-numeric: lining-nums; }
 h5, .t-h5 { font-family: var(--ff-display); font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); font-weight: 400; font-variant-numeric: lining-nums; }
@@ -279,6 +283,14 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .grid-3 { display: grid; gap: var(--grid-gap); list-style: none; margin: 0; padding: 0; }
 @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* Safari (every iPhone browser) and Firefox can't draw the squircle: a plain round corner at the same radius cuts in about
+   twice as deep, so there the corner takes the round radius that looks like the squircle (28px squircle ≈ 16px round on
+   phones, 36px ≈ 20px from 768px). Cards look the same in every browser. */
+@supports not (corner-shape: squircle) {
+  :root { --radius: var(--r-md); }
+  @media (min-width: 768px) { :root { --radius: var(--r-lg); } }
+}
 
 /* ---------- Tab bar (TabBar.astro): directly under a page banner, pinned under the header ----------
    Travel guide topics, destination regions (jump links) and blog topics (filters) all look and sit the same way:

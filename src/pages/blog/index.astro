@@ -11,18 +11,18 @@ const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) =>
 const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
 const hero = 'photo-1585904194096-15ef66ccd234';
 ---
-<Base title="Blog – stories from Bhutan" description="Travel stories, festival guides, food and hidden gems from our team in Bhutan." image={hero}>
+<Base title="Blog – articles from Bhutan" description="Articles on festivals, food, trekking and hidden valleys, from our team in Thimphu." image={hero}>
   <section class="banner">
     <BannerImg src={hero} alt="Masked dancers at a Bhutanese tshechu" />
-    <div><Breadcrumbs items={[['Blog']]} light /><h1>Stories from Bhutan</h1><p class="banner__line">Stories, festival notes and practical advice from our team in Thimphu.</p></div>
+    <div><Breadcrumbs items={[['Blog']]} light /><h1>Blog</h1><p class="banner__line">Articles on festivals, food, trekking and travelling in Bhutan, from our team in Thimphu.</p></div>
   </section>
-  <TabBar label="Filter posts by topic" filter>
-    <button class="t-label" type="button" aria-pressed="true" data-topic="">All stories</button>
+  <TabBar label="Filter articles by topic" filter>
+    <button class="t-label" type="button" aria-pressed="true" data-topic="">All articles</button>
     {tags.map((t) => <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t}</button>)}
   </TabBar>
   <section class="section">
     <div class="container">
-      <h2 class="sr-only">All stories</h2>
+      <h2 class="sr-only">All articles</h2>
       <p class="sr-only" aria-live="polite" data-status></p>
       <ul class="grid-3 posts" data-reveal="stagger">
         {posts.map((p) => <li data-tags={p.data.tags.map(slug).join(' ')}><BlogCard post={p} /></li>)}

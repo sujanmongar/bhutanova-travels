@@ -6,6 +6,8 @@ import { img, srcset, focal } from '../../config';
 interface Props { heading: string; text?: string; grey?: boolean }
 const { heading, text, grey = false } = Astro.props;
 const people = (await getCollection('team')).sort((a, b) => a.data.order - b.data.order);
+// While any profile is a sample (Team → placeholder), say so under the heading, so samples never pass as real staff
+const samples = people.some((m) => m.data.placeholder);
 // One card for everyone, grouped: office team, then guides, then drivers. A long group shows its first 8 and a button
 // reveals the rest, so dozens of guides never turn the page into a wall.
 const LIMIT = 8;
@@ -21,6 +23,7 @@ const detail = (m: (typeof people)[number]) =>
     <div class="sh" data-reveal>
       <h2>{heading}</h2>
       {text && <p>{text}</p>}
+      {samples && <p>Photos and names are placeholders while we add our own team.</p>}
     </div>
 
     {groups.map((g) => (

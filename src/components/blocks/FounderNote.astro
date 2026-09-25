@@ -1,12 +1,11 @@
 ---
 // A short signed note from the founder. Desktop: portrait beside the note. Phones: the portrait shrinks into the
 // signature, so the note isn't pushed a screen down. Name, role and photo come from the Team member it's signed by.
-// Under the signature, up to four plain points (what it means for guests), two by two from 768px; no icons.
 import Icon from '../Icon.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
 import { ptParagraphs } from '../../pt';
-interface Props { heading: string; text?: any[]; person?: { name: string; role: string; photo?: BlockImage} | null; points?: { title: string; text: string }[]; linkLabel?: string; linkHref?: string; grey?: boolean }
-const { heading, text, person, points = [], linkLabel, linkHref, grey = false } = Astro.props;
+interface Props { heading: string; text?: any[]; person?: { name: string; role: string; photo?: BlockImage} | null; linkLabel?: string; linkHref?: string; grey?: boolean }
+const { heading, text, person, linkLabel, linkHref, grey = false } = Astro.props;
 const photo = person?.photo;
 ---
 <section class:list={['section', { 'section--grey': grey }]}>
@@ -27,11 +26,6 @@ const photo = person?.photo;
           <p><span class="t-card">{person.name}</span><span class="t-label muted">{person.role}, Bhutanova Travels</span></p>
         </div>
       )}
-      {points.length > 0 && (
-        <ul class="fn__points">
-          {points.map((p) => <li><h3 class="t-title">{p.title}</h3><p class="t-body">{p.text}</p></li>)}
-        </ul>
-      )}
       {linkLabel && linkHref && <a class="link-more" href={linkHref}><span>{linkLabel}</span><Icon name="arrow-up-right" /></a>}
     </div>
   </div>
@@ -46,14 +40,10 @@ const photo = person?.photo;
   .fn__sign { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-8); }
   .fn__sign p { display: grid; gap: var(--space-1); }
   .fn__avatar { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-50); }
-  .fn__points { display: grid; gap: var(--space-6); margin: var(--space-8) 0 0; padding: var(--space-8) 0 0; border-top: 1px solid var(--border); list-style: none; }
-  .fn__points h3 { margin: 0 0 var(--space-2); }
-  .fn__points p { margin: 0; color: var(--text-2); }
   .link-more { margin-top: var(--space-6); }
   @media (min-width: 768px) {
     .fn { grid-template-columns: 5fr 7fr; gap: var(--space-12); }
     .fn__photo { display: block; }
-    .fn__points { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--grid-gap); }
     .fn__note { margin-top: var(--space-3); }
   .fn__avatar { display: none; }
   }

@@ -8,7 +8,7 @@ import { SITE, img, wa, tel } from '../config';
 interface Props { title?: string; text?: string; about?: string; id?: string; cta?: string; href?: string; customise?: string }
 const {
   title = 'Not sure which trip fits?',
-  text = 'Message a planner in Thimphu on WhatsApp. We usually reply within the hour.',
+  text = 'Message us on WhatsApp. We reply within 24 hours.',
   about,
   id = 'whatsapp',
   cta = 'Send an enquiry',
@@ -34,7 +34,7 @@ const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps')
         {person && (
           <div class="wa__who">
             {person.photo && <img src={img(person.photo.url, 128, 128, person.photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
-            <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Thimphu office</span></p>
+            <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Bhutanova Travels</span></p>
           </div>
         )}
         <div class="wa__act">
