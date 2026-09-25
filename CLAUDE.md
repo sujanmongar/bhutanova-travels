@@ -82,7 +82,9 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - `npx sanity deploy` (Studio schema only) is fine whenever a schema change needs it.
 - New CMS fields get real drafted content, never left empty.
 - One homepage section at a time; don't start the next until the user says so. The homepage order is the owner's
-  (set in Sanity): hero (with a proof line under the buttons: licensed by, licence no., year, each with an orange icon, figures bold), founder note, popular tours, themes, reviews, blog, FAQ, plan your trip
+  (set in Sanity): hero (about 85% of the screen, a proof line under the buttons: licensed by, licence no., years guiding, each
+  with an orange icon, figures bold; the header's Enquire stays hidden while the hero's own buttons are in view), founder
+  note (experience first: "experienced guides, now our own company", then up to four plain points, no icons), popular tours, themes, reviews, blog, FAQ, plan your trip
   (navy: steps + named planner), partners. No "why us" icon grid, no stepper rings, no photo CTA banner on the homepage.
 - Motion is quiet and quick, the same few moves everywhere (tokens in global.css): content fades in and rises 12px once
   as it enters (`data-reveal`, cards in a row 60ms apart); banner/hero photos settle from a 3% zoom and their words fade

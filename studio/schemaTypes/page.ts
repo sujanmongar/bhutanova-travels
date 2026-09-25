@@ -141,6 +141,17 @@ const founderNote = defineType({
     heading('A small team in Thimphu'),
     defineField({name: 'text', title: 'Note', type: 'simpleText', description: 'Two short paragraphs in the first person.', validation: (r) => r.required()}),
     defineField({name: 'person', title: 'Signed by', type: 'reference', to: [{type: 'teamMember'}], description: 'Name, role and portrait come from Team.', validation: (r) => r.required()}),
+    defineField({
+      name: 'points',
+      title: 'What it means for guests',
+      type: 'array',
+      description: 'Up to four short points under the note: a few words, then one sentence. Plain text, no icons.',
+      of: [{type: 'object', fields: [
+        {name: 'title', title: 'Point', type: 'string', validation: (r: any) => r.required()},
+        {name: 'text', title: 'One sentence', type: 'text', rows: 2, validation: (r: any) => r.required()},
+      ], preview: {select: {title: 'title', subtitle: 'text'}}}],
+      validation: (r) => r.max(4),
+    }),
     defineField({name: 'linkLabel', title: 'Link text', type: 'string', initialValue: 'More about us'}),
     defineField({name: 'linkHref', title: 'Link', type: 'url', initialValue: '/about/', hidden: ({parent}) => !parent?.linkLabel, validation: (r) => linkRules(r)}),
     grey(),
