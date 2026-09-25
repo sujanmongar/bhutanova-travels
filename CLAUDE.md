@@ -89,10 +89,9 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   up; pages cross-fade (header stays put); card photos ease in 2% on hover; buttons press to 98%. No bounces, no big
   zooms, no autoplaying rows or logo marquees (rows are swiped or moved with arrows; arrows hide when everything fits).
   Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
-  flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons (owner's call, Apple-style): the main button is navy (white on
-  dark backgrounds) and fills with the primary orange on hover; outline buttons have an orange outline and fill orange on
-  hover; text on orange is navy. The white outline button on photos/navy (hero Enquire) keeps its quiet white
-  outline and hover. WhatsApp buttons fill WhatsApp green on hover instead. Everything is off for reduced motion.
+  flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
+  outline → navy border). Only a few key buttons (.btn--accent: the hero's two and the header's Enquire) fill with the
+  primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green on hover. Everything is off for reduced motion.
 - Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
   beside the tentative itinerary timeline, 5 days then "Show all"), what's included, every day in full (one entry per

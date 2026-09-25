@@ -208,19 +208,21 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 }
 .btn:focus-visible { outline-offset: 3px; }
 .btn:active { scale: .98; transition-duration: 80ms; }  /* a small press, felt more than seen */
-/* Brand colours on buttons (the owner's call, Apple-style): the main button is navy (white on dark backgrounds) and
-   fills with the primary orange on hover; outline buttons wear an orange outline and fill orange on hover. Text on
-   orange is navy (white on this orange is too faint to read). The white outline button on photos and navy keeps its quiet
-   white hover. WhatsApp buttons fill WhatsApp green instead. */
+/* Hover: each variant goes one quiet step darker (or firmer). A few key buttons (.btn--accent: the hero's two and the
+   header's Enquire) fill with the primary orange instead, navy text on it (owner's call). WhatsApp buttons fill
+   WhatsApp green. */
 .btn--primary { background: var(--s-500); color: #fff; }
 .btn--light { background: #fff; color: var(--ink); }
-.btn--outline { background: transparent; color: var(--ink); border-color: var(--p-500); }
+.btn--outline { background: transparent; color: var(--ink); border-color: rgb(22 46 68 / .28); }
 .btn--soft { background: var(--surface); color: var(--ink); border-color: var(--border); }
 .btn--on-dark { background: transparent; border-color: rgb(255 255 255 / .32); color: #fff; }
 @media (hover: hover) {
-  :is(.btn--primary, .btn--light, .btn--outline, .btn--soft):hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); }
-  /* The white outline button on photos and navy (hero Enquire, contact card) keeps its quiet hover (owner's call) */
+  .btn--primary:hover { background: var(--s-800); }
+  .btn--light:hover { background: var(--s-50); }
+  .btn--outline:hover { border-color: var(--s-500); background: rgb(22 46 68 / .04); }
+  .btn--soft:hover { border-color: var(--border-dark); }
   .btn--on-dark:hover { border-color: rgb(255 255 255 / .72); background: rgb(255 255 255 / .08); }
+  .btn--accent:hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); }
   /* WhatsApp buttons fill with WhatsApp's own green on hover (dark text and logo stay readable on it) */
   .btn--wa:hover { background: var(--whatsapp); border-color: var(--whatsapp); color: var(--ink); }
 }
