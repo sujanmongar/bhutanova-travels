@@ -51,6 +51,8 @@
   --section: var(--space-16);   /* between sections */
   --card-pad: var(--space-6);   /* inside cards and panels */
   /* Frosted glass for everything pinned to the top (header, tab bars, the tour details bar), so they read as one strip */
+  --icon-bg: rgb(12 25 37 / .06); --icon-bg-hover: rgb(12 25 37 / .1);  /* round icon buttons: header search/menu, WhatsApp */
+  --whatsapp: #25d366;  /* the WhatsApp logo's own green, wherever the logo sits on white */
   --glass-bg: rgb(255 255 255 / .72); --glass-blur: saturate(180%) blur(18px);
   --grid-gap: var(--space-6);   /* between cards, rows and grids alike, at every width (so a card is 384px on desktop everywhere) */
   --measure: calc(var(--fs-base) * 34);  /* reading column for articles: 612px, about 70 characters a line */
@@ -218,7 +220,11 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
   .btn--outline:hover { border-color: var(--s-500); background: rgb(22 46 68 / .04); }
   .btn--soft:hover { border-color: var(--border-dark); }
   .btn--on-dark:hover { border-color: rgb(255 255 255 / .72); background: rgb(255 255 255 / .08); }
+  /* WhatsApp buttons fill with WhatsApp's own green on hover (dark text and logo stay readable on it) */
+  .btn--wa:hover { background: var(--whatsapp); border-color: var(--whatsapp); color: var(--ink); }
 }
+.btn--wa .icon { transition: color var(--dur-1); }
+@media (hover: hover) { .btn--wa:hover .icon { color: var(--ink); } }
 .btn--sm { --btn-h: 40px; padding: 0 var(--space-4); }
 .btn--lg { --btn-h: 56px; padding: 0 var(--space-8); }
 .btn--block { width: 100%; }

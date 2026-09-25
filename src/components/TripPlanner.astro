@@ -35,7 +35,7 @@ const Tag = inline ? 'div' : 'dialog';
           <img src="" alt="" width="96" height="72" data-based-img />
           <div><p class="t-title" data-based-title></p><p class="t-label muted" data-based-meta></p></div>
         </div>
-        <a class="btn btn--primary btn--lg btn--block" href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener" data-wa-link data-wa={waNumber}>
+        <a class="btn btn--outline btn--wa btn--lg btn--block" href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener" data-wa-link data-wa={waNumber}>
           <Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span>
         </a>
         <p class="or t-caption muted">Or send your details by email</p>
@@ -85,7 +85,7 @@ const Tag = inline ? 'div' : 'dialog';
         </div>
         </>
       )}
-      <button class:list={['btn btn--lg btn--block', inline ? 'btn--primary' : 'btn--outline']}>Send enquiry</button>
+      <button class="btn btn--primary btn--lg btn--block">Send enquiry</button>
       <p class="t-caption muted">{inline
         ? 'A planner in Thimphu replies within 24 hours.'
         : 'A planner in Thimphu replies with a day-by-day plan, then the price once places and stays are settled.'}</p>

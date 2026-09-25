@@ -103,7 +103,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
       <div class="facts__buy">
         <p><span class="t-label t-caps muted">From</span><b class="t-price num">${price}</b><span class="t-label muted">per person</span></p>
         <span class="facts__act">
-          <a class="btn btn--outline facts__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)" title="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
+          <a class="btn wa-round facts__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)" title="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
           <button class="btn btn--primary" type="button" data-customise={tour.id} data-plan-title="Enquire about this tour">Send an enquiry</button>
         </span>
       </div>
@@ -251,7 +251,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   <!-- Phones: booking bar at the bottom, hidden while the details bar (same action) is on screen -->
   <div class="bar">
     <p class="num"><small class="t-label muted">From</small><b class="t-price">${price}</b></p>
-    <a class="btn btn--outline bar__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)"><Icon name="social_whatsapp" /></a>
+    <a class="btn wa-round bar__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)"><Icon name="social_whatsapp" /></a>
     <button class="btn btn--primary" type="button" data-customise={tour.id} data-plan-title="Enquire about this tour">Enquire</button>
   </div>
 
@@ -392,7 +392,10 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .facts__buy { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-6); }
   .facts__act { display: flex; gap: var(--space-3); }
   .facts__wa { width: var(--btn-h); padding: 0; flex: none; }
-  .facts__act :global(.icon) { font-size: 22px; color: #25d366; }  /* WhatsApp logo in its own colour */
+  /* Round WhatsApp buttons: a light grey circle like the header's icon buttons, the logo in its own green */
+  .wa-round { background: var(--icon-bg); color: var(--whatsapp); border-color: transparent; }
+  @media (hover: hover) { .wa-round:hover { background: var(--whatsapp); color: var(--ink); } }
+  .facts__act :global(.icon) { font-size: 22px; color: var(--whatsapp); }  /* WhatsApp logo in its own colour */
   @media (max-width: 767px) { .facts__act { flex: 1 1 100%; } .facts__act .btn--primary { flex: 1 1 auto; } }  /* phones: the enquiry fills the line */
   .facts__buy p { display: grid; }
   .facts__buy b { color: var(--ink); }
@@ -493,7 +496,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .bar p { margin-right: auto; display: grid; }
   .bar b { color: var(--ink); }
   .bar .btn { --btn-h: 52px; }
-  .bar .bar__wa { width: var(--btn-h); padding: 0; font-size: 22px; }
+  .bar .bar__wa { width: var(--btn-h); padding: 0; font-size: 22px; color: var(--whatsapp); }  /* same green as the details bar's WhatsApp button */
   .bar.is-off { translate: 0 110%; }
   @media (min-width: 768px) { .bar { display: none; } }
 
