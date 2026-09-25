@@ -3,8 +3,8 @@ import Icon from '../Icon.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
 interface Props { heading: string; text?: string; image?: BlockImage; primaryLabel?: string; secondaryLabel?: string; proof?: string[] }
 const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Enquire', proof = [] } = Astro.props;
-// Trust bar at the foot of the hero: each fact gets an icon by what it says; figures (licence no., years, counts) in bold
-const ICONS: [RegExp, string][] = [[/licen[cs]e no|no\./i, 'identification-badge'], [/since|years/i, 'clock'], [/reply|hours|answer/i, 'headset'], [/inclusive|price|cost|hidden|deposit/i, 'receipt'], [/team|owned|local|based|bhutanese/i, 'users-three'], [/travell?ers|guests/i, 'users-three'], [/tripadvisor|google|rated|review/i, 'star'], [/representative|partner|member/i, 'handshake']];
+// Proof line: each fact gets an icon by what it says; figures (licence no., years) in bold
+const ICONS: [RegExp, string][] = [[/licen[cs]e no|no\./i, 'identification-badge'], [/since|years/i, 'clock'], [/reply|hours/i, 'headset'], [/inclusive|price/i, 'receipt'], [/team|owned|based/i, 'users-three'], [/tripadvisor|google|rated|review/i, 'star'], [/representative|partner|member/i, 'handshake']];
 const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'seal-check';
 ---
 <section class="hero">
@@ -23,38 +23,29 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
       <a class="btn btn--light btn--accent btn--lg" href="/bhutan-tours/">{primaryLabel}</a>
       <a class="btn btn--on-dark btn--accent btn--lg" href="/contact/" data-open-plan>{secondaryLabel}</a>
     </div>
+    {proof.length > 0 && <ul class="hero__proof t-label">{proof.map((p) => <li><Icon name={iconOf(p)} /><span>{p.split(/(\d[\d,.–-]*\+?)/).map((bit, i) => (i % 2 ? <b>{bit}</b> : bit))}</span></li>)}</ul>}
   </div>
-  {proof.length > 0 && (
-    <div class="hero__bar">
-      <ul class="container hero__proof t-label">
-        {proof.map((p) => <li><Icon name={iconOf(p)} /><span>{p.split(/(\d[\d,.·–-]*\+?)/).map((bit, i) => (i % 2 ? <b>{bit}</b> : bit))}</span></li>)}
-      </ul>
-    </div>
-  )}
 </section>
 
 <style>
-  /* The full screen (svh: the height with the phone's address bar showing, so nothing hides behind it): the photo, the
-     words and buttons, and the trust bar along the bottom */
-  .hero { position: relative; display: grid; grid-template-rows: minmax(0, 1fr) auto; height: 100svh; min-height: 560px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
-  .hero picture { position: absolute; inset: 0; z-index: -2; }  /* out of the grid: the photo lies behind everything */
+  .hero { position: relative; height: min(92svh, 800px); min-height: 600px; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
   .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
-  .hero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
-    background: linear-gradient(rgb(12 25 37 / .35), rgb(12 25 37 / .2) 20%, rgb(12 25 37 / .55) 40%, rgb(12 25 37 / .7) 70%, rgb(12 25 37 / .88)); }  /* darker behind the centred words */
-  /* The words and buttons sit in the middle of the space between the header and the trust bar, a touch low (optical centre) */
-  .hero__in { position: relative; z-index: 1; display: grid; align-content: center; row-gap: var(--space-6); padding-block: calc(var(--header-h) + var(--space-8)) var(--space-8); }
+  .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
+  .hero__in { position: relative; z-index: 1; height: 100%; display: grid; align-content: end; row-gap: var(--space-6); padding-bottom: max(var(--space-8), env(safe-area-inset-bottom)); }
   .hero__line { max-width: 48ch; color: #fff; }
   .hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-4); }
-  /* Trust bar: a hairline and a faint dark strip; orange icons, white figures */
-  .hero__bar { position: relative; z-index: 1; border-top: 1px solid rgb(255 255 255 / .18); background: rgb(12 25 37 / .35); padding-bottom: env(safe-area-inset-bottom); }
-  .hero__proof { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3) var(--space-6); margin-block: 0; padding-block: var(--space-4); list-style: none; color: var(--on-dark-2); }
-  .hero__proof li { display: flex; align-items: center; gap: var(--space-2); min-width: 0; }
-  .hero__proof li:first-child:nth-last-child(odd) { grid-column: 1 / -1; }  /* an odd count: the first fact takes its own line */
+  /* Proof line: a hairline above, each fact with an orange icon, figures in white bold */
+  .hero__proof { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-8); margin: var(--space-2) 0 0; padding: var(--space-4) 0 0; border-top: 1px solid rgb(255 255 255 / .24); list-style: none; color: var(--on-dark-2); }
+  .hero__proof li { display: flex; align-items: center; gap: var(--space-2); }
   .hero__proof :global(.icon) { flex: none; font-size: 20px; color: var(--p-500); }
   .hero__proof b { color: #fff; font-weight: 600; }
+  /* Phones: the first fact on its own line, the short ones share the next */
+  @media (max-width: 767px) { .hero__proof { column-gap: var(--space-6); } .hero__proof li:first-child { flex-basis: 100%; } }
   @media (min-width: 768px) {
-    .hero::after { background: radial-gradient(70% 80% at 0 55%, rgb(12 25 37 / .6), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 60%, rgb(12 25 37 / .55) 90%, rgb(12 25 37 / .7)); }
-    .hero__in { padding-block: calc(var(--header-h) + var(--space-12)) var(--space-12); }
-    .hero__proof { display: flex; flex-wrap: wrap; justify-content: space-between; padding-block: var(--space-6); }
+    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
+    .hero__in { padding-bottom: var(--space-12); }
+    .hero__proof { justify-self: start; }
   }
+  @media (min-width: 1200px) { .hero { height: min(92svh, 860px); } .hero__in { padding-bottom: var(--space-16); } }
 </style>
