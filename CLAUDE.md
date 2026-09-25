@@ -104,8 +104,8 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - Tours: the hub (/bhutan-tours/, the Tours menu item) shows the theme cards and popular tours. Each theme page
   (/bhutan-tours/<theme>/, the menu's theme links) is the tour finder: its banner, then one pinned bar with the theme
   tabs (links to the other themes, Cultural first), the count, Duration and Sort (Most popular from each tour's
-  Popularity, price; festival themes also Festival date, the default there). Simple tour cards (festival tours add "Next
-  festival: …"), and a last card "Want a different trip?" that opens the enquiry form. No "All tour packages" menu link.
+  Popularity, price; festival themes also Festival date, the default there). Simple tour cards (all the same height; the
+  festival date only drives the sort), and a last card "Want a different trip?" that opens the enquiry form. No "All tour packages" menu link.
 - One enquiry form for the whole site (TripPlanner, in the layout): every Enquire / Plan / Customise button opens it
   (data-open-plan, or data-customise="<tour id>" to fill in that tour). The sheet shows the chosen tour, Chat on WhatsApp,
   then "Or send your details by email": Full name *, Email *, Phone (optional), Travellers *, Days *, When, Anything
