@@ -78,7 +78,7 @@ export const collections = {
       itinerary[]{ title, body, overnight, "image": image.${IMG},
         "places": (places[]->{ _type, title, excerpt, "slug": slug.current, "dest": destination->slug.current, "page": coalesce(page, false),
           "image": coalesce(image.${IMG}, destination->image.${IMG}) })[defined(slug)] },
-      inclusions, exclusions, "map": map.${IMG}, featured, ${SEO} }`),
+      inclusions, exclusions, "map": map.${IMG}, featured, popularity, festivalDates[]{ name, start, end }, ${SEO} }`),
     schema: z.object({
       title: z.string(),
       category: reference('categories'),
@@ -105,6 +105,8 @@ export const collections = {
       exclusions: z.array(z.string()).default([]),
       map: z.string().optional(),
       featured: z.boolean().default(false),
+      popularity: z.number().default(99),
+      festivalDates: z.array(z.object({ name: z.string(), start: z.string(), end: z.string() })).default([]),
       seo,
     }),
   }),

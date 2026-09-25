@@ -38,7 +38,7 @@ const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps')
         )}
         <div class="wa__act">
           <a class="btn btn--light" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-          <a class="btn btn--on-dark" href={href}>{cta}</a>
+          <a class="btn btn--on-dark" href={href} data-open-plan={href === '/contact/' ? '' : undefined}>{cta}</a>
         </div>
         <p class="wa__alt t-label"><span>Or call <a href={tel(SITE.phone)}>{SITE.phone}</a></span><span class="wa__dot" aria-hidden="true"> · </span><span><a href={`mailto:${SITE.email}`}>{SITE.email}</a></span></p>
       </div>

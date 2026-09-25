@@ -17,7 +17,7 @@ const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = '
     {text && <p class="hero__line t-body">{text}</p>}
     <div class="hero__cta">
       <a class="btn btn--light btn--lg" href="/bhutan-tours/">{primaryLabel}</a>
-      <a class="btn btn--on-dark btn--lg" href="/contact/">{secondaryLabel}</a>
+      <a class="btn btn--on-dark btn--lg" href="/contact/" data-open-plan>{secondaryLabel}</a>
     </div>
     {proof.length > 0 && <ul class="hero__proof t-label">{proof.map((p) => <li>{p}</li>)}</ul>}
   </div>

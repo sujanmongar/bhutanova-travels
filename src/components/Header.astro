@@ -27,6 +27,7 @@ const nav: { href: string; label: string; all?: string; children: { href: string
     children: [
       { href: '/about/', label: 'About us' },
       { href: '/blog/', label: 'Blog' },
+      { href: '/contact/', label: 'Contact us' },
     ],
   },
 ];
@@ -93,7 +94,7 @@ const searchIndex = [
       <button class="icon-btn nav__search" type="button" aria-expanded="false" aria-controls="search-q" data-search-toggle>
         <Icon name="search" class="i-open" /><Icon name="close" class="i-close" /><span class="sr-only" data-search-label>Search</span>
       </button>
-      <a href="/contact/" class="btn btn--primary btn--sm nav__book">Enquire</a>
+      <a href="/contact/" class="btn btn--primary btn--sm nav__book" data-open-plan>Enquire</a>
       <button class="burger" type="button" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false" data-burger>
         <Icon name="bars" /><span class="sr-only">Menu</span>
       </button>
@@ -108,7 +109,7 @@ const searchIndex = [
 <script type="application/json" id="search-index" set:html={ldJson(searchIndex)} />
 
 <!-- Mobile/tablet only: Enquire follows you down the page instead of living in the (now tighter) top bar. -->
-{showFab && <a href="/contact/" class="btn btn--primary fab-enquire">Enquire</a>}
+{showFab && <a href="/contact/" class="btn btn--primary fab-enquire" data-open-plan>Enquire</a>}
 
 <!-- Mobile/tablet menu: native modal dialog → focus trap, Esc, inert page, backdrop for free.
      Links and CTAs sit in the lower half where the thumb rests. -->
@@ -145,7 +146,7 @@ const searchIndex = [
       <div class="drawer__cta">
         <a class="btn btn--soft" href={tel}><Icon name="phone" />Call us</a>
         <a class="btn btn--soft" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp</a>
-        <a class="btn btn--primary btn--lg" href="/contact/">Enquire</a>
+        <a class="btn btn--primary btn--lg" href="/contact/" data-open-plan>Enquire</a>
       </div>
     </div>
   </div>

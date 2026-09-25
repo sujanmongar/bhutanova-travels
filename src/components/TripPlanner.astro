@@ -1,0 +1,161 @@
+---
+// The site's one enquiry form: only what a planner needs for a first reply (travellers, days, month, anything else in
+// the guest's own words, and who to reply to); the planner works out places, hotels and the price in the conversation.
+// In the sheet: the chosen tour, a Chat on WhatsApp button, then "or send your details by email" and the form.
+// As a sheet (in the layout, once per page): data-open-plan opens it for a trip of their own; data-customise="<tour id>"
+// opens it for that tour with its days filled in (?customise=<tour id> in the address does the same); data-plan-title
+// sets the sheet's title.
+// Inline (the contact page): the same form on the page, where any message can be sent, so the trip fields are optional.
+import type { CollectionEntry } from 'astro:content';
+import Form from './Form.astro';
+import Icon from './Icon.astro';
+import { SITE, img } from '../config';
+
+interface Props { tours?: CollectionEntry<'tours'>[]; inline?: boolean }
+const { tours = [], inline = false } = Astro.props;
+const presets = Object.fromEntries(tours.map((t) => [t.id, { title: t.data.title, days: t.data.days, price: t.data.price, image: img(t.data.image, 288, 216) }]));
+const waNumber = SITE.phone.replace(/\D/g, '');
+const now = new Date();
+const months = Array.from({ length: 18 }, (_, i) => new Date(now.getFullYear(), now.getMonth() + i, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }));
+const id = (name: string) => `${inline ? 'c' : 'p'}-${name}`;  // the sheet is on the contact page too
+const Tag = inline ? 'div' : 'dialog';
+---
+<Tag class:list={['planner', inline ? 'planner--inline' : 'sheet']} id={inline ? undefined : 'plan'} aria-labelledby={inline ? undefined : 'plan-title'}
+  data-planner data-inline={inline ? '' : undefined} data-presets={inline ? undefined : JSON.stringify(presets)}>
+  <div class:list={{ sheet__in: !inline }}>
+    {!inline && (
+      <div class="sheet__head">
+        <p class="t-card" id="plan-title" data-title>Plan your trip</p>
+        <button type="button" class="sheet__close" aria-label="Close" data-close><Icon name="close" /></button>
+      </div>
+    )}
+    {!inline && (
+      <>
+        <div class="enq-tour" data-based hidden>
+          <img src="" alt="" width="96" height="72" data-based-img />
+          <div><p class="t-title" data-based-title></p><p class="t-label muted" data-based-meta></p></div>
+        </div>
+        <a class="btn btn--primary btn--lg btn--block" href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener" data-wa-link data-wa={waNumber}>
+          <Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span>
+        </a>
+        <p class="or t-caption muted">Or send your details by email</p>
+      </>
+    )}
+    <Form subject={inline ? 'Website message' : 'Trip enquiry'} class="planner__form">
+      <input type="hidden" name="tour" value="" data-tour />
+      {/* Who you are first, then the trip (travellers, days, when) and anything else. The contact page, where any message
+          can be sent: who you are, the message, then the trip details as optional. */}
+      {inline ? (
+        <>
+        <div class="field who"><label for={id('name')}>Full name *</label><input class="input" id={id('name')} name="name" autocomplete="name" required /></div>
+        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required /></div>
+        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
+        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="muted">(optional)</span></>}</label>
+          <textarea class="input" id={id('notes')} name="notes" rows={inline ? 4 : 3}
+            placeholder={inline ? 'Your question, or the trip you have in mind: places, hotels, a festival…' : "Places you'd like to see, the kind of hotels, a festival, children's ages…"}></textarea>
+        </div>
+        <p class="sub t-label">Planning a trip? <span class="muted">(optional)</span></p>
+        <div class="row trip">
+          <div class="field"><label for={id('guests')}>{inline ? 'Travellers' : 'Travellers *'}</label>
+            <input class="input" id={id('guests')} name="travellers" type="number" inputmode="numeric" min="1" value={inline ? undefined : '2'} placeholder={inline ? 'e.g. 2' : undefined} required={!inline} /></div>
+          <div class="field"><label for={id('days')}>{inline ? 'Days' : 'Days *'}</label>
+            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="2" max="30" placeholder="e.g. 7" required={!inline} /></div>
+        </div>
+        <div class="field when"><label for={id('when')}>When</label>
+          <select class="input" id={id('when')} name="when"><option value="">Flexible / not decided yet</option>{months.map((m) => <option>{m}</option>)}</select>
+        </div>
+        </>
+      ) : (
+        <>
+        <div class="field who"><label for={id('name')}>Full name *</label><input class="input" id={id('name')} name="name" autocomplete="name" required /></div>
+        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required /></div>
+        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
+        <div class="row trip">
+          <div class="field"><label for={id('guests')}>{inline ? 'Travellers' : 'Travellers *'}</label>
+            <input class="input" id={id('guests')} name="travellers" type="number" inputmode="numeric" min="1" value={inline ? undefined : '2'} placeholder={inline ? 'e.g. 2' : undefined} required={!inline} /></div>
+          <div class="field"><label for={id('days')}>{inline ? 'Days' : 'Days *'}</label>
+            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="2" max="30" placeholder="e.g. 7" required={!inline} /></div>
+        </div>
+        <div class="field when"><label for={id('when')}>When</label>
+          <select class="input" id={id('when')} name="when"><option value="">Flexible / not decided yet</option>{months.map((m) => <option>{m}</option>)}</select>
+        </div>
+        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="muted">(optional)</span></>}</label>
+          <textarea class="input" id={id('notes')} name="notes" rows={inline ? 4 : 3}
+            placeholder={inline ? 'Your question, or the trip you have in mind: places, hotels, a festival…' : "Places you'd like to see, the kind of hotels, a festival, children's ages…"}></textarea>
+        </div>
+        </>
+      )}
+      <button class:list={['btn btn--lg btn--block', inline ? 'btn--primary' : 'btn--outline']}>Send enquiry</button>
+      <p class="t-caption muted">{inline
+        ? 'A planner in Thimphu replies within 24 hours.'
+        : 'A planner in Thimphu replies with a day-by-day plan, then the price once places and stays are settled.'}</p>
+    </Form>
+  </div>
+</Tag>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-planner]').forEach((root) => {
+    const form = root.querySelector<HTMLFormElement>('form')!;
+    const $ = <T extends Element>(q: string, el: ParentNode = form) => el.querySelector<T>(q)!;
+    const field = (name: string) => $<HTMLInputElement>(`[name="${name}"]`);
+    const inline = root.hasAttribute('data-inline');
+
+    // Contact page: any message can be sent, so the trip fields are optional, but there has to be a message or the days
+    if (inline) {
+      const notes = field('notes');
+      form.addEventListener('submit', (e) => {
+        notes.setCustomValidity(notes.value.trim() || field('days').value ? '' : 'Write a message, or tell us the days of your trip.');
+        if (!notes.reportValidity()) e.preventDefault();
+      }, { capture: true });
+      form.addEventListener('input', () => notes.setCustomValidity(''));
+      return;
+    }
+
+    // The sheet: opened empty, or for a tour
+    const sheet = root as HTMLDialogElement;
+    const presets = JSON.parse(sheet.dataset.presets!) as Record<string, { title: string; days: number; price: number; image: string }>;
+    const based = $<HTMLElement>('[data-based]', sheet);
+    const waLink = $<HTMLAnchorElement>('[data-wa-link]', sheet);
+    const open = (id: string | null, title?: string) => {
+      const p = id ? presets[id] : undefined;
+      field('days').value = p ? String(p.days) : '';
+      field('tour').value = p ? `${p.title} (${p.days} days)` : '';
+      based.hidden = !p;
+      if (p) {
+        $<HTMLImageElement>('[data-based-img]', based).src = p.image;
+        $('[data-based-title]', based).textContent = p.title;
+        $('[data-based-meta]', based).textContent = `${p.days} days · from $${p.price.toLocaleString('en-US')} per person`;
+      }
+      const hello = p ? `Hello Bhutanova, I'm interested in ${p.title} (${p.days} days).` : 'Hello Bhutanova, I would like to plan a trip.';
+      waLink.href = `https://wa.me/${waLink.dataset.wa}?text=${encodeURIComponent(`${hello}\n${location.href.split('?')[0]}`)}`;
+      $('[data-title]', sheet).textContent = title ?? (p ? 'Customise this trip' : 'Plan your trip');
+      document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach((d) => d !== sheet && d.close());
+      sheet.showModal();
+    };
+    sheet.addEventListener('click', (e) => { const t = e.target as Element; if (t === sheet || t.closest('[data-close]')) sheet.close(); });
+    document.addEventListener('click', (e) => {
+      const t = (e.target as Element).closest<HTMLElement>('[data-open-plan], [data-customise]');
+      if (!t) return;
+      e.preventDefault();
+      open(t.dataset.customise ?? null, t.dataset.planTitle);
+    });
+    const start = new URL(location.href).searchParams.get('customise');
+    if (start && presets[start]) open(start);
+  });
+</script>
+
+<style>
+  /* The <form> itself is drawn by Form.astro, so it's reached through :global. One even gap between every part. */
+  .planner :global(.planner__form) { display: grid; gap: var(--space-6); }
+  .sub { padding-top: var(--space-6); border-top: 1px solid var(--border); color: var(--ink); }
+  .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); }
+  .field .muted { font-weight: var(--fw-caption); }
+  /* The chosen tour, as on the old enquiry sheet: photo, name, days and price */
+  .enq-tour { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); padding: var(--space-3); border-radius: var(--r-md); background: var(--surface); }
+  .enq-tour[hidden] { display: none; }
+  .enq-tour img { flex: none; width: 96px; height: 72px; border-radius: var(--r-sm); object-fit: cover; }
+  .enq-tour .t-title { color: var(--ink); }
+  .planner > .sheet__in > .btn :global(.icon) { font-size: 20px; }
+  .or { margin: var(--space-4) 0 var(--space-6); text-align: center; }
+  @media (min-width: 768px) { .sheet.planner { width: min(480px, 100%); } }
+</style>

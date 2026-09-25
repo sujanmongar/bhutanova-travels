@@ -38,7 +38,7 @@ const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).
         <p>{asked > 0 && `The ${asked} questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest. `}If yours is not there, ask a trip planner in Thimphu. We reply within 24 hours.</p>
       </div>
       <div class="ask" data-reveal>
-        <a class="btn btn--primary" href="/contact/">Ask a trip planner</a>
+        <a class="btn btn--primary" href="/contact/" data-open-plan>Ask a trip planner</a>
         {faqs && <a class="link-more" href={`/travel-guide/${faqs.id}/`}>Read the Bhutan travel FAQs<Icon name="arrow-right" /></a>}
       </div>
     </div>

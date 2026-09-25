@@ -35,7 +35,7 @@ const { cat, tours } = Astro.props;
         <>
           <div class="grid-3 tours">{tours.map((t) => <TourCard tour={t} />)}</div>
         </>
-      ) : <p class="t-body muted">New packages coming soon — <a class="accent" href="/contact/">ask us for a custom trip</a>.</p>}
+      ) : <p class="t-body muted">New packages coming soon — <a class="accent" href="/contact/" data-open-plan>ask us for a custom trip</a>.</p>}
     </div>
   </section>
 

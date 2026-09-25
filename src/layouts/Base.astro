@@ -3,6 +3,8 @@ import '../styles/global.css';
 import serifUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import TripPlanner from '../components/TripPlanner.astro';
+import { getCollection } from 'astro:content';
 import { SITE, img, ldJson, type Seo } from '../config';
 
 interface Props {
@@ -79,6 +81,8 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <Header />
     <main id="main"><slot /></main>
     <Footer />
+    {/* The one short enquiry form: every Enquire / Plan / Customise button on the site opens it */}
+    <TripPlanner tours={await getCollection('tours')} />
     <script>
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 

@@ -1,7 +1,7 @@
 ---
 import type { CollectionEntry } from 'astro:content';
 import { img, srcset } from '../config';
-import { tourPath } from '../utils';
+import { nextFestival, tourPath } from '../utils';
 interface Props { tour: CollectionEntry<'tours'>; eager?: boolean; rail?: boolean }
 const { tour, eager, rail } = Astro.props;
 // The photo frame is the same height on every card site-wide (--card-photo: 240px phones, 270px from 768px), whatever
@@ -12,6 +12,8 @@ const sizes = rail
   ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)'
   : '(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)';
 const t = tour.data;
+// Festival tours show when their next festival is, the one thing a festival-goer checks first
+const festival = nextFestival(t.festivalDates);
 ---
 <article class="tc">
   <div class="tc__img">
@@ -20,6 +22,7 @@ const t = tour.data;
   </div>
   <h3 class="tc__title t-card"><a href={tourPath(tour)}>{t.title}</a></h3>
   <p class="tc__meta t-body">{t.days} days · from <b class="num">${t.price.toLocaleString('en-US')}</b> per person</p>
+  {festival && <p class="tc__fest t-label">Next festival: <time datetime={festival.start}>{festival.label}</time></p>}
 </article>
 <style>
   .tc { position: relative; display: flex; flex-direction: column; height: 100%; }
@@ -32,6 +35,7 @@ const t = tour.data;
   /* "8 days · from $1,690 per person" at body size, price bold; sits at the bottom so it lines up across a row of cards. */
   .tc__meta { margin-top: auto; padding-top: var(--space-2); color: var(--text-2); }
   .tc__meta b { font-weight: 600; color: var(--ink); }
+  .tc__fest { margin-top: var(--space-1); color: var(--text-2); }
   @media (hover: hover) {
     .tc:hover .tc__img img { scale: 1.02; }
     .tc:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }

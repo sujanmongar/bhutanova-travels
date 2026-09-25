@@ -35,7 +35,7 @@ const first = person?.name.split(' ')[0];
       <p class="t-body talk__txt">{first ? `Your message comes to ${first}, who replies within 24 hours with a first plan and a price.` : 'We reply within 24 hours with a first plan and a price.'}</p>
       <div class="talk__act">
         <a class="btn btn--light btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-        <a class="btn btn--on-dark btn--block" href="/contact/">Send an enquiry</a>
+        <a class="btn btn--on-dark btn--block" href="/contact/" data-open-plan>Send an enquiry</a>
       </div>
       <ul class="talk__lines t-body">
         <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
