@@ -285,6 +285,10 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
+/* Short phones (iPhone SE, small Androids, under 600px of visible height): the band above the hero title steps down to
+   64px, so the first screen still reaches the Explore tours button */
+@media (max-width: 767px) and (max-height: 599px) { :root { --hero-gap: var(--space-16); } }
+
 /* Safari (every iPhone browser) and Firefox can't draw the squircle: a plain round corner at the same radius cuts in about
    twice as deep, so there the corner takes the round radius that looks like the squircle (28px squircle ≈ 16px round on
    phones, 36px ≈ 20px from 768px). Cards look the same in every browser. */
