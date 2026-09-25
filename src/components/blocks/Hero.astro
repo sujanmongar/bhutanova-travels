@@ -51,7 +51,7 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
   @media (min-width: 768px) {
     .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
     .hero { min-height: max(560px, min(85svh, 800px)); }
-    .hero__in { padding-block: calc(var(--header-h) + var(--space-8)) var(--space-12); }
+    .hero__in { padding-block: calc(var(--header-h) + var(--space-16)) var(--space-12); }  /* at least 64px under the header, even in a short laptop window (the hero grows instead) */
     .hero__proof { justify-self: start; }
   }
   @media (min-width: 1200px) { .hero { min-height: max(560px, min(85svh, 860px)); } .hero__in { padding-bottom: var(--space-16); } }
