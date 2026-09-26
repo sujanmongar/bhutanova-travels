@@ -1,0 +1,29 @@
+---
+// A plain page (404, search, sitemap, the legal pages): breadcrumbs, the h1 and an optional lede, the page's content,
+// then the closing contact card. crumbs is the trail after Home (default: the title; false for none). prose wraps the
+// content as article text, which follows the title at the prose rhythm (24px) instead of the section stack.
+import Base from './Base.astro';
+import Breadcrumbs from '../components/Breadcrumbs.astro';
+import WhatsAppCta from '../components/WhatsAppCta.astro';
+interface Props { title: string; heading?: string; description?: string; noindex?: boolean; crumbs?: Array<[string, string?]> | false; lede?: string; narrow?: boolean; prose?: boolean; cta?: boolean }
+const { title, heading = title, description, noindex, crumbs = [[title]], lede, narrow = false, prose = false, cta = true } = Astro.props;
+---
+<Base title={title} description={description} noindex={noindex}>
+  <section class="section">
+    <div class:list={['container', { narrow }]}>
+      {crumbs && <Breadcrumbs items={crumbs} />}
+      <header class:list={['ph', { 'ph--prose': prose }]}>
+        <h1>{heading}</h1>
+        {lede && <p class="t-body">{lede}</p>}
+      </header>
+      {prose ? <div class="prose"><slot /></div> : <slot />}
+    </div>
+  </section>
+  {cta && <WhatsAppCta />}
+</Base>
+<style>
+  .narrow { max-width: 760px; }
+  .ph { margin-bottom: var(--stack); }
+  .ph--prose { margin-bottom: var(--space-6); }
+  .ph > p { margin-top: var(--space-6); max-width: 56ch; color: var(--text-2); }
+</style>

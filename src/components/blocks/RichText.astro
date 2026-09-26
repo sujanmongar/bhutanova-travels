@@ -1,12 +1,28 @@
 ---
+// A page's free-text section. With "Plan card and share buttons beside the text" ticked (long texts such as About
+// Bhutan's "The country in detail"), the text keeps its reading width and, from 1200px, the plan card and share icons
+// sit beside it and stay in view; below that the share icons follow the text.
 import { ptHtml } from '../../pt';
+import WithSidebar from '../WithSidebar.astro';
 import type GithubSlugger from 'github-slugger';
-interface Props { heading?: string; body?: any[]; grey?: boolean; slugger?: GithubSlugger }
-const { heading, body, grey = false, slugger } = Astro.props;
+interface Props { heading?: string; body?: any[]; grey?: boolean; aside?: boolean; pageTitle?: string; slugger?: GithubSlugger }
+const { heading, body, grey = false, aside = false, pageTitle = 'Bhutanova Travels', slugger } = Astro.props;
+const html = ptHtml(body, slugger, heading ? 1 : 0).html;
 ---
 <section class:list={['section', { 'section--grey': grey }]}>
-  <div class="container">
-    {heading && <div class="sh" data-reveal><h2>{heading}</h2></div>}
-    <div class="prose" set:html={ptHtml(body, slugger, heading ? 1 : 0).html} />
-  </div>
+  {aside ? (
+    <WithSidebar share={pageTitle} plan={{ topic: pageTitle }}>
+      {heading && <div class="sh" data-reveal><h2>{heading}</h2></div>}
+      <div class="prose" set:html={html} />
+    </WithSidebar>
+  ) : (
+    <div class="container">
+      {heading && <div class="sh" data-reveal><h2>{heading}</h2></div>}
+      <div class="prose" set:html={html} />
+    </div>
+  )}
 </section>
+<style>
+  /* The share row here runs the full column width, not the text's measure as on destination pages (owner's call) */
+  section :global(.ws__share) { max-width: none; }
+</style>

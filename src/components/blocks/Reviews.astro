@@ -1,35 +1,18 @@
 ---
 import { getCollection, getEntry } from 'astro:content';
 import Icon from '../Icon.astro';
-import { img, srcset, focal, ldJson, SITE } from '../../config';
+import LinkMore from '../LinkMore.astro';
+import { img, srcset, focal } from '../../config';
+import { tourPath } from '../../utils';
 interface Props { heading: string; grey?: boolean }
 const { heading, grey = false } = Astro.props;
 const reviews = (await getEntry('reviews', 'reviews'))!.data;
 const tours = await getCollection('tours');
 // Editors wrap a phrase in **double asterisks** to highlight it; odd parts of the split are the highlights.
 const parts = (t: string) => t.split(/\*\*(.+?)\*\*/g);
-const plain = (t: string) => t.replace(/\*\*(.+?)\*\*/g, '$1');
-// Real ratings only — while "sample" is ticked these are placeholder numbers, and publishing fake review
-// counts in structured data is exactly what Google's review-snippet guidelines prohibit. Untick "sample"
-// once the platform ratings are real and this turns itself on.
-const ratingSchema = !reviews.sample && reviews.platforms.length > 0 && (() => {
-  const totalCount = reviews.platforms.reduce((n, p) => n + p.count, 0);
-  const weighted = reviews.platforms.reduce((n, p) => n + p.rating * p.count, 0) / totalCount;
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'TravelAgency',
-    '@id': new URL('/#org', Astro.site).href,
-    name: SITE.name,
-    url: Astro.site?.href,
-    aggregateRating: { '@type': 'AggregateRating', ratingValue: Math.round(weighted * 10) / 10, bestRating: 5, reviewCount: totalCount },
-    review: reviews.items.slice(0, 8).map((r) => ({
-      '@type': 'Review',
-      author: { '@type': 'Person', name: r.name },
-      reviewRating: { '@type': 'Rating', ratingValue: r.rating, bestRating: 5 },
-      reviewBody: plain(r.text),
-    })),
-  };
-})();
+// No review markup in the page's structured data: Google doesn't allow self-serving or other-site ratings on the
+// company's own site; star snippets come from the Google Business Profile.
+const items = reviews.items;
 type Review = (typeof reviews.items)[number];
 // The guest's own photo when there is one; otherwise the photo of the tour they took — never a stand-in face.
 // Shown as a small round portrait next to the name, so the CDN sends a square crop (or the editor's focal point).
@@ -38,13 +21,14 @@ const pic = (r: Review) => {
   const tour = tours.find((t) => t.data.title === r.trip);
   return tour && { url: tour.data.image, pos: '50% 50%', alt: '', crop: true };
 };
+// A trip that matches a tour's name links to that tour, so a guest's words lead straight to the trip
+const tripHref = (trip?: string) => { const t = trip && tours.find((x) => x.data.title === trip); return t ? tourPath(t) : undefined; };
 // While Reviews → "sample" is ticked, badges link out without figures: placeholder ratings never sit next to a real
 // platform's logo. Untick it once the rating and count are the real ones.
 const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo_tripadvisor' };
 ---
-{(reviews.items.length > 0 || reviews.platforms.length > 0) && (
+{(items.length > 0 || reviews.platforms.length > 0) && (
 <section class:list={['section', { 'section--grey': grey }]}>
-  {ratingSchema && <script type="application/ld+json" set:html={ldJson(ratingSchema)} />}
   <div class="container">
     <div class="rv__head" data-reveal>
       <h2>{heading}</h2>
@@ -74,9 +58,9 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
     </div>
 
     <!-- A wall of reviews: staggered columns, each review as long as it needs to be. Phones swipe through them. -->
-    {reviews.items.length > 0 && (
+    {items.length > 0 && (
       <ul class="quotes" data-reveal="stagger">
-        {reviews.items.map((r) => {
+        {items.map((r) => {
           const p = pic(r);
           return (
             <li>
@@ -85,8 +69,8 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
                 <blockquote>“{parts(r.text).map((t, k) => (k % 2 ? <mark>{t}</mark> : t))}”</blockquote>
                 <figcaption>
                   {p ? <img src={img(p.url, 112, p.crop ? 112 : undefined)} srcset={p.crop ? srcset(p.url, [56, 112, 168], 1) : undefined} sizes="56px"
-                    alt="" width="56" height="56" loading="lazy" decoding="async" style={`object-position:${p.pos}`} /> : <span class="quote__init" aria-hidden="true">{r.name.slice(0, 1)}</span>}
-                  <span class="quote__who"><b class="t-label">{r.name}</b><span class="t-caption">{r.place}{r.trip && <> · {r.trip}</>}</span></span>
+                    alt="" width="56" height="56" loading="lazy" decoding="async" style={`object-position:${p.pos}`} /> : <span class="quote__init t-title" aria-hidden="true">{r.name.slice(0, 1)}</span>}
+                  <span class="quote__who"><b class="t-label">{r.name}</b><span class="t-caption">{r.place}{r.trip && <> · {tripHref(r.trip) ? <a href={tripHref(r.trip)}>{r.trip}</a> : r.trip}</>}</span></span>
                 </figcaption>
               </figure>
             </li>
@@ -111,6 +95,8 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
         </ul>
       </div>
     )}
+    <!-- Right after reading guests' trips: the way to plan one -->
+    {items.length > 0 && <LinkMore class="rv__plan" label="Plan a trip like these" data-open-plan data-plan-title="Plan your trip" />}
   </div>
 </section>
 )}
@@ -121,19 +107,19 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   .rv__badges { display: none; flex-wrap: wrap; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
   .badge {
     display: flex; align-items: center; gap: var(--space-3); min-height: 60px; padding: var(--space-2) var(--space-4) var(--space-2) var(--space-3);
-    border: 1px solid var(--border-dark); border-radius: var(--r-md); background: #fff; color: var(--ink);
+    border: 1px solid var(--border-dark); border-radius: var(--r-md); background: var(--white); color: var(--ink);
     transition: border-color var(--dur-1), box-shadow var(--dur-2);
   }
-  .badge__logo { display: grid; place-items: center; flex: none; width: 36px; height: 36px; font-size: 30px; }
-  .badge__txt { display: grid; gap: 1px; }
+  .badge__logo { display: grid; place-items: center; flex: none; font-size: var(--icon-lg); }
+  .badge__txt { display: grid; gap: 0; }
   .badge__score { display: flex; align-items: center; gap: var(--space-2); }
   .badge__sub { color: var(--text-3); }
-  .badge :global(.badge__ext) { margin-left: var(--space-1); font-size: 11px; color: var(--text-3); }
+  .badge :global(.badge__ext) { margin-left: var(--space-1); font-size: var(--icon-xs); color: var(--text-3); }
   @media (hover: hover) { .badge:hover { border-color: var(--s-500); box-shadow: var(--sh-sm); } }
 
   .rate {
-    --size: 14px; --on: #e8a300; --off: rgb(12 25 37 / .14);
-    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27 18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+    --size: var(--icon-sm); --on: #e8a300; --off: rgb(12 25 37 / .14);
+    --shape: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cpath d='M234.29,114.85l-45,38.83L203,211.75a16.4,16.4,0,0,1-24.5,17.82L128,198.49,77.47,229.57A16.4,16.4,0,0,1,53,211.75l13.76-58.07-45-38.83A16.46,16.46,0,0,1,31.08,86l59-4.76,22.76-55.08a16.36,16.36,0,0,1,30.27,0l22.75,55.08,59,4.76a16.46,16.46,0,0,1,9.37,28.86Z'/%3E%3C/svg%3E");  /* Phosphor star (fill) */
     display: inline-block; inline-size: calc(var(--size) * 5); block-size: var(--size);
     background: linear-gradient(90deg, var(--on) var(--fill, 100%), var(--off) 0);
     -webkit-mask: var(--shape) 0 0 / var(--size) var(--size) repeat-x; mask: var(--shape) 0 0 / var(--size) var(--size) repeat-x;
@@ -153,13 +139,13 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   .quotes > li { scroll-snap-align: start; }
   .quote { display: grid; gap: var(--space-4); margin: 0; }
   /* The words in the regular sans (not the serif italic), a step above body size: 21.6px desktop, 18px phones */
-  .quote blockquote { margin: 0; font-family: var(--ff); font-size: var(--fs-h6); line-height: var(--lh-quote); font-weight: 400; color: var(--ink); text-wrap: pretty; }
-  .quote mark { padding-inline: .12em; border-radius: var(--r-xs); background: var(--p-100); color: inherit; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  .quote blockquote { margin: 0; font-family: var(--ff); font-size: var(--fs-h6); line-height: var(--lh-quote); letter-spacing: var(--ls-quote); font-weight: 400; color: var(--ink); text-wrap: pretty; }
+  .quote mark { padding-inline: var(--space-1); border-radius: var(--r-xs); background: var(--p-100); color: inherit; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   .quote figcaption { display: flex; align-items: center; gap: var(--space-3); margin-top: var(--space-2); }
   .quote figcaption img, .quote__init {
     flex: none; width: 48px; height: 48px; border-radius: var(--r-full); object-fit: cover; background: var(--s-50);
   }
-  .quote__init { display: grid; place-items: center; font-family: var(--ff-display); font-size: var(--fs-h6); color: var(--s-500); }
+  .quote__init { display: grid; place-items: center; color: var(--ink); }
   .quote__who { display: grid; gap: var(--space-1); min-width: 0; }
   .quote__who b { color: var(--ink); }
   .quote__who span { color: var(--text-3); }
@@ -169,7 +155,6 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
   .rv__more > p { color: var(--text-3); }
   .rv__more ul { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
   .rv__site { padding-inline: var(--space-3); }
-  .rv__site :global(.rv__logo) { font-size: 22px; }
 
   @media (min-width: 768px) {
     .quotes { display: block; columns: 2; column-gap: var(--space-12); margin-inline: 0; padding-inline: 0; overflow: visible; }
@@ -182,4 +167,5 @@ const logo: Record<string, string> = { Google: 'logo_google', Tripadvisor: 'logo
     .rv__head:has(+ .rv__more) { margin-bottom: 0; }  /* no review wall (sample) — the header ends the section */
   }
   @media (min-width: 1024px) { .quotes { columns: 3; column-gap: var(--space-16); } }
+  .rv__plan { margin-top: var(--space-4); }
 </style>

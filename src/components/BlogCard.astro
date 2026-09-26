@@ -1,39 +1,12 @@
 ---
+// An article or a travel guide as a Card: the topic (guides) or tag and date (articles) over the title, then the excerpt.
+// rail: in a swipe row; list: a thumbnail row on phones (the travel guide index).
 import type { CollectionEntry } from 'astro:content';
-import { img, srcset } from '../config';
-// rail: the card sits in a row (2 across until 1200px) rather than the 3-column grid. The photo frame has the same
-// fixed height as every card (--card-photo), so sizes asks for at least 360px (270 × 4/3) wherever the frame is narrower.
-// list: on phones the page shows the card as a list row with a 88px thumbnail (travel guide index), so the photo is small there.
+import Card from './Card.astro';
+import { topicName } from '../utils';
 interface Props { post: CollectionEntry<'blog'> | CollectionEntry<'guides'>; base?: string; rail?: boolean; list?: boolean }
 const { post, base = '/blog/', rail = false, list = false } = Astro.props;
 const d = post.data;
-const href = `${base}${post.id}/`;
-const meta = 'group' in d ? d.group : [d.tags[0], d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ');
+const meta = 'group' in d ? topicName(d.group) : [d.tags[0], d.date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })].filter(Boolean).join(' · ');
 ---
-<article class="bc">
-  <div class="bc__img">
-    <img src={img(d.image, 800, 600)} srcset={srcset(d.image, [400, 600, 800, 1200], 4 / 3)}
-      sizes={rail ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)' : `(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, ${list ? '88px' : 'calc(100vw - 32px)'}`}
-      alt="" width="800" height="600" loading="lazy" decoding="async" />
-  </div>
-  <p class="bc__meta t-label">{meta}</p>
-  <h3 class="t-card"><a href={href}>{d.title}</a></h3>
-  <p class="bc__ex t-body">{d.excerpt}</p>
-</article>
-<style>
-  .bc { position: relative; display: flex; flex-direction: column; height: 100%; }
-  /* Same photo height as every other card */
-  .bc__img { height: var(--card-photo); margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; }
-  @supports not (corner-shape: squircle) { .bc__img { clip-path: inset(0 round var(--radius)); } }
-  .bc__img img { width: 100%; height: 100%; object-fit: cover; transition: scale var(--dur-4) var(--ease-out); }
-  .bc__meta { color: var(--text-3); }
-  .bc h3 { margin: var(--space-2) 0 var(--space-3); }
-  .bc h3 a::after { content: ''; position: absolute; inset: 0; z-index: 1; }
-  .bc h3 a:focus-visible { outline: none; }
-  .bc:has(h3 a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); corner-shape: squircle; }
-  .bc__ex { color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-  @media (hover: hover) {
-    .bc:hover .bc__img img { scale: 1.02; }
-    .bc:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
-  }
-</style>
+<Card href={`${base}${post.id}/`} image={d.image} title={d.title} eyebrow={meta} text={d.excerpt} rail={rail} list={list} />

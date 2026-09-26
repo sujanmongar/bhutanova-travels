@@ -1,9 +1,13 @@
-# Sanity Clean Content Studio
+# Bhutanova Travels Studio
 
-Congratulations, you have now installed the Sanity Content Studio, an open-source real-time content editing environment connected to the Sanity backend.
+The Sanity Studio for the website (project `234ghw8x`, dataset `production`), published at https://bhutanova.sanity.studio.
+Schemas are in `schemaTypes/`. See the root `README.md` for how the site is built and deployed.
 
-Now you can do the following things:
+```bash
+npm install
+npm run dev      # http://localhost:3333
+npm run deploy   # publishes the Studio (schema changes)
+```
 
-- [Read “getting started” in the docs](https://www.sanity.io/docs/introduction/getting-started?utm_source=readme)
-- [Join the Sanity community](https://www.sanity.io/community/join?utm_source=readme)
-- [Extend and build plugins](https://www.sanity.io/docs/content-studio/extending?utm_source=readme)
+`scripts/set-deploy-hook.ts` creates the "Rebuild website on publish" webhook (instructions in its header).
+`scripts/import-guides.ts` and `scripts/import-destinations.ts` (with `md-to-pt.ts`) import writers' content files.

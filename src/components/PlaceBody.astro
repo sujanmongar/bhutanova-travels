@@ -1,30 +1,23 @@
 ---
-// Body of a destination or sight page: a facts line, the article, and the plan card as a desktop sidebar.
-import Icon from './Icon.astro';
-import PlanCta from './PlanCta.astro';
-interface Props { facts: [icon: string, text: string][]; credit?: { text: string; url?: string } }
-const { facts, credit } = Astro.props;
+// Body of a destination or sight page. The reading column: key facts (label over value, so each one says something
+// concrete), then the article with its photos and links and the photo credit; WithSidebar adds the share row and,
+// from 1200px, the plan card beside it.
+import WithSidebar from './WithSidebar.astro';
+import FactList, { type Fact } from './FactList.astro';
+interface Props { facts: Fact[]; credit?: { text: string; url?: string }; place: string; shareTitle: string }
+const { facts, credit, place, shareTitle } = Astro.props;
 ---
-<div class="container layout">
-  <div class="main">
-    {facts.length > 0 && <ul class="facts t-label muted">{facts.map(([icon, text]) => <li><Icon name={icon} />{text}</li>)}</ul>}
-    <slot />
-    {credit && <p class="credit t-caption subtle">Photo: {credit.url ? <a href={credit.url} target="_blank" rel="noopener">{credit.text}<span class="sr-only"> (opens in a new tab)</span></a> : credit.text}</p>}
-  </div>
-  <aside class="side"><PlanCta /></aside>
-</div>
+<WithSidebar class="layout" share={shareTitle} plan={{ title: `Plan a trip to ${place}`, topic: place }}>
+  {facts.length > 0 && <FactList facts={facts} />}
+  <slot />
+  {credit && <p class="credit t-caption subtle">Photo: {credit.url ? <a href={credit.url} target="_blank" rel="noopener">{credit.text}<span class="sr-only"> (opens in a new tab)</span></a> : credit.text}</p>}
+</WithSidebar>
 <style>
-  .layout { display: grid; gap: var(--space-10); padding-block: var(--stack) var(--section); }
-  .layout > * { min-width: 0; }
-  @media (min-width: 1200px) { .layout { grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-16); } }
-  .facts { display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-6); list-style: none; margin: 0 0 var(--space-8); padding: 0; }
-  .facts li { display: flex; gap: var(--space-2); }
-  /* Icon centred on the first line, so a fact that wraps keeps its icon at the top */
-  .facts :global(.icon) { flex: none; margin-top: calc((var(--lh-label) * var(--fs-label) - 18px) / 2); font-size: 18px; color: var(--text-3); }
+  .layout { padding-block: var(--stack) var(--section); }
+
+  /* Key facts (FactList) between hairlines; the column shares the text's measure */
+  .keyfacts, .credit { max-width: 64ch; }
+  .keyfacts { margin: 0 0 var(--space-10); padding: var(--space-6) 0; border-block: 1px solid var(--border); }
+
   .credit { margin-top: var(--space-8); }
-  .credit a { color: inherit; text-decoration: underline 1px var(--border-dark); text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
-  @media (hover: hover) { .credit a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
-  /* The plan card is a desktop sidebar only; below 1200px the closing WhatsApp section is the page's one CTA. */
-  .side { display: none; }
-  @media (min-width: 1200px) { .side { display: grid; gap: var(--space-4); align-content: start; position: sticky; top: calc(var(--header-h) + var(--space-6)); align-self: start; } }
 </style>

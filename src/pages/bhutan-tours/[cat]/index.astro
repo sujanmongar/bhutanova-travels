@@ -3,8 +3,7 @@
 // (theme tabs to move between themes, Duration and Sort). The Tours hub (/bhutan-tours/) keeps the theme cards.
 import { getCollection } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import BannerImg from '../../../components/BannerImg.astro';
+import Banner from '../../../components/Banner.astro';
 import TourFinder from '../../../components/TourFinder.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import { TOURS, tourPath } from '../../../utils';
@@ -17,14 +16,7 @@ const tours = (await getCollection('tours')).filter((t) => t.data.category.id ==
 const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: tours.map((t, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(tourPath(t), Astro.site).href, name: t.data.title })) };
 ---
 <Base title={cat.data.title} description={cat.data.excerpt} image={cat.data.image} seo={cat.data.seo} schema={list}>
-  <section class="banner">
-    <BannerImg src={cat.data.image} />
-    <div>
-      <Breadcrumbs items={[['Tours', TOURS], [cat.data.menuTitle]]} light />
-      <h1>{cat.data.menuTitle}</h1>
-      <p class="banner__line">{cat.data.excerpt}</p>
-    </div>
-  </section>
+  <Banner heading={cat.data.menuTitle} line={cat.data.excerpt} image={cat.data.image} alt={cat.data.alt} crumbs={[['Tours', TOURS], [cat.data.menuTitle]]} />
   <TourFinder current={cat} />
   <WhatsAppCta about={cat.data.menuTitle.toLowerCase()} />
 </Base>

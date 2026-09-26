@@ -50,13 +50,21 @@ description. Checklists are always Body 18 (owner's call) — 16 is only for UI 
 Colour is separate from type: `.muted` (text-2), `.subtle` (text-3). Icon sizing is exempt.
 Icons: one library, Phosphor, as SVG files in `src/icons` via `<Icon name>` (no icon fonts, no CDN). Feature/contact/fact
 icons are **Regular** (outline, one colour, no duotone fill, no orange fill, no tinted box or circle behind them). UI glyphs
-(arrows, carets, close, menu, check, search) are **Bold**. Brand and social logos are the only exceptions.
+(arrows, carets, close, menu, check, search) and any icon inside a button are **Bold**; media glyphs (pause, play) are
+Phosphor **Fill**, drawn at 14px (`<IconButton solid>`); rating stars are Phosphor star (fill) as a CSS mask. Every file in
+`src/icons` must be an unmodified Phosphor file (copy it from @phosphor-icons/core, don't redraw). The only exceptions are
+brand marks in their official shapes: the social logos (`social_*`) and the Google / Tripadvisor review badges.
+Icon sizes (owner's pick, tokens in global.css) — no other size: `--icon-xs` 12 small arrows and carets after words ·
+`--icon-sm` 16 beside 16px text and in pill buttons · `--icon-md` 20 beside 18px text (checklist ticks, FAQ toggles) and in
+round icon buttons · `--icon-lg` 24 facts and contact rows · `--icon-xl` 32 feature icons heading an item (why us). An icon
+beside wrapping text sits on the first line: `margin-top: calc((line-height × font-size − icon) / 2)`.
 
 ### Spacing — 8-point scale only
 Tokens `--space-1` 4 · `--space-2` 8 · `--space-3` 12 · `--space-4` 16 · `--space-6` 24 · `--space-8` 32 ·
 `--space-10` 40 · `--space-12` 48 · `--space-16` 64 · `--space-20` 80 · `--space-24` 96 · `--space-32` 128.
 Semantic (mobile / ≥768px): `--gutter` 16/32 page edge · `--stack` 32/48 section title → content ·
-`--section` 64/96 between sections · `--hero-gap` 96/128 least photo between header and hero title (64 on phones under 600px tall) · `--card-pad` 24 · `--grid-gap` 24 (every width).
+`--section` 64/96 between sections · `--hero-gap` 96/128 least photo between header and hero title (64 on phones under 600px tall) · `--card-pad` 24 · `--grid-gap` 24 (every width) · `--sticky-top` where every sticky column pins, 24px under the
+header (or under the tour page's pinned details bar). A link under a section's intro sits 24px below it.
 Every margin, padding, gap and spacing offset uses one of these. Only 1–2px borders/hairlines are exempt.
 
 ### Look
@@ -68,12 +76,27 @@ illustration.
 Sections alternate white and light grey (`.section--grey`), set per block in Sanity.
 Buttons: `.btn` variants only (primary navy, light, outline, soft, on-dark), pill, 16/600 text, **no arrow icons inside
 buttons** (text links `.link-more` keep their small angle arrow, the Bold arrow-up-right ↗). Mobile first: design at 375px, then 768, then 1024/1200.
+Icon-only buttons: always `<IconButton>` (`.ib` in global.css; the round WhatsApp is `<WaButton>` without a label, which uses it):
+a pill button's height (48, 46 from 1200), 20px glyph, hover = the fill one step darker, press 98%. The tone only picks colours:
+soft (grey, on white), line (hairline: arrows, share), light (over photos), dark (photo viewer), on-dark (navy, header over
+the hero), wa. Never restyle one in a component or give it its own :hover; a context may only set `--ib-bg` / `--ib-hover`.
 Images: sharp but right-sized — `img(src, w, h)` / `srcset(src, widths, ratio)` make the CDN return exactly the frame
 (centred crop) for fixed-aspect frames; accurate `sizes`; lazy except the LCP image; page banners use `BannerImg`.
 Corners: every card and card image uses `--radius` (28px on phones, 36px from 768px) + `corner-shape: squircle`
 (Apple-style). Where the squircle isn't supported (Safari, so every iPhone; Firefox) `--radius` becomes the round corner
 that looks the same: 16px on phones, 20px from 768px. Small things keep small radii: inputs 12, thumbnails 12, badges 16, buttons full pill. Palette navy `--s-500` #162E44 + orange `--p-500` #FFA500 (orange is for fills/icons, never small text).
 Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curated", no exclamation marks, no Title Case.
+
+## Editing base (Studio)
+- Every photo field: crop + focal point, "Describe the photo" (alt, warned when empty), "Photo credit", and a warning under
+  1600 px wide (2400 for banners). Document photos reach the site as one address carrying rect= and fp-x/fp-y (content.config
+  photoUrl → img()/srcset()/fpOf()), so any img() call keeps the subject in frame. Alt goes on covers, banners, galleries and
+  day photos; cards beside their own title keep alt="" on purpose.
+- Site settings (singleton `settings`): phone/WhatsApp, second phone, email shown + "Where emails go" (emailTo), address,
+  hours, licence, footer line, social links (an icon shows only when its link is set), and the banners + Google text of the
+  built-in pages (tours, destinations, guides, blog, contact) via pageBanner() in config.ts. Empty fields keep the defaults.
+- SEO tab: focus keyword with live checks (title, description, address, heading); no meta keywords tag (Google ignores it).
+- Plain text boxes (tour days, FAQ answers) take **bold** and [links](/page/) through md() in utils.ts.
 
 ## Workflow
 - **Local first.** No `git commit` / `git push` without an explicit go-ahead.
@@ -85,7 +108,7 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
 - One homepage section at a time; don't start the next until the user says so. The homepage order is the owner's
   (set in Sanity): hero (on phones as tall as its content, a band of photo above the title; about 85% of the screen from 768px so the next
   section peeks; a proof line under the buttons: licensed by, licence no., years guiding, each
-  with an orange icon, figures bold; buttons Explore tours + Chat on WhatsApp, since the header carries Enquire), founder
+  with an orange icon, figures bold; headline says who plans (a guide with 10+ years), the line says what you get and why (own guides and drivers, one all-inclusive price, no agent); buttons Explore tours + Get a free trip plan (WhatsApp, pre-filled: when, travellers, interests), since the header carries Enquire; the promise is a free plan and price within 24 hours), founder
   note (short: "experienced guides, now our own company", two lines, signed), why travel with us (four points with outline icons, the same
   style as About's "What guides us"), popular tours, themes, reviews, blog, FAQ, plan your trip
   (navy: steps + named planner), partners. No stepper rings, no photo CTA banner on the homepage.
@@ -96,7 +119,14 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   Scroll-in is checked on every scroll frame: anything already scrolled past shows at once without animating (fast
   flicks, jumps and anchors never leave blank sections). Anything that moves on its own has a pause button. The tour gallery autoplay is the owner's call. Buttons darken one step on hover (primary → --s-800, light → --s-50,
   outline → navy border). "See all" text links (`.link-more`, and the menu / drawer / search "see all" and the tour page's Show all) are navy `--ink` with an orange angle arrow (↗), a thin (1px) orange `--p-500` line under the words at rest that thickens to 2px on hover while the arrow nudges (`.see-all` gives the look to the rows; the words sit in a `<span>` so the line skips the arrow). Only a few key buttons (.btn--accent: the hero's Explore tours and the header's Enquire) fill with the
-  primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green on hover. Everything is off for reduced motion.
+  primary orange on hover, navy text on it. WhatsApp buttons fill WhatsApp green (`--whatsapp`) on hover; the logo itself is WhatsApp's darker green
+  (`--whatsapp-dark` #128C7E) on light backgrounds, so it reads at 4:1 (owner's pick). Photos under the header (banners,
+  hero, tour cover) carry a darker band at the top so the white logo and menu stay readable. Links come in two kinds (owner's call): link buttons (.link-more / .see-all, with the ↗) have
+  the orange line at rest that thickens to 2px on hover — the only links that thicken; plain links are ink words on a thin
+  underline in the text's own colour (in a sentence, and every contact line incl. the footer's Get in touch) or no line
+  (in a list: footer columns, breadcrumbs, sitemap), and on hover the
+  line turns orange, still 1px, while the words go ink (white on navy). Components never set a link's colour or underline —
+  only `--link` / `--link-hover` (dark containers) and `--link-rest` (a list link's colour). Everything is off for reduced motion.
 - Tour pages are one continuous page (no tabs): split cover (navy words, the tour's photos taking turns), a details bar
   pinned under the header (the header hides while reading down, returns on scroll up), overview (highlights + icon facts
   beside the tentative itinerary timeline, 5 days then "Show all"), what's included, every day in full (one entry per
@@ -121,6 +151,10 @@ Copy: plain and specific, no "seamless / nestled / breathtaking / embark / curat
   then "Or send your details by email": Full name *, Email *, Phone (optional), Travellers *, Days *, When, Anything
   else. Tour pages: Send an enquiry + a round WhatsApp button. The contact page shows the same form inline (trip optional).
   Keep it short: the planner settles places, hotels and price in the conversation.
+  Sending (SITE.ownMailer, off for now = Web3Forms only): the form posts to the site's own Cloudflare function (functions/api/enquiry.js → Resend, branded email from
+  src/emails/enquiry.mjs, guest as Reply-to; env RESEND_API_KEY, ENQUIRY_TO, ENQUIRY_FROM), then Web3Forms (SITE.formKey),
+  then the visitor's email app. `node scripts/test-enquiry.mjs` checks the function. The promise everywhere: "Free
+  day-by-day plan and price within 24 hours. Nothing to pay to ask." 
 - Footer (navy): logo, one line about us and social circles on the left; Tours, Information, About + Quick links, then
   Get in touch (address, office hours, WhatsApp, phone, email, licence), under small orange uppercase titles; a darker bottom bar with
   the copyright on the left and Sitemap (/sitemap/, every page listed), Privacy policy, Cancellation policy and Cookie

@@ -1,0 +1,14 @@
+---
+// The site's one round icon-only button: search, menu, close, carousel arrows, pause, photo viewer controls, share,
+// social and the round WhatsApp. Same height as a pill button, 20px glyph (--icon-md); its look lives in global.css (.ib) and
+// the tone only picks the colours for what it sits on:
+//   soft (grey fill, on white) · line (hairline, on white) · light (white, over photos) · dark (dark glass, over photos
+//   and the photo viewer) · on-dark (on navy) · wa (grey fill, green logo; fills WhatsApp green on hover).
+// solid: a filled media glyph (pause / play), drawn a step smaller (16px) so it weighs the same as the Bold outlines.
+// With href it is a link, otherwise a button. Pass a label (the accessible name) unless the slot carries its own text.
+import Icon from './Icon.astro';
+interface Props { icon?: string; label?: string; href?: string; tone?: 'soft' | 'line' | 'light' | 'dark' | 'on-dark' | 'wa'; solid?: boolean; class?: string; [attr: string]: unknown }
+const { icon, label, href, tone = 'soft', solid = false, class: cls, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+<Tag class:list={['ib', `ib--${tone}`, { 'ib--solid': solid }, cls]} href={href} type={href ? undefined : 'button'} aria-label={label} {...rest}>{icon && <Icon name={icon} />}<slot /></Tag>

@@ -1,30 +1,29 @@
 ---
 import Base from '../layouts/Base.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
+import WaButton from '../components/WaButton.astro';
 import Icon from '../components/Icon.astro';
+import LinkMore from '../components/LinkMore.astro';
+import Section from '../components/Section.astro';
 import TripPlanner from '../components/TripPlanner.astro';
-import BannerImg from '../components/BannerImg.astro';
-import { SITE, tel, wa } from '../config';
-const hero = 'photo-1662547150045-7a8d3a9ad0b2';
+import Banner from '../components/Banner.astro';
+import { SITE, tel, wa, mailto, pageBanner } from '../config';
+const { seo, ...b } = pageBanner('contact', { heading: 'Contact us to plan a trip', line: 'WhatsApp, email, phone or the form below: they all reach our team in Thimphu, and we reply within 24 hours.', image: 'photo-1662547150045-7a8d3a9ad0b2', alt: 'Paro valley' });
 // Most actionable first: on phones this list sits above the form. Each value is [text, href?].
 const info: Array<[string, string, Array<[string, string?]>]> = [
   ['social_whatsapp', 'WhatsApp', [[SITE.phone, wa(`${new URL(Astro.url.pathname, Astro.site).href}#contact`)]]],
-  ['phone', 'Call us', [[SITE.phone, tel(SITE.phone)], [SITE.phoneAlt, tel(SITE.phoneAlt)]]],
-  ['envelope', 'Email us', [[SITE.email, `mailto:${SITE.email}`]]],
-  ['clock', 'Office hours', [['Mon–Sat, 9am–6pm (BTT, GMT+6)']]],
+  ['phone', 'Call us', [[SITE.phone, tel(SITE.phone)], ...(SITE.phoneAlt ? [[SITE.phoneAlt, tel(SITE.phoneAlt)]] : [])]],
+  ['envelope', 'Email us', [[SITE.email, mailto()]]],
+  ['clock', 'Office hours', [[SITE.hours]]],
   ['location-dot', 'Visit us', [[SITE.address, 'https://maps.google.com/?q=Babesa,Thimphu,Bhutan']]],
 ];
 ---
-<Base title="Contact us and plan a trip" description="Contact Bhutanova Travels to plan a Bhutan trip: WhatsApp, email, phone or the enquiry form. We reply within 24 hours." image={hero}>
-  <section class="banner">
-    <BannerImg src={hero} alt="Paro valley" />
-    <div><Breadcrumbs items={[['Contact']]} light /><h1>Contact us to plan a trip</h1><p class="banner__line">WhatsApp, email, phone or the form below: they all reach our team in Thimphu, and we reply within 24 hours.</p></div>
-  </section>
+<Base title="Contact us and plan a trip" description="Contact Bhutanova Travels to plan a Bhutan trip: WhatsApp, email, phone or the enquiry form. We reply within 24 hours." image={b.image} seo={seo}>
+  <Banner {...b} crumbs={[['Contact']]} />
 
   <section class="section">
     <div class="container contact" id="contact">
       <div>
-        <div class="sh" data-reveal><h2>Let's plan your journey</h2><p>Tell us when you'd like to travel and what excites you. We reply with a first plan and a clear price.</p></div>
+        <div class="sh" data-reveal><h2>Plan your trip with us</h2><p>Tell us your dates and what you'd like to see. We reply with a free day-by-day plan and price within 24 hours.</p></div>
         <ul class="info" data-reveal="stagger">
           {info.map(([i, t, v]) => (
             <li>
@@ -38,47 +37,46 @@ const info: Array<[string, string, Array<[string, string?]>]> = [
       </div>
       <div class="form">
         <h2>Send us a message</h2>
+        <WaButton anchor="contact" label="Chat on WhatsApp" size="lg" block />
+        <p class="or t-caption muted">Or write to us here</p>
         <TripPlanner inline />
         <p class="note t-caption subtle">By sending a message you agree to our <a href="/privacy/">privacy policy</a>.</p>
       </div>
     </div>
   </section>
 
-  <section class="section section--grey">
-    <div class="container">
-      <div class="frame">
-        <iframe class="map" title="Map of Babesa, Thimphu" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          data-src="https://www.google.com/maps?q=Babesa,Thimphu,Bhutan&z=14&output=embed"></iframe>
-        <div class="frame__gate"><p>This map is from Google Maps, which may set cookies when it loads.</p><button type="button" class="btn btn--outline" data-consent-load>Show the map</button></div>
-      </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="container">
-      <div class="sh" data-reveal>
-        <h2>Questions before you write?</h2>
-        <p>Visas, the nightly fee, altitude, what a trip costs — all answered in our travel FAQs, or just ask us directly above.</p>
-      </div>
-      <a class="link-more" href="/travel-guide/travel-faqs/" data-reveal><span>Read the Bhutan travel FAQs</span><Icon name="arrow-up-right" /></a>
+  <Section heading="Questions before you write?" text="Visas, the nightly fee, altitude, what a trip costs — all answered in our travel FAQs, or just ask us directly above." grey>
+    <LinkMore href="/travel-guide/travel-faqs/" label="Read the Bhutan travel FAQs" data-reveal="" />
+  </Section>
+  <Section heading="Find our office" text={`${SITE.address}. ${SITE.hours}.`}>
+    <div class="frame">
+      <iframe class="map" title="Map of Babesa, Thimphu" tabindex="-1" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        data-src="https://www.google.com/maps?q=Babesa,Thimphu,Bhutan&z=14&output=embed"></iframe>
+      <div class="frame__gate"><p>This map is from Google Maps, which may set cookies when it loads.</p><button type="button" class="btn btn--outline" data-consent-load>Show the map</button></div>
     </div>
-  </section>
+  </Section>
 </Base>
 <style>
   .contact { display: grid; gap: var(--space-10); }
-  @media (min-width: 1200px) { .contact { grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: start; } }
+  .form > .btn { margin-top: var(--space-6); }
+  .form .or { margin: var(--space-4) 0 var(--space-6); text-align: center; }
+  /* Wide screens: the details stay in view beside the (taller) form */
+  @media (min-width: 1200px) {
+    .contact { grid-template-columns: 1fr 1fr; gap: var(--space-16); align-items: start; }
+    .contact > :first-child { position: sticky; top: var(--sticky-top); }
+  }
   .info { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 var(--space-8); }
   @media (min-width: 768px) and (max-width: 1199px) { .info { grid-template-columns: 1fr 1fr; } }
   .info li { display: flex; gap: var(--space-3); padding: var(--space-4) 0; border-top: 1px solid var(--border-dark); }
-  .info li > :global(.icon) { font-size: 16px; margin-top: var(--space-1); color: var(--p-600); }
+  .info li > :global(.icon) { flex: none; font-size: var(--icon-lg); margin-top: calc((var(--lh-card) * var(--fs-card) - var(--icon-lg)) / 2); color: var(--p-600); }
   .info h3 { margin: 0 0 var(--space-3); }
   /* Two values (the phone numbers) wrap when they don't fit; the row gap keeps each link's tap area clear of the next */
-  .info__v { display: flex; flex-wrap: wrap; gap: var(--space-6); }
-  .info a, .info p { color: var(--text-2); word-break: break-word; }
+  .info__v { display: flex; flex-direction: column; gap: var(--space-2); }
+  .info p { color: var(--text-2); }
+  .info a, .info p { word-break: break-word; }
   .info a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); }  /* ~50px tap area, same as .crumbs a */
-  .info a { text-decoration: underline 1px var(--border-dark); text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
-  @media (hover: hover) { .info a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
-  .contact :global(.form) { display: grid; gap: var(--space-6); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: #fff; }
+  .contact :global(.form) { display: grid; gap: var(--space-6); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; background: var(--white); }
   @media (min-width: 768px) { .contact :global(.form) { padding: var(--space-8); } }
   .map { display: block; width: 100%; height: 320px; border: 0; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   @media (min-width: 768px) { .map { height: 420px; } }

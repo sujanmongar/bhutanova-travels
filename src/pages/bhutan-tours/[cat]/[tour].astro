@@ -3,14 +3,21 @@
 // sticks under the header while you read, an overview (highlights and trip facts beside the tentative itinerary, each day
 // jumping to its full text), what's included, every day in full, common questions, more tours and the contact card.
 import { getCollection, getEntry } from 'astro:content';
+import WaButton from '../../../components/WaButton.astro';
+import EnquireButton from '../../../components/EnquireButton.astro';
 import Base from '../../../layouts/Base.astro';
 import Icon from '../../../components/Icon.astro';
-import Faq from '../../../components/Faq.astro';
+import LinkMore from '../../../components/LinkMore.astro';
+import Checklist from '../../../components/Checklist.astro';
+import FactList from '../../../components/FactList.astro';
+import IconButton from '../../../components/IconButton.astro';
+import FaqBlock from '../../../components/blocks/FaqBlock.astro';
 import TourCard from '../../../components/TourCard.astro';
+import Section from '../../../components/Section.astro';
 import Breadcrumbs from '../../../components/Breadcrumbs.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
-import { img, srcset, wa } from '../../../config';
-import { TOURS, catPath } from '../../../utils';
+import { img, srcset, focal, fpOf } from '../../../config';
+import { TOURS, catPath, md, nextFestival, usd } from '../../../utils';
 
 export async function getStaticPaths() {
   return (await getCollection('tours')).map((tour) => ({
@@ -22,20 +29,15 @@ const { tour } = Astro.props;
 const t = tour.data;
 const cat = await getEntry(t.category);
 const gallery = t.gallery.length ? t.gallery : [t.image];
-const faqs = (await getEntry('faqs', 'faqs'))?.data.items ?? [];
+// Each photo's own description (Google Images, screen readers); the tour name and number when the editor left it empty
+const altOf = (i: number) => (t.gallery.length ? t.galleryAlt[i] : t.alt) || `${t.title} photo ${i + 1}`;
+// This tour's own questions first, then the ones every tour shares
+const faqs = [...t.faqs, ...((await getEntry('faqs', 'faqs'))?.data.items ?? [])];
 const others = (await getCollection('tours')).filter((x) => x.id !== tour.id);
 const related = [...others.filter((x) => x.data.category.id === t.category.id), ...others.filter((x) => x.data.category.id !== t.category.id)].slice(0, 6);
 
-// ponytail: paragraphs + "- " bullets only; swap for a markdown lib if editors need bold/links here.
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-const md = (s: string) =>
-  s.trim().split(/\n\s*\n/).map((b) => {
-    const lines = b.split('\n').map((l) => l.trim());
-    return lines.every((l) => l.startsWith('- ')) ? `<ul>${lines.map((l) => `<li>${esc(l.slice(2))}</li>`).join('')}</ul>` : `<p>${esc(lines.join(' '))}</p>`;
-  }).join('');
 const url = new URL(Astro.url.pathname, Astro.site).href;
-const chat = wa(url, t.title);
-const price = t.price.toLocaleString('en-US');
+const price = usd(t.price);
 // Editors write day titles as "Day 02–03: Thimphu": split them into the label ("Day 2–3") and the title ("Thimphu")
 const dayOf = (title: string, i: number) => {
   const m = title.match(/^Day\s+(\d+)(?:\s*[–-]\s*(\d+))?\s*[:.–-]\s*(.+)$/i);
@@ -44,17 +46,22 @@ const dayOf = (title: string, i: number) => {
 const days = t.itinerary.map((d, i) => ({ ...d, ...dayOf(d.title, i) }));
 const SHOW = 5; // days in the tentative itinerary before "Show all"
 // Facts under the highlights: an icon, a small label and the value. Meals, transport and accommodation come from the
-// tour's own inclusions, so they never disagree with "What's included".
+// tour's own inclusions, so they never disagree with "What's included". The festival dates link to the calendar guide.
 const inc = (re: RegExp) => t.inclusions.find((x) => re.test(x));
+// Festival tours: the next festival from the tour's dates in Studio, linked to the festival calendar guide when there is one
+const fest = nextFestival(t.festivalDates);
+const calendar = (await getEntry('guides', 'festival-calendar')) && '/travel-guide/festival-calendar/';
 const facts = ([
+  ['calendar-blank', 'Festival dates', fest && (fest.name ? `${fest.name}: ${fest.label}` : fest.label)],
   ['mountains', 'Highest point', t.maxAltitude],
   ['plant', 'Best season', t.bestSeason],
+  ['person-simple-hike', 'Difficulty', t.difficulty],
   ['ph_bed', 'Accommodation', inc(/hotel|lodge|accommodation|homestay|room|camp/i)],
   ['ph_fork-knife', 'Meals', inc(/meal/i)],
   ['ph_car', 'Transport', inc(/vehicle|transport/i)],
   ['users-three', 'Group size', t.groupSize],
   ['ph_compass', 'Guide languages', t.guideLanguages],
-] as const).filter(([, , v]) => v);
+] as const).flatMap(([icon, label, value]) => (value ? [{ icon, label, value, href: label === 'Festival dates' ? calendar || undefined : undefined }] : []));
 const schema = [
   {
     '@context': 'https://schema.org', '@type': 'TouristTrip', name: t.title, description: t.summary, url,
@@ -67,8 +74,8 @@ const schema = [
 ];
 const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [1200, 800];
 ---
-<Base title={`${t.title} – ${t.nights} nights / ${t.days} days Bhutan tour`} description={t.summary} image={t.image} schema={schema} seo={t.seo}
-  photos={gallery.map((g, i) => ({ src: img(g, 1600), srcset: srcset(g, [800, 1200, 1600, 2400]), alt: `${t.title} photo ${i + 1}` }))}>
+<Base title={`${t.title}, ${t.days} days`} description={t.summary} image={t.image} schema={schema} seo={t.seo}
+  photos={gallery.map((g, i) => ({ src: img(g, 1600), srcset: srcset(g, [800, 1200, 1600, 2400]), alt: altOf(i) }))}>
   <!-- Cover: the words on solid navy, the photos beside them taking turns every 5s (phones: words, then the photo).
        A tap on the photo opens the viewer on the one showing. -->
   <section class="hero tv">
@@ -80,15 +87,17 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
       </div>
     </div>
     <button type="button" class="tv__photo" data-view="0" data-slides aria-label={gallery.length > 1 ? `View all ${gallery.length} photos` : 'View the photo'}>
-      {gallery.map((g, i) => (
-        <img class:list={['tv__slide', { 'is-on': i === 0 }]} src={img(g, 1400)} srcset={srcset(g, [600, 900, 1400, 2000])} sizes="(min-width:1024px) 50vw, 100vw"
-          alt="" width="1400" height="933" loading={i === 0 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} decoding="async" />
-      ))}
+      {gallery.map((g, i) => {
+        // Only the first photo loads with the page (it is the LCP image); the script fills in the rest after the page's load
+        const s = { src: img(g, 1400), srcset: srcset(g, [600, 900, 1400, 2000]) };
+        return <img class:list={['tv__slide', { 'is-on': i === 0 }]} {...(i === 0 ? { ...s, fetchpriority: 'high' } : { 'data-src': s.src, 'data-srcset': s.srcset })}
+          sizes="(min-width:1024px) 50vw, 100vw" alt={altOf(i)} style={`object-position:${focal(fpOf(g))}`} width="1400" height="933" decoding="async" />;
+      })}
     </button>
     {gallery.length > 1 && (
       <div class="tv__tools">
-        <button type="button" class="tv__pause" aria-label="Pause the photos" aria-pressed="false" data-pause><Icon name="pause" /></button>
-        <button type="button" class="btn btn--light btn--sm" data-view="0" data-view-live>View all {gallery.length} photos</button>
+        <IconButton tone="light" icon="pause" solid label="Pause the photos" aria-pressed="false" data-pause />
+        <button type="button" class="btn btn--light" data-view="0" data-view-live>View all {gallery.length} photos</button>
       </div>
     )}
   </section>
@@ -96,16 +105,18 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   <template id="play-icon"><Icon name="play" /></template>
 
   <!-- The details bar: sticks under the header from 768px while you read (phones get the booking bar at the bottom instead) -->
-  <div class="facts" data-facts>
+  <div class="facts" data-facts data-page-tour={tour.id}>
     <div class="container facts__in">
       <ul class="facts__list">
-        <li><span class="t-label t-caps muted">Duration</span><span class="t-card">{t.days} days / {t.nights} nights</span></li>
+        <li><span class="t-label t-caps muted">Duration</span><span class="t-body">{t.days} days / {t.nights} nights</span></li>
+        <li class="facts__private"><span class="t-label t-caps muted">Private tour</span><span class="t-body">Your own guide and driver</span></li>
+        {fest && <li class="facts__fest"><span class="t-label t-caps muted">Festival dates</span><p class="t-body">{calendar ? <a href={calendar}>{fest.label}</a> : fest.label}</p></li>}
       </ul>
       <div class="facts__buy">
-        <p><span class="t-label t-caps muted">From</span><b class="t-price num">${price}</b><span class="t-label muted">per person</span></p>
+        <p><span class="t-label t-caps muted">From</span><b class="t-price num">{price}</b><span class="t-label muted">per person</span></p>
         <span class="facts__act">
-          <a class="btn wa-round facts__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)" title="Chat on WhatsApp"><Icon name="social_whatsapp" /></a>
-          <button class="btn btn--primary" type="button" data-customise={tour.id} data-plan-title="Enquire about this tour">Send an enquiry</button>
+          <WaButton about={t.title} />
+          <EnquireButton tour={tour.id} title="Enquire about this tour" />
         </span>
       </div>
     </div>
@@ -113,147 +124,117 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
 
   <!-- Overview: highlights (the site checklist) and the route map on the left; on the right the days as a timeline, each
        as the tentative itinerary, each day jumping to its full text -->
-  <section class="section" id="overview">
-    <div class="container">
-      <div class="sh" data-reveal><h2>Tour overview</h2></div>
-      <div class="ov">
-        <div class="ov__left" data-reveal>
-          {t.highlights.length > 0 && (
-            <>
-              <h3 class="t-card">Highlights</h3>
-              <ul class="bullets">{t.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
-            </>
-          )}
-          {facts.length > 0 && (
-            <ul class="tf">
-              {facts.map(([icon, label, value]) => (
-                <li><Icon name={icon} /><span><span class="t-label t-caps muted">{label}</span><span class="t-body">{value}</span></span></li>
-              ))}
-            </ul>
-          )}
-          {t.map && (
-            <figure class="route">
-              <img src={img(t.map, 1200)} srcset={srcset(t.map, [600, 900, 1600])} sizes="(min-width:1024px) 480px, calc(100vw - 32px)"
-                alt={`Route map for ${t.title}`} width={mapW} height={mapH} loading="lazy" decoding="async" />
-              <figcaption class="t-caption muted">The route, day by day</figcaption>
-            </figure>
-          )}
-        </div>
-        {days.length > 0 && <div class="ov__days" data-reveal>
-          <h3 class="t-card">Tentative itinerary</h3>
-          <ol class="tl" data-tl>
-            {days.map((d, i) => (
-              <li hidden={i >= SHOW}>
-                <a href={`#day-${i + 1}`}>
-                  <span class="t-label t-caps muted">{d.label}</span>
-                  <span class="t-card">{d.title}</span>
-                </a>
-              </li>
-            ))}
-          </ol>
-          {days.length > SHOW && (
-            <button type="button" class="tl__more see-all t-link" aria-expanded="false" data-tl-more>
-              <span data-more-label>Show all {days.length} days</span><Icon name="chevron-up" />
-            </button>
-          )}
-        </div>}
+  <Section heading="Tour overview" id="overview">
+    <div class="ov">
+      <div class="ov__left" data-reveal>
+        {t.highlights.length > 0 && <Checklist heading="Highlights" items={t.highlights} />}
+        {facts.length > 0 && <FactList class="tf" cols="side" facts={facts} />}
+        {t.map && (
+          <figure class="route">
+            <img src={img(t.map, 1200)} srcset={srcset(t.map, [600, 900, 1600])} sizes="(min-width:1024px) 480px, calc(100vw - 32px)"
+              alt={`Route map for ${t.title}`} width={mapW} height={mapH} loading="lazy" decoding="async" />
+            <figcaption class="t-caption muted">The route, day by day</figcaption>
+          </figure>
+        )}
       </div>
+      {days.length > 0 && <div class="ov__days" data-reveal>
+        <h3 class="t-card">Tentative itinerary</h3>
+        <ol class="tl" data-tl>
+          {days.map((d, i) => (
+            <li hidden={i >= SHOW}>
+              <a href={`#day-${i + 1}`}>
+                <span class="t-label t-caps muted">{d.label}</span>
+                <span class="t-card">{d.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+        {days.length > SHOW && (
+          <LinkMore class="tl__more" icon="chevron-up" label={`Show all ${days.length} days`} aria-expanded="false" data-tl-more />
+        )}
+      </div>}
     </div>
-  </section>
+  </Section>
 
   <!-- What the price covers -->
   {(t.inclusions.length > 0 || t.exclusions.length > 0) && (
-    <section class="section section--grey" id="included">
-      <div class="container">
-        <div class="sh" data-reveal><h2>What's included</h2></div>
-        <div class="inc" data-reveal>
-          {t.inclusions.length > 0 && (
-            <div>
-              <p class="t-label t-caps muted">Included in the price</p>
-              <ul class="checks">{t.inclusions.map((x) => <li class="t-body"><Icon name="check" class="ok" />{x}</li>)}</ul>
-            </div>
-          )}
-          {t.exclusions.length > 0 && (
-            <div>
-              <p class="t-label t-caps muted">Not included</p>
-              <ul class="checks">{t.exclusions.map((x) => <li class="t-body"><Icon name="close" class="no" />{x}</li>)}</ul>
-            </div>
-          )}
-        </div>
-        {t.priceNotes.length > 0 && (
-          <div class="notes" data-reveal>
-            <p class="t-label t-caps muted">Good to know</p>
-            <ul class="t-body">{t.priceNotes.map((n) => <li>{n}</li>)}</ul>
+    <Section heading="What's included" grey id="included">
+      <div class="inc" data-reveal>
+        {t.inclusions.length > 0 && (
+          <div>
+            <p class="t-label t-caps muted">Included in the price</p>
+            <Checklist class="checks" variant="included" items={t.inclusions} />
+          </div>
+        )}
+        {t.exclusions.length > 0 && (
+          <div>
+            <p class="t-label t-caps muted">Not included</p>
+            <Checklist class="checks" variant="excluded" items={t.exclusions} />
           </div>
         )}
       </div>
-    </section>
+      {t.priceNotes.length > 0 && (
+        <div class="notes" data-reveal>
+          <p class="t-label t-caps muted">Good to know</p>
+          <ul class="t-body">{t.priceNotes.map((n) => <li>{n}</li>)}</ul>
+        </div>
+      )}
+    </Section>
   )}
 
   <!-- Every day in full: the day and its title on the left (they stay in view while you read the day), the text on the right -->
   {t.itinerary.length > 0 && (
-    <section class="section" id="itinerary">
-      <div class="container">
-        <div class="sh" data-reveal><h2>Day by day</h2></div>
-        <ol class="days">
-          {days.map((d, i) => (
-            <li id={`day-${i + 1}`} class="day">
-              <div class="day__head">
-                <p class="t-label t-caps muted">{d.label}</p>
-                <h3>{d.title}</h3>
-              </div>
-              <div class="day__body">
-                {d.places.length === 0 && d.image && <img class="day__img" src={img(d.image, 900, 600)} srcset={srcset(d.image, [600, 900, 1360], 3 / 2)}
-                  sizes="(min-width:1024px) 720px, calc(100vw - 32px)" alt="" width="900" height="600" loading="lazy" decoding="async" />}
-                <div class="day__text t-body"><Fragment set:html={md(d.body)} /></div>
-                {d.overnight && <p class="overnight t-label"><Icon name="ph_bed" />Overnight: {d.overnight}</p>}
-                {d.places.length > 0 && (
-                  <div class="stops-wrap">
-                    <p class="t-label t-caps muted">Places on this day</p>
-                    <ul class="stops">
-                      {d.places.map((p) => (
-                        <li>
-                          <a href={p._type === 'destination' ? `/destinations/${p.slug}/` : p.page ? `/destinations/${p.dest}/${p.slug}/` : `/destinations/${p.dest}/`}>
-                            {p.image && <img src={img(p.image, 480, 360)} srcset={srcset(p.image, [240, 480, 720], 4 / 3)} sizes="240px" alt="" width="480" height="360" loading="lazy" decoding="async" />}
-                            <span class="stops__t t-label">{p.title}</span>
-                            {p.excerpt && <span class="stops__x t-caption muted">{p.excerpt}</span>}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
+    <Section heading="Day by day" text="A suggested plan. Any day can change: more nights somewhere, a festival, a hike, other hotels." id="itinerary">
+      <ol class="days">
+        {days.map((d, i) => (
+          <li id={`day-${i + 1}`} class="day">
+            <div class="day__head">
+              <p class="t-label t-caps muted">{d.label}</p>
+              <h3 class="t-card">{d.title}</h3>
+            </div>
+            <div class="day__body">
+              {d.places.length === 0 && d.image && <img class="day__img" src={img(d.image, 900, 600)} srcset={srcset(d.image, [600, 900, 1360], 3 / 2)}
+                sizes="(min-width:1024px) 720px, calc(100vw - 32px)" alt={d.alt ?? ''} width="900" height="600" loading="lazy" decoding="async" />}
+              {d.distance && <p class="day__dist t-label"><Icon name="path" />{d.distance}</p>}
+              <div class="day__text t-body"><Fragment set:html={md(d.body)} /></div>
+              {d.overnight && <p class="overnight t-label"><Icon name="ph_bed" />Overnight: {d.overnight}</p>}
+              {d.places.length > 0 && (
+                <div class="stops-wrap">
+                  <p class="t-label t-caps muted">Places on this day</p>
+                  <ul class="stops">
+                    {d.places.map((p) => (
+                      <li>
+                        <a href={p._type === 'destination' ? `/destinations/${p.slug}/` : `/destinations/${p.dest}/${p.slug}/`}>
+                          {p.image && <img src={img(p.image, 480, 360)} srcset={srcset(p.image, [240, 480, 720], 4 / 3)} sizes="240px" alt="" width="480" height="360" loading="lazy" decoding="async" />}
+                          <span class="stops__t t-title">{p.title}</span>
+                          {p.excerpt && <span class="stops__x t-body muted">{p.excerpt}</span>}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </Section>
   )}
 
-  {faqs.length > 0 && (
-    <section class="section section--grey" id="faq">
-      <div class="container">
-        <Faq items={faqs}><div class="sh" data-reveal><h2>Common questions</h2></div></Faq>
-      </div>
-    </section>
-  )}
+  {faqs.length > 0 && <FaqBlock heading="Common questions" items={faqs} ask={false} />}
 
   {related.length > 0 && (
-    <section class="section">
-      <div class="container">
-        <div class="sh" data-reveal><h2>More Bhutan tours</h2></div>
-        <div class="rail" data-reveal="stagger">{related.map((r) => <TourCard tour={r} rail />)}</div>
-      </div>
-    </section>
+    <Section heading="More Bhutan tours" link={{ href: TOURS, label: 'All tours' }} rail="more-tours" railLabel="tours">
+      {related.map((r) => <TourCard tour={r} rail />)}
+    </Section>
   )}
-  <WhatsAppCta title="Want this trip on your dates?" text="Tell us when you would like to travel. We reply within 24 hours with a first plan and a price." about={t.title} customise={tour.id} />
+  <WhatsAppCta title="Make this trip your own" text="Your dates, more nights somewhere, a festival, a hike, other hotels: tell us and we reply within 24 hours with a free day-by-day plan and price." about={t.title} customise={tour.id} />
 
   <!-- Phones: booking bar at the bottom, hidden while the details bar (same action) is on screen -->
   <div class="bar">
-    <p class="num"><small class="t-label muted">From</small><b class="t-price">${price}</b></p>
-    <a class="btn wa-round bar__wa" href={chat} target="_blank" rel="noopener" aria-label="Chat on WhatsApp about this tour (opens in a new tab)"><Icon name="social_whatsapp" /></a>
-    <button class="btn btn--primary" type="button" data-customise={tour.id} data-plan-title="Enquire about this tour">Enquire</button>
+    <p class="num"><small class="t-label t-caps muted">From</small><b class="t-price">{price}</b><small class="t-label muted">per person</small></p>
+    <WaButton about={t.title} />
+    <EnquireButton label="Enquire" tour={tour.id} title="Enquire about this tour" />
   </div>
 
 </Base>
@@ -265,19 +246,25 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   const shots = slides ? [...slides.querySelectorAll('img')] : [];
   if (slides && shots.length > 1 && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     let now = 0, seen = true, paused = false;
+    // The other photos load once the page has finished loading, so they never compete with the first
+    const fill = () => shots.forEach((s) => { if (s.dataset.src) { s.srcset = s.dataset.srcset!; s.src = s.dataset.src; } });
+    if (document.readyState === 'complete') fill(); else addEventListener('load', fill, { once: true });
     new IntersectionObserver(([e]) => (seen = e.isIntersecting)).observe(slides);
     const pause = document.querySelector<HTMLButtonElement>('[data-pause]');
     pause?.addEventListener('click', () => {
       paused = !paused;
       pause.setAttribute('aria-pressed', String(paused));
-      pause.setAttribute('aria-label', paused ? 'Play the photos' : 'Pause the photos');
       pause.innerHTML = paused ? pause.dataset.play! : pause.dataset.pauseIcon!;
     });
     if (pause) { pause.dataset.pauseIcon = pause.innerHTML; pause.dataset.play = document.getElementById('play-icon')!.innerHTML; }
     setInterval(() => {
       if (paused || !seen || document.hidden || slides.matches(':hover, :focus-visible')) return;
+      // On to the next photo that has arrived (one still loading, or broken, is skipped this time round)
+      let next = now;
+      do next = (next + 1) % shots.length; while (next !== now && !(shots[next].complete && shots[next].naturalWidth));
+      if (next === now) return;
       shots[now].classList.remove('is-on');
-      now = (now + 1) % shots.length;
+      now = next;
       shots[now].classList.add('is-on');
       slides.dataset.view = String(now);
       document.querySelectorAll<HTMLElement>('[data-view-live]').forEach((b) => (b.dataset.view = String(now)));
@@ -289,7 +276,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   const more = document.querySelector<HTMLButtonElement>('[data-tl-more]');
   if (tl && more) {
     const rest = [...tl.querySelectorAll<HTMLElement>('li')].slice(5);
-    const label = more.querySelector('[data-more-label]')!;
+    const label = more.querySelector('span')!;
     const all = label.textContent;
     more.addEventListener('click', () => {
       const open = more.getAttribute('aria-expanded') !== 'true';
@@ -336,42 +323,40 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   :global(header.nav[data-nav]) { transition: translate var(--dur-2) var(--ease-out), background-color var(--dur-3) var(--ease-out), box-shadow var(--dur-3), color var(--dur-3); }
   :global(html.nav-up header.nav[data-nav]) { translate: 0 -100%; box-shadow: none; }
   @media (min-width: 768px) { :global(html) { scroll-padding-top: calc(var(--header-h) + var(--space-24) + var(--space-4)); } }
-  :global(.btn.fab-enquire) { display: none; }
 
   /* Cover: words on solid navy, the photos beside them (phones: stacked) */
-  .tv { position: relative; display: grid; background: var(--s-500); color: #fff; }
+  .tv { position: relative; display: grid; background: var(--s-500); color: var(--on-dark); }
   .tv__txt { display: grid; align-items: end; padding: calc(var(--header-h) + var(--space-8)) var(--gutter) var(--space-10); }
   .tv__txt-in { display: grid; gap: var(--space-4); max-width: 560px; }
   .tv__txt-in :global(.crumbs) { margin-bottom: var(--space-2); }
-  .tv h1 { color: #fff; text-wrap: balance; }
+  .tv h1 { color: var(--on-dark); text-wrap: balance; }
   .tv__lead { color: var(--on-dark-2); }
   .tv__photo { position: relative; display: block; padding: 0; border: 0; background: var(--s-800); cursor: zoom-in; aspect-ratio: 4 / 3; overflow: hidden; }
   .tv__photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1.2s var(--ease-out); }
   .tv__photo img.is-on { opacity: 1; }
   .tv__tools { position: absolute; right: var(--space-4); bottom: var(--space-4); display: flex; align-items: center; gap: var(--space-2); }
-  .tv__pause { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: var(--r-full); background: rgb(255 255 255 / .9); color: var(--s-800); font-size: 14px; cursor: pointer; transition: background var(--dur-1), scale var(--dur-1) var(--ease-out); }
-  @media (hover: hover) { .tv__pause:hover { background: #fff; } }
-  .tv__pause:active { scale: .98; }
-  @media (prefers-reduced-motion: reduce) { .tv__pause { display: none; } }  /* the photos don't move then, so nothing to pause */
+  @media (prefers-reduced-motion: reduce) { .tv__tools [data-pause] { display: none; } }  /* the photos don't move then, so nothing to pause */
   @media (min-width: 1024px) {
     .tv { grid-template-columns: 1fr 1fr; min-height: min(86svh, 760px); }
     .tv__txt { padding: calc(var(--header-h) + var(--space-12)) var(--space-12) var(--space-16) max(var(--gutter), calc((100vw - var(--container)) / 2)); }
     .tv__photo { aspect-ratio: auto; }
+    /* The header sits over the photo half here: a darker band keeps its white menu readable on bright skies */
+    .tv__photo::after { content: ''; position: absolute; inset: 0 0 auto; z-index: 1; height: 190px; background: linear-gradient(rgb(var(--scrim-rgb) / .6), rgb(var(--scrim-rgb) / 0)); pointer-events: none; }
     .tv__tools { right: var(--space-6); bottom: var(--space-6); }
   }
 
   /* Details bar: the facts (small uppercase label over the value), then the price and the button */
-  .facts { background: #fff; border-bottom: 1px solid var(--border); }
+  .facts { background: var(--white); border-bottom: 1px solid var(--border); }
   .facts__in { display: grid; gap: var(--space-6); padding-block: var(--space-6); }
   .facts__list { display: grid; gap: var(--space-4); list-style: none; margin: 0; padding: 0; }
   .facts__list li { display: grid; gap: var(--space-1); }
+  .facts__list .t-body { color: var(--ink); }
+  /* The private-tour and festival facts need the room of a laptop screen; on tablets the bar stays one line (phones stack
+     them). Festival tours show their dates first: the private-tour fact joins them from 1200px. */
+  @media (min-width: 768px) and (max-width: 1023px) { .facts__list :is(.facts__private, .facts__fest) { display: none; } }
+  @media (min-width: 1024px) and (max-width: 1199px) { .facts__list:has(.facts__fest) .facts__private { display: none; } }
   .facts__buy { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-4) var(--space-6); }
   .facts__act { display: flex; gap: var(--space-3); }
-  .facts__wa { width: var(--btn-h); padding: 0; flex: none; }
-  /* Round WhatsApp buttons: a light grey circle like the header's icon buttons, the logo in its own green */
-  .wa-round { background: var(--icon-bg); color: var(--whatsapp); border-color: transparent; }
-  @media (hover: hover) { .wa-round:hover { background: var(--whatsapp); color: var(--ink); } }
-  .facts__act :global(.icon) { font-size: 22px; }  /* the logo takes the button colour: green, ink on hover */
   @media (max-width: 767px) { .facts__act { flex: 1 1 100%; } .facts__act .btn--primary { flex: 1 1 auto; } }  /* phones: the enquiry fills the line */
   .facts__buy p { display: grid; }
   .facts__buy b { color: var(--ink); }
@@ -379,6 +364,7 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
     .facts { position: sticky; top: var(--above); z-index: 30; transition: top var(--dur-2) var(--ease-out); background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
     .facts__in { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding-block: var(--space-4); }
     .facts__list { display: flex; gap: var(--space-10); }
+    .facts__list .t-body { white-space: nowrap; }
     .facts__buy p { grid-template-columns: auto auto; align-items: baseline; column-gap: var(--space-2); }
     .facts__buy p > :first-child { grid-column: 1 / -1; }
   }
@@ -386,42 +372,29 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   /* Overview */
   .ov { display: grid; gap: var(--space-12); }
   .ov h3 { margin-bottom: var(--space-4); }
-  .bullets { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
-  .bullets li { display: flex; gap: var(--space-3); color: var(--text-2); }
-  .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 12px) / 2); font-size: 12px; color: var(--s-500); }
-  /* Facts: icon, then a small uppercase label over the value; two columns from 768px, under a hairline */
-  .tf { display: grid; gap: var(--space-6); list-style: none; margin: var(--space-8) 0 0; padding: var(--space-6) 0 0; border-top: 1px solid var(--border-dark); }
-  .tf li { display: flex; align-items: flex-start; gap: var(--space-3); }
-  .tf li > span { display: grid; gap: var(--space-1); }
-  .tf .t-body { color: var(--ink); }
-  .tf :global(.icon) { flex: none; font-size: 24px; color: var(--s-500); }
-  @media (min-width: 768px) { .tf { grid-template-columns: 1fr 1fr; column-gap: var(--space-8); } }
+  /* Facts (FactList, side): under a hairline */
+  .tf { margin-top: var(--space-8); padding-top: var(--space-6); border-top: 1px solid var(--border-dark); }
+  .tf :global(dd) { text-wrap: pretty; }  /* tour values keep the wrap they had as paragraphs; place facts don't use it (owner's call to unify) */
   .route { display: grid; gap: var(--space-3); margin: var(--space-10) 0 0; }
-  .route img { width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--border); background: #fff; }
+  .route img { width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--white); }
   /* Days as a timeline: a dot per day and a line joining them */
   .tl { list-style: none; margin: 0; padding: 0; }
   .tl li { position: relative; padding-left: var(--space-10); }
-  .tl li::before { content: ''; position: absolute; left: var(--space-2); top: calc(var(--space-3) + 4px); width: 10px; height: 10px; border-radius: 50%; background: var(--s-500); box-shadow: 0 0 0 4px #fff; }
-  .tl li:not(:last-child)::after { content: ''; position: absolute; left: calc(var(--space-2) + 4px); top: calc(var(--space-3) + 18px); bottom: 0; width: 2px; background: var(--border-dark); }
+  .tl li::before { content: ''; position: absolute; left: var(--space-2); top: var(--space-4); width: 10px; height: 10px; border-radius: 50%; background: var(--s-500); box-shadow: 0 0 0 4px var(--white); }
+  .tl li:not(:last-child)::after { content: ''; position: absolute; left: var(--space-3); top: calc(var(--space-4) + 10px + var(--space-1)); bottom: 0; width: 2px; background: var(--border-dark); }
   .tl a { display: grid; gap: var(--space-1); padding-block: var(--space-2) var(--space-6); color: inherit; }
   .tl li[hidden] { display: none; }
   /* The last day shown has no line running on below it while the rest are folded away */
   .tl li:has(+ li[hidden])::after { display: none; }
-  .tl__more { display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; margin: var(--space-2) 0 0 var(--space-10); padding: 0; border: 0; background: none; cursor: pointer; }  /* looks like .link-more (.see-all) */
+  .tl__more { margin: var(--space-2) 0 0 var(--space-10); }
   .tl__more :global(.icon) { rotate: 180deg; }
+  .tl__more:hover :global(.icon) { translate: none; }  /* a chevron turns; only the angle arrow nudges on hover */
   .tl__more[aria-expanded='true'] :global(.icon) { rotate: 0deg; }
-  @media (hover: hover) { .tl a:hover .t-card { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; } }
   @media (min-width: 1024px) { .ov { grid-template-columns: 5fr 7fr; column-gap: var(--space-16); } }
 
   /* What's included */
   .inc { display: grid; gap: var(--space-10); }
   .inc .checks { margin-top: var(--space-4); }
-  .checks { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
-  .checks li { display: flex; gap: var(--space-3); color: var(--text-2); }
-  .checks :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 14px) / 2); font-size: 14px; }
-  /* Green tick for what the price covers, red cross for what it doesn't */
-  .checks :global(.ok) { color: var(--success); }
-  .checks :global(.no) { color: var(--error); }
   .notes { margin-top: var(--space-12); padding-top: var(--space-8); border-top: 1px solid var(--border-dark); }
   .notes ul { display: grid; gap: var(--space-2); margin: var(--space-4) 0 0; padding-left: var(--space-4); color: var(--text-2); }
   .notes li::marker { color: var(--p-500); }
@@ -435,14 +408,15 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .day__head { position: sticky; top: calc(var(--above) + var(--facts-h)); z-index: 2; align-self: start; display: grid; gap: var(--space-2); align-content: start;
     margin-inline: calc(var(--gutter) * -1); padding: var(--space-3) var(--gutter); background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--border); transition: top var(--dur-2) var(--ease-out); }
-  .day__head h3 { font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
   .day__body { display: grid; gap: var(--space-4); min-width: 0; }
   .day__img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--r-md); background: var(--s-50); }
   .day__text { display: grid; gap: var(--space-4); max-width: 68ch; color: var(--text-2); }
+  .day__dist { display: flex; align-items: flex-start; gap: var(--space-2); margin-bottom: var(--space-3); color: var(--text-2); }
+  .day__dist :global(.icon) { flex: none; margin-top: calc((var(--lh-label) * var(--fs-label) - var(--icon-sm)) / 2); color: var(--p-500); font-size: var(--icon-sm); }
   .day__text :global(ul) { display: grid; gap: var(--space-2); margin: 0; padding-left: var(--space-4); }
   .day__text :global(li::marker) { color: var(--p-500); }
   .overnight { display: inline-flex; align-items: center; gap: var(--space-2); justify-self: start; padding: var(--space-1) var(--space-3); border-radius: var(--r-sm); background: var(--surface); color: var(--text-2); }
-  .overnight :global(.icon) { color: var(--p-700); }
+  .overnight :global(.icon) { font-size: var(--icon-sm); color: var(--p-500); }
   .stops-wrap { display: grid; gap: var(--space-3); margin-top: var(--space-2); min-width: 0; }
   .stops { display: grid; grid-auto-flow: column; grid-auto-columns: 240px; gap: var(--space-4); list-style: none; margin: 0; padding: 0 0 var(--space-2); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
   .stops::-webkit-scrollbar { display: none; }
@@ -451,7 +425,6 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   .stops img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); }
   .stops__t { color: var(--ink); }
   .stops__x { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-  @media (hover: hover) { .stops a:hover .stops__t { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; } }
   @media (min-width: 1024px) {
     .day { grid-template-columns: 4fr 8fr; column-gap: var(--space-16); }
     /* The day and its title stay in view while you read the day */
@@ -459,19 +432,23 @@ const [mapW, mapH] = t.map?.match(/-(\d+)x(\d+)\./)?.slice(1).map(Number) ?? [12
   }
 
   /* The FAQ's pinned title (desktop) sits below the header and the details bar on this page */
-  #faq :global(.faq__head) { top: calc(var(--above) + var(--facts-h) + var(--space-8)); transition: top var(--dur-2) var(--ease-out); }
+  :global(#faq .faq__head) { top: calc(var(--above) + var(--facts-h) + var(--space-6)); transition: top var(--dur-2) var(--ease-out); }
 
   /* Phones: booking bar */
-  @media (max-width: 767px) { :global(body) { padding-bottom: calc(var(--space-20) + env(safe-area-inset-bottom)); } }
+  /* The page ends clear of the bar, and a focused link (Tab, the browser's find) scrolls to above it, never under it */
+  @media (max-width: 767px) {
+    :global(body) { padding-bottom: calc(var(--space-20) + env(safe-area-inset-bottom)); }
+    :global(html) { scroll-padding-bottom: calc(var(--space-20) + var(--space-4) + env(safe-area-inset-bottom)); }
+  }
   .bar {
     position: fixed; inset: auto 0 0; z-index: 40; display: flex; align-items: center; gap: var(--space-2);
     padding: var(--space-3) var(--gutter) calc(var(--space-3) + env(safe-area-inset-bottom));
-    background: rgb(255 255 255 / .94); -webkit-backdrop-filter: saturate(180%) blur(14px); backdrop-filter: saturate(180%) blur(14px);
+    background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur);
     border-top: 1px solid var(--border); box-shadow: var(--sh-up); transition: translate var(--dur-3) var(--ease-out);
   }
-  .bar p { margin-right: auto; display: grid; }
+  .bar p { margin-right: auto; display: grid; grid-template-columns: auto 1fr; column-gap: var(--space-2); align-items: baseline; }
+  .bar p small:first-child { grid-column: 1 / -1; }
   .bar b { color: var(--ink); }
-  .bar .bar__wa { width: var(--btn-h); padding: 0; font-size: 22px; }
   .bar.is-off { translate: 0 110%; }
   @media (min-width: 768px) { .bar { display: none; } }
 

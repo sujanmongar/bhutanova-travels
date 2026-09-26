@@ -1,0 +1,30 @@
+---
+// The site's one list of key facts (destination and sight pages, the tour overview): a 24px navy icon beside a small caps
+// label, the value under it in ink (a link when the fact has one). cols auto: two across at every width, a long value (a
+// sentence) takes the whole row. side: one column, two from 768px, one again from 1024px where it sits beside the
+// tour's itinerary. The frame around it (hairlines, spacing, width) is the caller's: its class and scope land on the dl.
+import Icon from './Icon.astro';
+export type Fact = { icon: string; label: string; value: string; href?: string };
+interface Props { facts: Fact[]; cols?: 'auto' | 'side'; class?: string; [attr: string]: unknown }
+const { facts, cols = 'auto', class: cls, ...rest } = Astro.props;
+---
+<dl class:list={['keyfacts', { 'keyfacts--side': cols === 'side' }, cls]} aria-label="Key facts" {...rest}>
+  {facts.map((f) => (
+    <div class:list={{ wide: cols === 'auto' && f.value.length > 24 }}>
+      <dt class="t-label t-caps muted"><Icon name={f.icon} />{f.label}</dt>
+      <dd class="t-body">{f.href ? <a href={f.href}>{f.value}</a> : f.value}</dd>
+    </div>
+  ))}
+</dl>
+<style>
+  .keyfacts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-4) var(--space-6); }
+  @media (min-width: 600px) { .keyfacts { row-gap: var(--space-6); } }
+  .keyfacts > .wide { grid-column: 1 / -1; }
+  .keyfacts--side { grid-template-columns: minmax(0, 1fr); gap: var(--space-6); }
+  @media (min-width: 768px) { .keyfacts--side { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: var(--space-8); } }
+  @media (min-width: 1024px) { .keyfacts--side { grid-template-columns: minmax(0, 1fr); } }
+  .keyfacts > div { display: grid; row-gap: var(--space-1); align-content: start; padding-left: calc(var(--icon-lg) + var(--space-3)); }
+  .keyfacts dt { position: relative; margin: 0; }
+  .keyfacts dt :global(.icon) { position: absolute; left: calc(-1 * var(--icon-lg) - var(--space-3)); top: 50%; translate: 0 -50%; font-size: var(--icon-lg); color: var(--s-500); }
+  .keyfacts dd { margin: 0; color: var(--ink); }
+</style>

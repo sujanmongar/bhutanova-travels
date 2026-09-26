@@ -2,6 +2,7 @@
 // Team: office team, guides and drivers, each group as the same photo cards (the first eight, then "Show all").
 import { getCollection } from 'astro:content';
 import Icon from '../Icon.astro';
+import Section from '../Section.astro';
 import { img, srcset, focal } from '../../config';
 interface Props { heading: string; text?: string; grey?: boolean }
 const { heading, text, grey = false } = Astro.props;
@@ -18,38 +19,31 @@ const detail = (m: (typeof people)[number]) =>
   m.data.group === 'office' ? m.data.bio : [m.data.languages, m.data.years && `${m.data.years} years`].filter(Boolean).join(' · ');
 ---
 {people.length > 0 && (
-<section id="team" class:list={['section', { 'section--grey': grey }]}>
-  <div class="container">
-    <div class="sh" data-reveal>
-      <h2>{heading}</h2>
-      {text && <p>{text}</p>}
-      {samples && <p>Photos and names are placeholders while we add our own team.</p>}
+<Section heading={heading} text={text} grey={grey} id="team">
+  <Fragment slot="head">{samples && <p>Photos and names are placeholders while we add our own team.</p>}</Fragment>
+  {groups.map((g) => (
+    <div class="group" data-group>
+      {groups.length > 1 && <h3 class="group__h">{g.label}</h3>}
+      <ul class="people" data-reveal="stagger">
+        {g.list.map((m, i) => (
+          <li hidden={i >= LIMIT}>
+            <div class="people__ph">
+              {m.data.photo
+                ? <img src={img(m.data.photo.url, 480, 600, m.data.photo.hotspot)} srcset={srcset(m.data.photo.url, [240, 480, 720], 4 / 5, m.data.photo.hotspot)}
+                    sizes="(min-width:1024px) 280px, (min-width:768px) 30vw, 45vw" alt={m.data.name} width="480" height="600" loading="lazy" decoding="async"
+                    style={`object-position:${focal(m.data.photo.hotspot)}`} />
+                : <Icon name="user" />}
+            </div>
+            <p class="t-card">{m.data.name}</p>
+            <p class="t-label tm__role">{m.data.role}</p>
+            {detail(m) && <p class="t-body muted tm__detail">{detail(m)}</p>}
+          </li>
+        ))}
+      </ul>
+      {g.list.length > LIMIT && <button type="button" class="btn btn--outline group__more" data-more>Show all {g.list.length} {g.label.toLowerCase()}</button>}
     </div>
-
-    {groups.map((g) => (
-      <div class="group" data-group>
-        {groups.length > 1 && <h3 class="group__h">{g.label}</h3>}
-        <ul class="people" data-reveal="stagger">
-          {g.list.map((m, i) => (
-            <li hidden={i >= LIMIT}>
-              <div class="people__ph">
-                {m.data.photo
-                  ? <img src={img(m.data.photo.url, 480, 600, m.data.photo.hotspot)} srcset={srcset(m.data.photo.url, [240, 480, 720], 4 / 5, m.data.photo.hotspot)}
-                      sizes="(min-width:1024px) 280px, (min-width:768px) 30vw, 45vw" alt={m.data.name} width="480" height="600" loading="lazy" decoding="async"
-                      style={`object-position:${focal(m.data.photo.hotspot)}`} />
-                  : <Icon name="user" />}
-              </div>
-              <p class="t-card">{m.data.name}</p>
-              <p class="t-body muted">{m.data.role}</p>
-              {detail(m) && <p class="t-body muted">{detail(m)}</p>}
-            </li>
-          ))}
-        </ul>
-        {g.list.length > LIMIT && <button type="button" class="btn btn--outline group__more" data-more>Show all {g.list.length} {g.label.toLowerCase()}</button>}
-      </div>
-    ))}
-  </div>
-</section>
+  ))}
+</Section>
 )}
 
 <script>
@@ -76,7 +70,10 @@ const detail = (m: (typeof people)[number]) =>
   .people li { display: grid; align-content: start; }
   .people li .t-card { margin-bottom: var(--space-1); }
   .people li[hidden] { display: none; }
-  .people__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; overflow: hidden; background: var(--surface-2); color: var(--text-2); font-size: 48px; }
+  .people__ph { display: grid; place-items: center; aspect-ratio: 4 / 5; margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; overflow: hidden; background: var(--surface-2); color: var(--text-2); font-size: var(--icon-xl); }
   .people__ph img { width: 100%; height: 100%; object-fit: cover; }
   .group__more { margin-top: var(--space-8); }
+  /* Role as a label in text-2, then the detail a step apart, so the two don't run together */
+  .tm__role { color: var(--text-2); }
+  .tm__detail { margin-top: var(--space-2); }
 </style>

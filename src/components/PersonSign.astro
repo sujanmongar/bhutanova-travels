@@ -1,0 +1,25 @@
+---
+// A person's signature: round photo, name, then "Role, Bhutanova Travels". The navy contact panels sign with the trip
+// planner (tone dark), the founder note with its author. lg: 64px photo and a card-size name; md: 48px and an item-size
+// name, for the narrow sidebar card. The caller's class and scope land on the root.
+import { SITE, img } from '../config';
+import type { Planner } from '../planner';
+interface Props { person: Planner; size?: 'md' | 'lg'; tone?: 'light' | 'dark'; class?: string; [attr: string]: unknown }
+const { person, size = 'lg', tone = 'light', class: cls, ...rest } = Astro.props;
+const px = size === 'lg' ? 64 : 48;
+---
+<div class:list={['sign', `sign--${size}`, `sign--${tone}`, cls]} {...rest}>
+  {person.photo && <img src={img(person.photo.url, px * 2, px * 2, person.photo.hotspot)} alt="" width={px} height={px} loading="lazy" decoding="async" />}
+  <p class="sign__txt"><span class={size === 'lg' ? 't-card' : 't-title'}>{person.name}</span><span class="t-label">{person.role}, {SITE.name}</span></p>
+</div>
+<style>
+  .sign { display: flex; align-items: center; gap: var(--space-4); }
+  .sign--md { gap: var(--space-3); }
+  .sign img { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-50); }
+  .sign--md img { width: 48px; height: 48px; }
+  .sign__txt { display: grid; gap: var(--space-1); margin: 0; }
+  .sign--light .t-label { color: var(--text-2); }
+  .sign--dark img { background: var(--s-800); }
+  .sign--dark :is(.t-card, .t-title) { color: var(--on-dark); }
+  .sign--dark .t-label { color: var(--on-dark-2); }
+</style>

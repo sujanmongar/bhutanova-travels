@@ -1,74 +1,63 @@
 ---
 import { getCollection } from 'astro:content';
-import Arrows from '../Arrows.astro';
+import Section from '../Section.astro';
 import { img, srcset } from '../../config';
-import { catPath } from '../../utils';
+import { catPath, usd } from '../../utils';
 // grid: the same cards laid out as a grid (the tours hub) instead of a row visitors swipe or move with the arrows.
 // hideHeading keeps the h2 for screen readers only, where the page's h1 already says it. exclude: the category page's own.
 interface Props { heading: string; text?: string; grey?: boolean; grid?: boolean; hideHeading?: boolean; exclude?: string }
 const { heading, text, grey = false, grid = false, hideHeading = false, exclude } = Astro.props;
 const cats = (await getCollection('categories')).filter((c) => c.id !== exclude).sort((a, b) => a.data.order - b.data.order);
+// How many tours each theme has and its lowest price, so the card sets expectations before the click
+const tours = await getCollection('tours');
+const meta = (id: string) => {
+  const list = tours.filter((t) => t.data.category.id === id);
+  if (!list.length) return 'New trips coming soon';
+  return `${list.length} ${list.length === 1 ? 'tour' : 'tours'} · from ${usd(Math.min(...list.map((t) => t.data.price)))}`;
+};
 // The CDN crops each photo to the card's 5:7 shape (the same centred crop CSS cover shows), so files stay card-sized.
 const RATIO = 5 / 7;
-const id = 'themes';
+// Row: each tile an <article> in the shared tile rail. Grid (the tours hub): a list, each tile a list item.
+const List = grid ? 'ul' : Fragment;
+const Tile = grid ? 'li' : 'article';
 ---
-<section class:list={['section cats-sec', { 'section--grey': grey }]}>
-  <div class="container">
-    <div class:list={['sh', { 'sh--row': !grid, 'sr-only': hideHeading }]} data-reveal>
-      <h2>{heading}</h2>
-      {text && <p>{text}</p>}
-      {!grid && <div class="sh__act"><Arrows target={id} label="themes" /></div>}
-    </div>
-    <ul class:list={['cats', { 'cats--grid': grid }]} id={grid ? undefined : id} data-reveal="stagger">
-      {cats.map((c) => (
-        <li>
-          <article class="cat">
-            <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes={grid ? '(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)' : '(min-width:1200px) 340px, (min-width:768px) 320px, calc(100vw - 52px)'}
-              alt="" width="680" height="952" loading="lazy" decoding="async" />
-            <div class="cat__txt">
-              <h3 class="t-card"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
-              <p class="t-body">{c.data.excerpt}</p>
-            </div>
-          </article>
-        </li>
-      ))}
-    </ul>
-  </div>
-</section>
+<Section heading={heading} text={text} grey={grey} hideHeading={hideHeading} rail={grid ? undefined : 'themes'} railLabel="themes" railClass="rail--tile">
+  <List {...(grid ? { class: 'grid-3 cats', 'data-reveal': 'stagger' } : {})}>
+    {cats.map((c) => (
+      <Tile class="cat">
+        <img src={img(c.data.image, 680, 952)} srcset={srcset(c.data.image, [340, 500, 680, 1000], RATIO)} sizes={grid ? '(min-width:1264px) 384px, (min-width:1024px) 30vw, (min-width:768px) calc(50vw - 44px), calc(100vw - 32px)' : '(min-width:1200px) 340px, (min-width:768px) 320px, calc(100vw - 52px)'}
+          alt="" width="680" height="952" loading="lazy" decoding="async" />
+        <div class="cat__txt">
+          <p class="cat__meta t-label">{meta(c.id)}</p>
+          <h3 class="t-card"><a href={catPath(c.id)}>{c.data.menuTitle}</a></h3>
+          <p class="t-body">{c.data.excerpt}</p>
+        </div>
+      </Tile>
+    ))}
+  </List>
+</Section>
 
 <style>
-  /* Row: clipped to the content width like the tour row, swiped or moved with the arrows; nothing moves on its own.
-     Card widths: phones as wide as the tour and blog cards (the next card peeking in 20px), 320px from 768px, 340px from 1200px. */
-  .cats {
-    display: grid; grid-auto-flow: column; grid-auto-columns: min(calc(100% - 20px), 360px); gap: var(--space-4); list-style: none;
-    margin: calc(var(--space-2) * -1) calc(var(--gutter) * -1); padding: var(--space-2) var(--gutter); scroll-padding-inline: var(--gutter); /* 8px keeps the focus ring unclipped */
-    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scrollbar-width: none;
-  }
-  .cats::-webkit-scrollbar { display: none; }
-  .cats > li { scroll-snap-align: start; }
+  /* Row: the shared tile rail (.rail--tile), swiped or moved with the arrows; nothing moves on its own.
+     Grid (the tours hub): .grid-3, with the card gap between rows too, as the words sit on the photos. */
+  .cats { row-gap: var(--grid-gap); }
 
-  .cat { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 5 / 7; border-radius: var(--radius); corner-shape: squircle; overflow: hidden; isolation: isolate; background: var(--s-800); color: #fff; -webkit-font-smoothing: antialiased; }
+  .cat { position: relative; display: flex; flex-direction: column; justify-content: flex-end; aspect-ratio: 5 / 7; border-radius: var(--radius); corner-shape: squircle; overflow: hidden; isolation: isolate; background: var(--s-800); color: var(--on-dark); -webkit-font-smoothing: antialiased; }
   .cat img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: scale var(--dur-4) var(--ease-out); }
-  .cat::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 12%, rgb(12 25 37 / .5) 42%, rgb(12 25 37 / .92)); }
+  .cat::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(transparent 12%, rgb(var(--scrim-rgb) / .5) 42%, rgb(var(--scrim-rgb) / .92)); }
   .cat__txt { padding: var(--space-4); }
-  .cat h3 { color: #fff; }
+  .cat h3 { color: var(--on-dark); }
+  .cat__meta { margin-bottom: var(--space-2); color: var(--on-dark-2); }
   .cat h3 a::after { content: ''; position: absolute; inset: 0; }
-  .cat p { margin-top: var(--space-3); color: #fff;
-    display: -webkit-box; -webkit-line-clamp: 7; -webkit-box-orient: vertical; overflow: hidden; }
+  .cat p.t-body { margin-top: var(--space-3); color: var(--on-dark);
+    display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  /* Three lines on every card, so the labels and titles line up across a row */
+  .cat p.t-body { min-height: calc(3 * var(--lh-body) * var(--fs-body)); }
   .cat:has(a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 3px; }
   .cat a:focus-visible { outline: 0; }
-  @media (hover: hover) {
-    .cat:hover img { scale: 1.02; }
-    .cat:hover h3 a { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
+  @media (max-width: 767px) {
+    .cat { aspect-ratio: 4 / 5; }
+    .cat p.t-body { -webkit-line-clamp: 4; }
   }
-  @media (min-width: 768px) { .cats { grid-auto-columns: 320px; gap: var(--space-6); } }
-  @media (min-width: 1200px) {
-    .cats { grid-auto-columns: 340px; margin-inline: calc(var(--space-4) * -1); padding-inline: var(--space-4); scroll-padding-inline: var(--space-4); }
-    .cat__txt { padding: var(--card-pad); }
-  }
-
-  /* Grid: one card per row on phones, two on tablets, three on desktop — same card as the homepage row */
-  .cats--grid { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); margin-inline: 0; padding-inline: 0; overflow: visible; scroll-snap-type: none; }
-  @media (min-width: 768px) { .cats--grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (min-width: 1024px) { .cats--grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (min-width: 1200px) { .cat__txt { padding: var(--card-pad); } }
 </style>

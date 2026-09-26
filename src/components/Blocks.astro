@@ -25,7 +25,7 @@ const { sections, title } = Astro.props;
 const hasH1 = ['pageBanner', 'hero'].includes(sections[0]?._type);
 // Heading ids from every Text block share one counter (and skip ids the layout already uses), so anchors stay unique.
 const slugger = new GithubSlugger();
-['main', 'drawer', 'plan', 'whatsapp', 'enquire', 'rail-quotes', 'themes'].forEach((id) => slugger.slug(id));
+['main', 'drawer', 'plan', 'whatsapp', 'enquire', 'rail-quotes', 'rail-themes', 'faq'].forEach((id) => slugger.slug(id));
 
 const blocks: Record<string, any> = { hero: Hero, pageBanner: PageBanner, intro: Intro, founderNote: FounderNote, reasons: Reasons, storyRows: StoryRows, richText: RichText, tourRail: TourRail, categoryTiles: CategoryTiles, latestPosts: LatestPosts, reviewList: Reviews, bookingSteps: BookingSteps, team: Team, faqList: FaqBlock, partners: Partners };
 // The Call to action and WhatsApp card blocks both render the closing contact section (the photo is no longer used).

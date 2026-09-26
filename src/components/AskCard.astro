@@ -1,0 +1,16 @@
+---
+// The soft ask: a light grey card with a card-size title, one line and the buttons passed in the slot (an enquiry button,
+// maybe the round WhatsApp). level: the title's element, a p where a heading would break the page's order.
+interface Props { title: string; text: string; level?: 'h3' | 'p'; class?: string; [attr: string]: unknown }
+const { title, text, level: Title = 'h3', class: cls, ...rest } = Astro.props;
+---
+<div class:list={['ask', cls]} {...rest}>
+  <Title class="t-card">{title}</Title>
+  <p class="ask__text t-body muted">{text}</p>
+  <div class="ask__act"><slot /></div>
+</div>
+<style>
+  .ask { display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
+  .ask__text { max-width: 60ch; }
+  .ask__act { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-3); }
+</style>

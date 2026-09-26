@@ -2,25 +2,14 @@
 // The three newest posts in a row like the tour row: one on phones, two on tablets, three from 1200px (arrows only
 // when there is more to see). Same card as the blog index.
 import { getCollection } from 'astro:content';
-import Icon from '../Icon.astro';
+import Section from '../Section.astro';
 import BlogCard from '../BlogCard.astro';
-import Arrows from '../Arrows.astro';
 interface Props { heading: string; grey?: boolean }
 const { heading, grey = false } = Astro.props;
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
 ---
 {posts.length > 0 && (
-<section class:list={['section', { 'section--grey': grey }]}>
-  <div class="container">
-    <div class="sh sh--row" data-reveal>
-      <h2>{heading}</h2>
-      <div class="sh__act">
-        <a class="link-more" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
-        <Arrows target="rail-posts" label="articles" />
-      </div>
-    </div>
-    <div class="rail" id="rail-posts" data-reveal="stagger">{posts.map((p) => <BlogCard post={p} rail />)}</div>
-    <a class="link-more m-only" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
-  </div>
-</section>
+<Section heading={heading} grey={grey} link={{ href: '/blog/', label: 'All articles' }} rail="posts" railLabel="articles">
+  {posts.map((p) => <BlogCard post={p} rail />)}
+</Section>
 )}

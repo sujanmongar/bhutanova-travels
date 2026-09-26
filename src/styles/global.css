@@ -1,7 +1,18 @@
-/* One variable file per family. Italic files only download if a page actually uses <em> or a pull quote. */
-/* Fraunces for titles and headings only, with its optical-size axis so large headings get the display cut. */
-@import '@fontsource-variable/fraunces/opsz.css';
-@import '@fontsource-variable/fraunces/opsz-italic.css';
+/* Fraunces for titles and headings only, with its optical-size axis so large headings get the display cut. The site only
+   uses weight 400, so the files in src/fonts are Fraunces (@fontsource-variable, opsz) pinned at wght 400 with fontTools'
+   instancer: half the size, same outlines. Italic and non-latin files only download if a page uses those characters. */
+@font-face { font-family: 'Fraunces Variable'; font-style: normal; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-vietnamese-opsz-normal-400.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: 'Fraunces Variable'; font-style: normal; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-latin-ext-opsz-normal-400.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Fraunces Variable'; font-style: normal; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-latin-opsz-normal-400.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Fraunces Variable'; font-style: italic; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-vietnamese-opsz-italic-400.woff2) format('woff2-variations');
+  unicode-range: U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB; }
+@font-face { font-family: 'Fraunces Variable'; font-style: italic; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-latin-ext-opsz-italic-400.woff2) format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Fraunces Variable'; font-style: italic; font-weight: 400; font-display: swap; src: url(../fonts/fraunces-latin-opsz-italic-400.woff2) format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
 
 /* ---------- Tokens ---------- */
 :root {
@@ -25,12 +36,10 @@
   --border: #e3e8ed; --border-dark: #cbd3db; --border-input: #7d8b99;
 
   /* Shape & depth */
-  /* Cards and card images: --radius (36px) with corner-shape: squircle; sheets 28px; fields 12px */
+  /* Cards and card images: --radius with corner-shape: squircle; sheets 28px; fields 12px */
   --r-xs: 6px; --r-sm: 12px; --r-md: 16px; --r-lg: 20px; --r-xl: 28px; --r-2xl: 36px; --r-full: 999px;
   --radius: var(--r-xl); --radius-sm: var(--r-sm);  /* every card: 28px on phones, 36px from 768px; Apple-style squircle where supported */
-  --sh-xs: 0 1px 2px rgb(12 25 37 / .06);
   --sh-sm: 0 1px 2px rgb(12 25 37 / .04), 0 4px 12px rgb(12 25 37 / .06);
-  --sh-md: 0 2px 4px rgb(12 25 37 / .04), 0 12px 28px -6px rgb(12 25 37 / .14);
   --sh-lg: 0 4px 8px rgb(12 25 37 / .04), 0 24px 56px -12px rgb(12 25 37 / .22);
   --sh-up: 0 -1px 0 rgb(12 25 37 / .06), 0 -8px 24px rgb(12 25 37 / .08);
   --ring: 0 0 0 4px rgb(255 165 0 / .32);
@@ -51,13 +60,28 @@
   --section: var(--space-16);   /* between sections */
   --hero-gap: var(--space-24);  /* least photo between the header and the hero's title: 96 on phones, 128 from 768px */
   --card-pad: var(--space-6);   /* inside cards and panels */
+  --icon-bg: rgb(12 25 37 / .06); --icon-bg-hover: rgb(12 25 37 / .1);  /* icon buttons (.ib) on white */
+  /* Icon sizes (the owner's scale): small arrows and carets after words 12 · beside 16px text and in pill buttons 16 ·
+     beside 18px text and in round icon buttons 20 · facts 24 · feature icons that head an item 32. No other icon size. */
+  --icon-xs: 12px; --icon-sm: 16px; --icon-md: 20px; --icon-lg: 24px; --icon-xl: 32px;
+  --on-dark-bg: rgb(255 255 255 / .12); --on-dark-hover: rgb(255 255 255 / .22);  /* icon buttons on navy or over the hero photo */
+  --whatsapp: #25d366;  /* WhatsApp's bright green: the hover fill of every WhatsApp button */
+  --whatsapp-dark: #128c7e;  /* WhatsApp's darker green: the logo on light backgrounds, readable at 4:1 (owner's pick) */
   /* Frosted glass for everything pinned to the top (header, tab bars, the tour details bar), so they read as one strip */
-  --icon-bg: rgb(12 25 37 / .06); --icon-bg-hover: rgb(12 25 37 / .1);  /* round icon buttons: header search/menu, WhatsApp */
-  --whatsapp: #25d366;  /* the WhatsApp logo's own green, wherever the logo sits on white */
   --glass-bg: rgb(255 255 255 / .72); --glass-blur: saturate(180%) blur(18px);
+  /* On navy or over a photo: lines, fills, glass and scrims */
+  --on-dark-line: rgb(255 255 255 / .16);         /* hairlines and borders on navy or a photo */
+  --on-dark-line-strong: rgb(255 255 255 / .32);  /* outline buttons and fields on navy or a photo */
+  --on-dark-line-hover: rgb(255 255 255 / .72);   /* those outlines, hovered */
+  --on-dark-tint: rgb(255 255 255 / .06);         /* quiet panels and hover fills on navy */
+  --glass-light: rgb(255 255 255 / .9);           /* light icon buttons over photos */
+  --glass-dark: rgb(8 16 24 / .6); --glass-dark-hover: rgb(8 16 24 / .8);  /* dark buttons and badges over photos */
+  --glass-dark-line: rgb(255 255 255 / .2);       /* the rim of those dark buttons */
+  /* --viewer-bg and --scrim-rgb: in the rule just after this block */
   --grid-gap: var(--space-6);   /* between cards, rows and grids alike, at every width (so a card is 384px on desktop everywhere) */
   --measure: calc(var(--fs-base) * 34);  /* reading column for articles: 612px, about 70 characters a line */
   --header-h: 72px;  /* phones: room for the larger logo and 48px buttons */
+  --sticky-top: calc(var(--header-h) + var(--space-6));  /* where a sticky side column pins, 24px under the header */
   --card-photo: 240px;          /* photo height on every tour, blog, guide and place card (270px from 768px) */
 
   /* ---------- Typography — Typescale: 18px base, Minor Third (1.200) ----------
@@ -93,11 +117,16 @@
   /* Sans. Reading text is the 18px base; UI controls and small text sit on the 16px floor. */
   --fs-body: var(--fs-base); --lh-body: 1.6; --ls-body: 0; --fw-body: 400;     /* 18 — reading text, every description */
   --fs-caption: 1rem;  --lh-caption: 1.6;  --ls-caption: 0;  --fw-caption: 400;  /* 16 — small print, secondary text */
-  --fs-label: 1rem;    --lh-label: 1.6;    --ls-label: 0;    --fw-label: 500;    /* 16 — nav, breadcrumbs, meta, tags, checklists */
+  --fs-label: 1rem;    --lh-label: 1.6;    --ls-label: 0;    --fw-label: 500;    /* 16 — nav, breadcrumbs, meta, tags, form labels */
   --fs-button: 1rem;   --lh-button: 1.6;   --ls-button: 0;   --fw-button: 600;   /* 16 — every button… */
   --fs-link: 1rem;     --lh-link: 1.6;     --ls-link: 0;     --fw-link: 600;     /* 16 — …and every text CTA, identical */
   --fs-price: var(--fs-h5); --lh-price: var(--lh-h5); --ls-price: 0; --fw-price: 600; /* tour page price box and sticky bar, sans */
   --ls-caps: 0.08em;   /* the uppercase variant (.t-caps) of label/link */
+}
+/* Also set on ::backdrop, which inherits nothing from the page before Safari 17.4 / Chrome 122 */
+:root, ::backdrop {
+  --viewer-bg: rgb(8 16 24 / .96);  /* the photo viewer */
+  --scrim-rgb: 12 25 37;            /* photo scrims: rgb(var(--scrim-rgb) / <alpha>) */
 }
 @media (min-width: 768px) {
   :root {
@@ -117,16 +146,13 @@
   }
 }
 
-/* The standard content container for desktop is 1140–1200px, so that is where it stops however wide the
-   screen gets. Heroes and banners still run edge to edge; only their text is bound to this column. */
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + var(--space-4)); scrollbar-gutter: stable; }
-html:has(dialog:modal) { overflow: hidden; }
 /* iOS overscroll above a photo hero shows navy, not a white strip */
 html:has(main > .hero:first-child) { background: var(--s-800); }
 body { margin: 0; font-family: var(--ff-body); font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--text); background: var(--white); }
-:is(.hero, .banner, .footer, .widget--cta, .promo) { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+:is(.hero, .banner, .footer, .widget--cta) { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 img, svg { display: block; max-width: 100%; }
 img { height: auto; }
 a { color: inherit; text-decoration: none; }
@@ -148,8 +174,8 @@ h1, .t-h1 { font-family: var(--ff-display); font-size: var(--fs-display);  /* pa
 h2 { font-family: var(--ff-display); font-size: var(--fs-section); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 400; font-variant-numeric: lining-nums; }
 h3, .t-h3 { font-family: var(--ff-display); font-size: var(--fs-h3); line-height: var(--lh-h3); letter-spacing: var(--ls-h3); font-weight: 400; font-variant-numeric: lining-nums; }
 h4, .t-h4 { font-family: var(--ff-display); font-size: var(--fs-h4); line-height: var(--lh-h4); letter-spacing: var(--ls-h4); font-weight: 400; font-variant-numeric: lining-nums; }
-h5, .t-h5 { font-family: var(--ff-display); font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); font-weight: 400; font-variant-numeric: lining-nums; }
-h6, .t-h6 { font-family: var(--ff-display); font-size: var(--fs-h6); line-height: var(--lh-h6); letter-spacing: var(--ls-h6); font-weight: 400; font-variant-numeric: lining-nums; }
+h5 { font-family: var(--ff-display); font-size: var(--fs-h5); line-height: var(--lh-h5); letter-spacing: var(--ls-h5); font-weight: 400; font-variant-numeric: lining-nums; }
+h6 { font-family: var(--ff-display); font-size: var(--fs-h6); line-height: var(--lh-h6); letter-spacing: var(--ls-h6); font-weight: 400; font-variant-numeric: lining-nums; }
 /* Component titles sit on the same scale, but by name: a card title stays a card title at any heading level. */
 .t-card { font-family: var(--ff-display); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); font-weight: 400; font-variant-numeric: lining-nums; color: var(--ink); }
 .t-title { font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); font-weight: 400; font-variant-numeric: lining-nums; color: var(--ink); }
@@ -168,27 +194,26 @@ h6, .t-h6 { font-family: var(--ff-display); font-size: var(--fs-h6); line-height
 button, input, select, textarea { font: inherit; font-family: var(--ff); letter-spacing: inherit; color: inherit; }
 ::selection { background: var(--p-100); color: var(--ink); }
 :focus-visible { outline: 2px solid var(--focus, var(--s-500)); outline-offset: 2px; }
-:is(.footer, .hero, .banner, .widget--cta) { --focus: #fff; }
+:is(.footer, .hero, .banner, .widget--cta) { --focus: var(--on-dark); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.skip { position: absolute; left: -999px; top: var(--space-2); z-index: 200; background: var(--s-500); color: #fff; padding: var(--space-2) var(--space-4); border-radius: var(--r-sm); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); }
+.skip { position: absolute; left: -999px; top: var(--space-2); z-index: 200; background: var(--s-500); color: var(--on-dark); padding: var(--space-2) var(--space-4); border-radius: var(--r-sm); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); }
 .skip:focus { left: var(--space-2); }
 
+/* The standard content container for desktop is 1140–1200px, so that is where it stops however wide the
+   screen gets. Heroes and banners still run edge to edge; only their text is bound to this column. */
 .container { width: 100%; max-width: calc(var(--container) + var(--gutter) * 2); margin-inline: auto; padding-inline: max(var(--gutter), env(safe-area-inset-left), env(safe-area-inset-right)); }
 .section { padding-block: var(--section); }
 /* Hero/banner photos run up under the transparent header */
 main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1); }
 .section--grey { background: var(--surface); }
 /* Consecutive white sections share one gap instead of doubling it */
-.section:not(.section--grey) + .section:not(.section--grey) { padding-top: 0; }
-.accent { color: var(--p-700); }
+.section:not(.section--grey) + .section:not(.section--grey),
+.section:not(.section--grey) + script + .section:not(.section--grey) { padding-top: 0; }
 .icon { width: 1em; height: 1em; flex: none; }
-.center { display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--stack); }
 
 /* Section heading — left-aligned, editorial. .sh--row puts an action (link/arrows) on the right. */
 .sh { display: grid; justify-items: start; margin-bottom: var(--stack); }
-.sh--center { text-align: center; justify-items: center; }
-.label { display: block; margin-bottom: var(--space-3); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--p-700); }
-.sh > p:not(.label) { margin-top: var(--space-6); max-width: 56ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--text-2); }
+.sh > p { margin-top: var(--space-6); max-width: 56ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--text-2); }
 .sh--row { grid-template-columns: minmax(0, 1fr) auto; align-items: end; column-gap: var(--space-6); }
 .sh--row > :not(.sh__act) { grid-column: 1; }
 .sh__act { grid-column: 2; grid-row: 1 / span 3; display: flex; align-items: center; gap: var(--space-6); }
@@ -199,7 +224,7 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 /* Split: heading left, intro right (desktop) */
 @media (min-width: 1024px) {
   .sh--split { grid-template-columns: 5fr 6fr; column-gap: var(--space-16); align-items: end; }
-  .sh--split > p:not(.label) { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
+  .sh--split > p { grid-column: 2; grid-row: 1 / span 2; margin-top: 0; }
 }
 
 /* ---------- Buttons ---------- */
@@ -215,24 +240,25 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 }
 .btn:focus-visible { outline-offset: 3px; }
 .btn:active { scale: .98; transition-duration: 80ms; }  /* a small press, felt more than seen */
-/* Hover: each variant goes one quiet step darker (or firmer). A few key buttons (.btn--accent: the hero's two and the
+/* Hover: each variant goes one quiet step darker (or firmer). A few key buttons (.btn--accent: the hero's Explore tours and the
    header's Enquire) fill with the primary orange instead, navy text on it (owner's call). WhatsApp buttons fill
    WhatsApp green. */
-.btn--primary { background: var(--s-500); color: #fff; }
-.btn--light { background: #fff; color: var(--ink); }
-.btn--outline { background: transparent; color: var(--ink); border-color: rgb(22 46 68 / .28); }
+.btn--primary { background: var(--s-500); color: var(--on-dark); }
+.btn--light { background: var(--white); color: var(--ink); }
+.btn--outline { background: transparent; color: var(--ink); border-color: var(--border-dark); }
 .btn--soft { background: var(--surface); color: var(--ink); border-color: var(--border); }
-.btn--on-dark { background: transparent; border-color: rgb(255 255 255 / .32); color: #fff; }
+.btn--on-dark { background: transparent; border-color: var(--on-dark-line-strong); color: var(--on-dark); }
 @media (hover: hover) {
   .btn--primary:hover { background: var(--s-800); }
   .btn--light:hover { background: var(--s-50); }
-  .btn--outline:hover { border-color: var(--s-500); background: rgb(22 46 68 / .04); }
+  .btn--outline:hover { border-color: var(--s-500); background: var(--icon-bg); }
   .btn--soft:hover { border-color: var(--border-dark); }
-  .btn--on-dark:hover { border-color: rgb(255 255 255 / .72); background: rgb(255 255 255 / .08); }
-  .btn--accent:hover { background: var(--p-500); border-color: var(--p-500); color: var(--s-800); }
+  .btn--on-dark:hover { border-color: var(--on-dark-line-hover); background: var(--on-dark-tint); }
+  .btn--accent:hover { background: var(--p-500); border-color: var(--p-500); color: var(--ink); }
   /* WhatsApp buttons fill with WhatsApp's own green on hover (dark text and logo stay readable on it) */
   .btn--wa:hover { background: var(--whatsapp); border-color: var(--whatsapp); color: var(--ink); }
 }
+.btn .icon { font-size: var(--icon-sm); }
 .btn--wa .icon { transition: color var(--dur-1); }
 @media (hover: hover) { .btn--wa:hover .icon { color: var(--ink); } }
 .btn--sm { --btn-h: 40px; padding: 0 var(--space-4); }
@@ -240,35 +266,52 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .btn--block { width: 100%; }
 @media (min-width: 1200px) { .btn { --btn-h: 46px; } .btn--sm { --btn-h: 38px; } .btn--lg { --btn-h: 52px; } }
 
+/* ---------- Icon buttons (IconButton.astro): every round, icon-only control ----------
+   One size (a pill button's height), one 20px glyph, one hover (the fill one step darker), one press (98%).
+   The tone only sets the colours for what the button sits on. */
+.ib {
+  --ib-bg: var(--icon-bg); --ib-hover: var(--icon-bg-hover);
+  flex: none; display: inline-grid; place-items: center; width: 48px; height: 48px; padding: 0;
+  border: 1px solid transparent; border-radius: var(--r-full); background: var(--ib-bg); color: var(--ink);
+  font-size: var(--icon-md); line-height: 1; text-decoration: none; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out), opacity var(--dur-2), scale var(--dur-1) var(--ease-out);
+}
+@media (min-width: 1200px) { .ib { width: 46px; height: 46px; } }
+.ib--line { --ib-bg: transparent; border-color: var(--border-dark); }
+.ib--light { --ib-bg: var(--glass-light); --ib-hover: var(--white); }
+.ib--dark { --ib-bg: var(--glass-dark); --ib-hover: var(--glass-dark-hover); border-color: var(--glass-dark-line); color: var(--on-dark); }
+.ib--on-dark { --ib-bg: var(--on-dark-bg); --ib-hover: var(--on-dark-hover); color: var(--on-dark); }
+.ib--wa { color: var(--whatsapp-dark); --ib-hover: var(--whatsapp); }
+.ib--solid { font-size: var(--icon-sm); }  /* filled media glyphs (pause / play) sit a step smaller */
+.ib:not(:disabled):active { scale: .98; transition-duration: 80ms; }
+.ib:disabled { opacity: .35; cursor: default; }
+@media (hover: hover) {
+  .ib:not(:disabled):hover { background-color: var(--ib-hover); }
+  .ib--wa:hover { color: var(--ink); }  /* green logo on its green fill would vanish */
+}
+
 /* "See all" links (owner's call): navy text, an orange angle arrow, and a thin orange line under the words (not the
-   arrow) so they read as links even on phones; on hover the line thickens and the arrow nudges up. .see-all gives the
-   same look to the menu, drawer and search "see all" rows and the tour page's Show all. */
+   arrow) so they read as links even on phones; on hover the line thickens and the arrow nudges up. LinkMore.astro draws
+   .link-more (the tour page's Show all is one, with a turning chevron); .see-all gives the same look to the menu, drawer
+   and search "see all" rows. */
 .link-more {
   display: inline-flex; align-items: center; gap: var(--space-2); min-height: 44px; color: var(--ink); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); white-space: nowrap;
 }
 .see-all { color: var(--ink); text-decoration: none; }
-:is(.link-more, .see-all) .icon { font-size: .8em; color: var(--p-500); transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out); }
-:is(.link-more, .see-all) > span { padding-bottom: 3px; background: linear-gradient(var(--p-500), var(--p-500)) 0 100% / 100% 1px no-repeat; transition: background-size var(--dur-2) var(--ease-out); }
+:is(.link-more, .see-all) .icon { font-size: var(--icon-xs); color: var(--p-500); transition: translate var(--dur-2) var(--ease-out), rotate var(--dur-2) var(--ease-out); }
+:is(.link-more, .see-all) > span { padding-bottom: var(--space-1); background: linear-gradient(var(--p-500), var(--p-500)) 0 100% / 100% 1px no-repeat; transition: background-size var(--dur-2) var(--ease-out); }
 :is(.link-more, .see-all):is(:focus-visible, :active) > span { background-size: 100% 2px; }
 /* Mobile-only "see all" link under a row whose header link is hidden on phones (after .link-more so display:none wins) */
 .m-only { margin-top: var(--space-4); }
 @media (min-width: 768px) { .m-only { display: none; } }
 @media (hover: hover) {
   :is(.link-more, .see-all):hover > span { background-size: 100% 2px; }
-  :is(.link-more, a.see-all):hover .icon { translate: 2px -2px; }
+  :is(.link-more, .see-all):hover .icon { translate: 2px -2px; }
 }
 
 
 /* Round carousel arrows */
 .arrows { display: flex; gap: var(--space-2); }
-.arrow {
-  display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgb(22 46 68 / .18);
-  background: transparent; color: var(--s-500); font-size: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: background-color var(--dur-1), color var(--dur-1), border-color var(--dur-1), opacity var(--dur-2), scale var(--dur-1) var(--ease-out);
-}
-@media (hover: hover) { .arrow:not(:disabled):hover { background: var(--s-500); border-color: var(--s-500); color: #fff; } }
-.arrow:not(:disabled):active { scale: .98; }
-.arrow:disabled { opacity: .35; box-shadow: none; cursor: default; }
 
 /* Horizontal rail: swipe on mobile, 2-up tablet, 3-up desktop. Block padding gives hover lift/shadow room. */
 .rail {
@@ -280,8 +323,13 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 .rail > * { scroll-snap-align: start; }
 @media (min-width: 768px) { .rail { grid-auto-columns: calc((100% - 24px) / 2); gap: var(--space-6); } }
 @media (min-width: 1200px) { .rail { grid-auto-columns: calc((100% - 48px) / 3); margin-inline: calc(var(--space-4) * -1); padding-inline: var(--space-4); scroll-padding-inline: var(--space-4); } }
+/* Tall photo tiles (the tour themes): phones as the other rails, then fixed widths so a fourth tile peeks in */
+@media (min-width: 768px) { .rail--tile { grid-auto-columns: 320px; } }
+@media (min-width: 1200px) { .rail--tile { grid-auto-columns: 340px; } }
 
-.grid-3 { display: grid; gap: var(--grid-gap); list-style: none; margin: 0; padding: 0; }
+/* Card grid: 1 → 2 → 3 across; 40px between rows, as cards carry text under the photo. Filtered-out cards are [hidden]. */
+.grid-3 { display: grid; gap: var(--space-10) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
+.grid-3 > [hidden] { display: none; }
 @media (min-width: 768px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
@@ -298,10 +346,20 @@ main > :is(.hero, .banner):first-child { margin-top: calc(var(--header-h) * -1);
 }
 
 /* ---------- Tab bar (TabBar.astro): directly under a page banner, pinned under the header ----------
-   Travel guide topics, destination regions (jump links) and blog topics (filters) all look and sit the same way:
+   Travel guide topics, destination regions (jump links), tour themes (page links) and blog topics (filters) all look and sit the same way:
    text tabs, the current one in ink with an orange bar under it. */
 .tabbar { position: sticky; top: var(--header-h); z-index: 20; background: var(--glass-bg); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border); }
-.tabbar__in { display: flex; gap: var(--space-6); overflow: auto hidden; scrollbar-width: none; overscroll-behavior: none; scroll-padding-inline: var(--gutter); }  /* sideways only, no rubber-band, no browser back: on iPhone the row can't be dragged about */
+.tabbar__row { display: flex; align-items: center; column-gap: var(--space-6); }
+/* The tabs run to the screen edges when they scroll sideways */
+.tabbar__in { flex: 1 1 auto; min-width: 0; margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); display: flex; gap: var(--space-6); overflow: auto hidden; scrollbar-width: none; overscroll-behavior: none; scroll-padding-inline: var(--gutter); }  /* sideways only, no rubber-band, no browser back: on iPhone the row can't be dragged about */
+/* Tools beside the tabs (the tour finder's count, Duration and Sort): from 1024px on the same line, which the tabs share
+   within the content width; below that on a slim line of their own under a hairline */
+.tabbar__tools { flex: none; }
+@media (min-width: 1024px) { .tabbar--tools .tabbar__in { margin-inline: 0; padding-inline: 0; } }
+@media (max-width: 1023px) {
+  .tabbar--tools .tabbar__row { flex-direction: column; align-items: stretch; }
+  .tabbar__tools { padding-block: var(--space-2); border-top: 1px solid var(--border); }
+}
 .tabbar__in::-webkit-scrollbar { display: none; }
 .tabbar__in > :is(a, button) {
   position: relative; flex: none; display: inline-flex; align-items: center; min-height: 52px; padding: 0; border: 0; background: none;
@@ -318,52 +376,56 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 
 /* ---------- Page banner (inner pages) ---------- */
 .banner {
-  position: relative; display: grid; align-items: end; color: #fff; background: var(--s-800);
+  position: relative; display: grid; align-items: end; color: var(--on-dark); background: var(--s-800);
   min-height: calc(360px + var(--header-h)); padding-block: calc(var(--header-h) + var(--space-16)) var(--space-12); isolation: isolate; overflow: hidden;
 }
 .banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
 .banner > div { width: 100%; max-width: calc(var(--container) + var(--gutter) * 2); margin-inline: auto; padding-inline: var(--gutter); }
-.banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(12 25 37 / .15), rgb(12 25 37 / .2) 40%, rgb(12 25 37 / .72)); z-index: -1; }
+/* A darker band under the header keeps the white logo and menu readable on bright skies (owner's pick) */
+.banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgb(var(--scrim-rgb) / .66), rgb(var(--scrim-rgb) / 0) 190px), linear-gradient(rgb(var(--scrim-rgb) / .15), rgb(var(--scrim-rgb) / .25) 40%, rgb(var(--scrim-rgb) / .78)); z-index: -1; }
+@media (max-width: 767px) { .banner::after { background: linear-gradient(rgb(var(--scrim-rgb) / .66), rgb(var(--scrim-rgb) / 0) 170px), linear-gradient(rgb(var(--scrim-rgb) / .25), rgb(var(--scrim-rgb) / .45) 35%, rgb(var(--scrim-rgb) / .82)); } }
 /* The hero headline is the only Display; page banners carry an ordinary H1 */
 .hero-title {
-  color: #fff; font-family: var(--ff-display); font-weight: 400; font-size: var(--fs-display); line-height: var(--lh-display);
+  color: var(--on-dark); font-family: var(--ff-display); font-weight: 400; font-size: var(--fs-display); line-height: var(--lh-display);
   letter-spacing: var(--ls-display); font-variant-numeric: lining-nums; max-width: 20ch; text-wrap: balance;
 }
-.banner h1 { color: #fff; max-width: 20ch; }
+.banner h1 { color: var(--on-dark); max-width: 20ch; }
 @media (min-width: 768px) { .banner { min-height: calc(440px + var(--header-h)); padding-bottom: var(--space-16); } }
 @media (min-width: 1200px) { .banner { min-height: calc(520px + var(--header-h)); padding-bottom: var(--space-20); } }
 
 /* ---------- Breadcrumbs ---------- */
+.crumbs { margin-bottom: var(--space-4); }  /* breadcrumbs → h1: 16px on every page (the tour cover keeps its own 8 + gap) */
 .crumbs ol { display: flex; flex-wrap: wrap; align-items: center; list-style: none; margin: 0; padding: 0; font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-3); }
-.crumbs li + li::before { content: '/'; margin-inline: var(--space-2); opacity: .6; }
-.crumbs a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); color: var(--text-2); transition: color var(--dur-1); }
-.crumbs a:hover { color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+/* The slash ends the previous item, so a trail that wraps never starts a line with a lone '/' */
+.crumbs li:not(:last-child)::after { content: '/'; margin-inline: var(--space-2); }
+.crumbs a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); --link-rest: var(--text-2); }
 .crumbs [aria-current] { display: inline-block; vertical-align: bottom; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60vw; }
-.crumbs--light ol { color: rgb(255 255 255 / .82); }
-.crumbs--light a { color: #fff; }
-.crumbs--light a:hover { color: #fff; }
-.crumbs--light [aria-current] { color: #fff; }
-.banner .crumbs { margin-bottom: var(--space-4); }
-.banner__line { margin-top: var(--space-4); max-width: 58ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: #fff; }
+.crumbs--light ol { color: var(--on-dark-2); }
+.crumbs--light a { --link-rest: var(--on-dark); }
+.crumbs--light [aria-current] { color: var(--on-dark); }
+.banner__line { margin-top: var(--space-4); max-width: 58ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--on-dark); }
 
 /* ---------- Prose (blog, guides, tour text from CMS) ---------- */
 .prose { max-width: 64ch; font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--text); }
 .prose > * + * { margin-top: var(--space-6); }
+/* The one quiet "ask us" line midway through a long article (withAsk in utils.ts) */
+.prose .mid-ask { padding-block: var(--space-4); border-block: 1px solid var(--border); }
+button.link-more { background: none; border: 0; padding: 0; cursor: pointer; text-align: left; }
+.prose .mid-ask .link-more { white-space: normal; }
 .prose h2 { margin-top: var(--space-12); font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
 /* h2 renders at the H3 size, so article h3s step down one to keep the order */
 .prose h3 { margin-top: var(--space-8); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
-.prose :is(h2, h3) + * { margin-top: var(--space-3); }
-/* In-text links look the same everywhere on light pages: in articles and in any running text (a plain <a> inside a body or
-   caption paragraph). Navy panels (footer, WhatsApp card) keep their own light link colour. */
-.prose a, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a { color: var(--p-700); text-decoration: underline 1px; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: 3px; transition: text-decoration-color var(--dur-2), color var(--dur-2); }
-.prose a:hover, main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]):hover, .search__empty > a:hover, .cookie p > a:hover { color: var(--p-800); text-decoration-color: var(--p-500); text-decoration-thickness: 2px; }
+.prose h4 { margin-top: var(--space-8); font-size: var(--fs-title); line-height: var(--lh-title); letter-spacing: var(--ls-title); }
+.prose :is(h2, h3, h4) + * { margin-top: var(--space-3); }
 .prose ul, .prose ol { padding-left: var(--space-6); }
 .prose li + li { margin-top: var(--space-2); }
 .prose li::marker { color: var(--p-500); }
 .prose :is(strong, b) { color: var(--ink); }
 .prose img { border-radius: var(--r-md); }
 .prose blockquote { margin-inline: 0; padding: var(--space-4) var(--space-6); background: var(--p-50); border-left: 3px solid var(--p-500); border-radius: 0 var(--r-md) var(--r-md) 0; }
-.prose table { width: 100%; border-collapse: collapse; font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); display: block; overflow-x: auto; }
+/* Tables fill the text column; a wide one scrolls inside its wrapper (pt.ts wraps every table) */
+.prose .table-wrap { overflow-x: auto; }
+.prose table { width: 100%; border-collapse: collapse; font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); }
 .prose th, .prose td { text-align: left; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--border); }
 .prose :is(td, th).nw { white-space: nowrap; }
 .prose th { background: var(--surface); font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text-2); }
@@ -374,8 +436,6 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
   margin-top: var(--space-3); color: var(--text-2);
   font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption);
 }
-.prose figcaption a { color: inherit; text-decoration-color: var(--border-dark); text-underline-offset: 4px; }
-@media (hover: hover) { .prose figcaption a:hover { color: var(--ink); text-decoration-color: var(--p-500); text-decoration-thickness: 1px; } }
 .prose .gallery > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
 .prose .gallery img { aspect-ratio: 4 / 3; object-fit: cover; }
 .prose .gallery--3 > div > :first-child { grid-column: 1 / -1; }
@@ -396,10 +456,9 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .prose .tc img { width: 96px; height: 96px; object-fit: cover; border-radius: var(--r-sm); background: var(--surface); }
 .prose .tc .t-label { color: var(--text-2); }
 .prose .tc .t-card { margin-block: var(--space-1); }
-.prose .tc a { color: var(--ink); text-decoration: underline 1.5px transparent; text-underline-offset: 6px; }
+.prose .tc a { color: var(--ink); text-decoration: underline 1.5px transparent; text-underline-offset: var(--space-2); }
 .prose .tc a::after { content: ''; position: absolute; inset: 0; }
 .prose .tc b { color: var(--ink); }
-@media (hover: hover) { .prose .tc:hover a { text-decoration-color: var(--p-500); } }
 .prose .tc a:focus-visible { outline: none; }
 .prose .tc:has(a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 4px; }  /* the whole row is the target */
 /* Pull quote: the quote role between hairlines (the "Quote / note" paragraph style keeps its tinted box) */
@@ -412,7 +471,7 @@ html:has(.tabbar) { scroll-padding-top: calc(var(--header-h) + var(--space-12));
 .field label { font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--text); }
 .input {
   width: 100%; min-width: 0; min-height: 48px; padding: var(--space-3) var(--space-4); border: 1px solid var(--border-input); border-radius: var(--radius-sm);
-  background: #fff; color: var(--ink); font-family: var(--ff); font-size: var(--fs-caption); /* 16px stops iOS zoom */ line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption);
+  background: var(--white); color: var(--ink); font-family: var(--ff); font-size: var(--fs-caption); /* 16px stops iOS zoom */ line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption);
   transition: border-color var(--dur-1), box-shadow var(--dur-2);
 }
 .input::placeholder { color: var(--text-3); opacity: 1; }
@@ -423,7 +482,7 @@ textarea.input { min-height: 120px; resize: vertical; }
    arrow sat against the border, and on iPhone a native select ignored the field's height and padding. */
 select.input {
   -webkit-appearance: none; appearance: none; cursor: pointer;
-  padding-right: var(--space-10); background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2341515f'%3E%3Cpath transform='rotate(180 128 128)' d='M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z'/%3E%3C/svg%3E") no-repeat right var(--space-4) center / 12px 12px;
+  padding-right: var(--space-10); background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256' fill='%2341515f'%3E%3Cpath transform='rotate(180 128 128)' d='M216.49,168.49a12,12,0,0,1-17,0L128,97,56.49,168.49a12,12,0,0,1-17-17l80-80a12,12,0,0,1,17,0l80,80A12,12,0,0,1,216.49,168.49Z'/%3E%3C/svg%3E") no-repeat right var(--space-4) center / var(--icon-xs) var(--icon-xs);
 }
 /* iOS draws date fields at a fixed native width that ignores width: 100%, so in a half-width column they spill out
    of the form. Plain appearance lets them fit like every other input (tapping still opens the date picker). */
@@ -438,23 +497,17 @@ select.input {
 html:has(dialog[open]) { overflow: hidden; }
 .sheet {
   position: fixed; inset: 0; z-index: 100; margin: auto 0 0; padding: 0; border: 0; width: 100%; max-width: none; max-height: 92dvh;
-  border-radius: var(--r-xl) var(--r-xl) 0 0; background: #fff; color: var(--text); box-shadow: 0 -16px 48px rgb(12 25 37 / .2);
+  border-radius: var(--r-xl) var(--r-xl) 0 0; background: var(--white); color: var(--text); box-shadow: var(--sh-up);
   overflow: hidden auto; overscroll-behavior: contain; touch-action: pan-y pinch-zoom; translate: 0 100%;  /* scrolls up and down only, never sideways */
   transition: translate var(--dur-3) var(--ease-out), overlay var(--dur-3) allow-discrete, display var(--dur-3) allow-discrete;
 }
 .sheet[open] { translate: 0 0; }
 @starting-style { .sheet[open] { translate: 0 100%; } }
-.sheet::backdrop { background: rgb(12 25 37 / 0); transition: background var(--dur-3), overlay var(--dur-3) allow-discrete, display var(--dur-3) allow-discrete; }
-.sheet[open]::backdrop { background: rgb(12 25 37 / .5); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-@starting-style { .sheet[open]::backdrop { background: rgb(12 25 37 / 0); } }
+.sheet::backdrop { background: rgb(var(--scrim-rgb) / 0); transition: background var(--dur-3), overlay var(--dur-3) allow-discrete, display var(--dur-3) allow-discrete; }
+.sheet[open]::backdrop { background: rgb(var(--scrim-rgb) / .5); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+@starting-style { .sheet[open]::backdrop { background: rgb(var(--scrim-rgb) / 0); } }
 .sheet__in { min-height: 100%; padding: 0 var(--card-pad) calc(var(--card-pad) + env(safe-area-inset-bottom)); }
-.sheet__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--card-pad) 0 var(--space-4); background: #fff; }  /* top padding matches the sides */
-.sheet__close {
-  flex: none; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%;
-  background: var(--surface); color: var(--s-500); font-size: 16px; cursor: pointer; transition: background var(--dur-1), scale var(--dur-1);
-}
-@media (hover: hover) { .sheet__close:hover { background: var(--surface-2); } }
-.sheet__close:active { scale: .98; }
+.sheet__head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding: var(--card-pad) 0 var(--space-4); background: var(--white); }  /* top padding matches the sides */
 @media (min-width: 768px) {
   .sheet { margin: 0 0 0 auto; width: min(440px, 100%); height: 100dvh; max-height: none; border-radius: var(--r-xl) 0 0 var(--r-xl); translate: 100% 0; }
   .sheet[open] { translate: 0 0; }
@@ -469,12 +522,11 @@ html:has(dialog[open]) { overflow: hidden; }
   position: relative; padding-bottom: var(--space-3); border-bottom: 1px solid var(--border);
   font-family: var(--ff-display); font-size: var(--fs-title); line-height: var(--lh-title); font-weight: 400; letter-spacing: var(--ls-title); color: var(--ink);
 }
-.widget--cta { gap: var(--space-3); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); color: #fff; }
+.widget--cta { gap: var(--space-3); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); color: var(--on-dark); }
 /* Support card (help / plan a trip): one design everywhere — title at card size over body text, like every other item */
-.widget--cta .widget__h { color: #fff; border-color: rgb(255 255 255 / .16); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
-.widget--cta p:not(.widget__h) { margin-bottom: var(--space-1); font-size: var(--fs-body); line-height: var(--lh-body); letter-spacing: var(--ls-body); font-weight: var(--fw-body); color: var(--on-dark-2); }
+.widget--cta .widget__h { color: var(--on-dark); border-color: var(--on-dark-line); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-card); }
 .widget-sticky { display: grid; gap: var(--space-6); }
-@media (min-width: 1024px) { .widget-sticky { position: sticky; top: calc(var(--header-h) + var(--space-6)); } }
+@media (min-width: 1024px) { .widget-sticky { position: sticky; top: var(--sticky-top); } }
 
 /* ---------- Motion ---------- */
 /* Motion: quiet and quick, the same few moves everywhere. Content fades in and rises 12px once as it enters the screen;
@@ -514,36 +566,31 @@ html:has(dialog[open]) { overflow: hidden; }
   [data-reveal=''].is-in, [data-reveal='stagger'].is-in > * { animation: rise var(--dur-4) var(--ease-out) calc(var(--i, 0) * var(--stagger)) backwards; }
   [data-reveal].is-past, [data-reveal='stagger'].is-past > * { animation: none; }  /* scrolled past: just show it */
 }
-/* Touch screens have no hover: a card dims a touch while it's pressed, so the tap is felt */
-@media (hover: none) {
-  :is(.tc, .bc, .cat, .places a, .stops a) { -webkit-tap-highlight-color: transparent; }
-  :is(.tc, .bc, .cat, .places a, .stops a):active img { opacity: .82; transition: opacity var(--dur-1) var(--ease-out); }
-}
 /* Photos that load while you scroll fade in instead of popping (the class is set by Base.astro) */
 img.is-arriving { animation: fade var(--dur-3) var(--ease-out); }
 
 /* ---------- Photo viewer (Lightbox.astro): one for the whole site ----------
    Fitted by default (the whole photo, with its caption and credit under it in articles); on tour pages a tap fills the
    screen and the photo can be looked around (follows the mouse, or a thumb drags it). Phones can pinch to zoom. */
-.lb { --focus: #fff; width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: rgb(8 16 24 / .96); color: #fff;
+.lb { --focus: var(--on-dark); width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: var(--viewer-bg); color: var(--on-dark);
   opacity: 0; transition: opacity var(--dur-2) var(--ease-out), overlay var(--dur-2) allow-discrete, display var(--dur-2) allow-discrete; }
 .lb[open] { opacity: 1; }
 @starting-style { .lb[open] { opacity: 0; } }  /* fades in and out instead of snapping */
 html:has(dialog.lb[open]) { overflow: hidden; scrollbar-gutter: auto; }  /* no empty scrollbar strip beside a full-screen photo */
-.lb::backdrop { background: rgb(8 16 24 / .96); }
+.lb::backdrop { background: var(--viewer-bg); }
 .lb__track { display: flex; height: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior: contain; scroll-snap-type: x mandatory; scrollbar-width: none; touch-action: pan-x pinch-zoom; }
 .lb__track::-webkit-scrollbar { display: none; }
 .lb__track figure { flex: 0 0 100%; height: 100%; min-height: 0; display: grid; grid-template-rows: minmax(0, 1fr) auto; place-items: center; margin: 0; padding: var(--space-16) var(--space-4); scroll-snap-align: center; }
 .lb__track img { width: auto; height: auto; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--r-sm); }
 .lb__cap { max-width: 64ch; margin-top: var(--space-3); text-align: center; color: var(--on-dark-2); }
-.lb__cap a { color: inherit; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 3px; }
 /* Controls sit on their own dark glass with a hairline, so they read over the dark backdrop and over a bright filled photo alike */
-.lb__close, .lb__btn { position: absolute; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgb(8 16 24 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .2); color: #fff; font-size: 16px; cursor: pointer; }
+.lb__close, .lb__btn { position: absolute; z-index: 2; }
 .lb__close { top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); right: var(--space-4); }
 .lb__btn { top: 50%; translate: 0 -50%; display: none; }
-.lb__fit { position: absolute; z-index: 2; top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); left: var(--space-4); min-height: 44px; padding: 0 var(--space-4); border: 0; border-radius: var(--r-full); background: rgb(8 16 24 / .6); box-shadow: inset 0 0 0 1px rgb(255 255 255 / .2); color: #fff; cursor: pointer; }
-@media (hover: hover) { :is(.lb__close, .lb__btn, .lb__fit):hover { background: rgb(8 16 24 / .75); } }
-.lb__count { position: absolute; left: 50%; bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; padding: var(--space-1) var(--space-3); border-radius: var(--r-full); background: rgb(8 16 24 / .6); color: #fff; }
+.lb__fit { position: absolute; z-index: 2; top: calc(var(--space-4) + env(safe-area-inset-top, 0px)); left: var(--space-4); min-height: 48px; padding: 0 var(--space-4); border: 1px solid var(--glass-dark-line); border-radius: var(--r-full); background: var(--glass-dark); color: var(--on-dark); cursor: pointer; transition: background-color var(--dur-1) var(--ease-out), scale var(--dur-1) var(--ease-out); }
+.lb__fit:active { scale: .98; }
+@media (hover: hover) { .lb__fit:hover { background: var(--glass-dark-hover); } }
+.lb__count { position: absolute; left: 50%; bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px)); translate: -50% 0; padding: var(--space-1) var(--space-3); border-radius: var(--r-full); background: var(--glass-dark); color: var(--on-dark); }
 .lb.is-single :is(.lb__btn, .lb__count) { display: none; }
 @media (min-width: 768px) { .lb__btn { display: grid; } .lb__btn--prev { left: var(--space-6); } .lb__btn--next { right: var(--space-6); } }
 /* In articles the caption sits over the counter's spot, so the counter goes up a little */
@@ -558,17 +605,16 @@ html:has(dialog.lb[open]) { overflow: hidden; scrollbar-gutter: auto; }  /* no e
 
 /* ---------- Cookie notice (CookieNotice.astro): a small card, full width at the bottom on phones, bottom right from
    768px (clear of the hero's words and buttons, which sit on the left) ---------- */
-.cookie { position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--r-lg); background: #fff; box-shadow: var(--sh-lg); }
+.cookie { position: fixed; left: var(--gutter); right: var(--gutter); bottom: calc(var(--space-4) + env(safe-area-inset-bottom)); z-index: 60; display: grid; gap: var(--space-3); padding: var(--space-4); border: 1px solid var(--border); border-radius: var(--r-lg); background: var(--white); box-shadow: var(--sh-lg); }
 .cookie[hidden] { display: none; }
 .cookie p { margin: 0; }
 .cookie__head { display: flex; align-items: center; gap: var(--space-2); }
-.cookie__head .icon { font-size: 22px; color: var(--p-500); }
-.cookie__head .t-title { color: var(--ink); }
+.cookie__head .icon { font-size: var(--icon-md); color: var(--p-500); }
 .cookie__act { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); margin-top: var(--space-1); }
 .cookie__act[hidden], .cookie__prefs[hidden] { display: none; }
 .cookie__act .btn { flex: 1 1 0; padding-inline: var(--space-3); }
 /* Customise: a quiet text button on its own line under the two equal choices */
-.cookie__more { flex-basis: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
+.cookie__more { flex-basis: 100%; min-height: 32px; padding: 0; border: 0; background: none; color: var(--ink); cursor: pointer; text-decoration: underline 1px var(--p-500); text-underline-offset: var(--space-1); }
 @media (hover: hover) { .cookie__more:hover { text-decoration-thickness: 2px; } }
 /* Categories: hairline rows, the name and a line under it, the switch on the right */
 .cookie__prefs { display: grid; border-top: 1px solid var(--border); }
@@ -577,8 +623,8 @@ html:has(dialog.lb[open]) { overflow: hidden; scrollbar-gutter: auto; }  /* no e
 .cookie__cat .t-label { color: var(--ink); }
 .cookie__always { flex: none; }
 /* A native checkbox drawn as a switch (role="switch"): navy when on */
-.switch { appearance: none; flex: none; position: relative; width: 44px; height: 26px; margin: 0; border-radius: var(--r-full); background: var(--border-dark); cursor: pointer; transition: background-color var(--dur-2); }
-.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: 0 1px 2px rgb(12 25 37 / .2); transition: translate var(--dur-2) var(--ease-out); }
+.switch { appearance: none; flex: none; position: relative; width: 44px; height: 26px; margin: 0; border-radius: var(--r-full); background: var(--border-input); cursor: pointer; transition: background-color var(--dur-2); }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--white); box-shadow: 0 1px 2px rgb(var(--scrim-rgb) / .2); transition: translate var(--dur-2) var(--ease-out); }
 .switch:checked { background: var(--s-500); }
 .switch:checked::after { translate: 18px 0; }
 @media (min-width: 768px) { .cookie { left: auto; bottom: calc(var(--gutter) + env(safe-area-inset-bottom)); width: 400px; padding: var(--card-pad); } }
@@ -587,3 +633,45 @@ html:has(dialog.lb[open]) { overflow: hidden; scrollbar-gutter: auto; }  /* no e
   html { scroll-behavior: auto; }
   *, ::before, ::after { transition: none !important; animation: none !important; }
 }
+
+/* ======================================================================================================================
+   Interactions: ONE rule per kind of element. Components set only the colours they need through the variables below
+   (--ib-bg / --ib-hover on icon buttons, --link-hover on text links) and never write their own :hover / :active rules.
+   ==================================================================================================================== */
+/* Icon buttons: see .ib under Buttons (IconButton.astro) */
+
+/* Cards: the photo eases in 2% and the title gets the orange underline; on touch the photo dims while pressed.
+   .card is Card.astro (tour, article and guide cards); .tc the tour row inside an article (pt.ts). */
+:is(.card, .tc, .cat, .dest a, .att a, .stops a, .recent li a) img { transition: scale var(--dur-4) var(--ease-out), opacity var(--dur-1) var(--ease-out); }
+@media (hover: hover) {
+  :is(.card, .tc, .cat, .dest a, .att a, .stops a):hover img { scale: 1.02; }
+  :is(.card, .tc, .cat, .dest a, .att a, .stops a, .recent li a, .tl a, .faq summary):hover :is(h3, .t-title, .t-card, .stops__t) { text-decoration: underline 1.5px var(--p-500); text-underline-offset: var(--space-2); }
+}
+@media (hover: none) {
+  :is(.card, .tc, .cat, .dest a, .att a, .stops a, .recent li a) { -webkit-tap-highlight-color: transparent; }
+  :is(.card, .tc, .cat, .dest a, .att a, .stops a, .recent li a):active img { opacity: .82; }
+}
+
+/* Text links. Two kinds, never mixed:
+   - link buttons (.link-more / .see-all, with the ↗): an orange line at rest that thickens to 2px on hover — the only
+     links that ever thicken (owner's rule);
+   - plain links: in a sentence (articles, captions, meta and contact lines, key facts) ink words on a thin underline in the
+     text's own colour (the footer's Get in touch lines too, like every other contact line); in a list (footer
+     columns, breadcrumbs, sitemap) no line at rest. On hover every plain link's line turns
+     orange (still 1px) and the words go ink (white on navy or a photo).
+   Components never set a link's colour or underline, only the variables: --link / --link-hover (set by dark containers)
+   and --link-rest (a list link's colour at rest). */
+:root { --link: var(--ink); --link-hover: var(--ink); }
+:is(.footer, .wa, .banner, .talk, .crumbs--light, .lb, .hero) { --link: var(--on-dark); --link-hover: var(--on-dark); }
+:is(.prose a:not([class]):not(.tc a), main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a, .meta a, .credit a, .keyfacts a, .info a, .banner__line a, .talk__lines a, .wa__alt a, .lb__cap a, .faq__a a, .day__text a, .quote__who a, .footer__contact a) { color: var(--link); text-decoration: underline 1px color-mix(in srgb, currentColor 40%, transparent); text-underline-offset: var(--space-1); }
+:is(.footer a:not(.ib), .footer button, .crumbs a, .map a) { color: var(--link-rest, currentColor); text-decoration: underline 1px transparent; text-underline-offset: var(--space-1); }
+:is(.prose a:not([class]):not(.tc a), main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a, .meta a, .credit a, .keyfacts a, .info a, .banner__line a, .talk__lines a, .wa__alt a, .lb__cap a, .faq__a a, .day__text a, .quote__who a, .footer__contact a, .footer a:not(.ib), .footer button, .crumbs a, .map a, .toc a) {
+  transition: color var(--dur-1) var(--ease-out), text-decoration-color var(--dur-1) var(--ease-out), text-decoration-thickness var(--dur-1) var(--ease-out), border-color var(--dur-1) var(--ease-out);
+}
+@media (hover: hover) {
+  :is(.prose a:not([class]):not(.tc a), main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a, .meta a, .credit a, .keyfacts a, .info a, .banner__line a, .talk__lines a, .wa__alt a, .lb__cap a, .faq__a a, .day__text a, .quote__who a, .footer__contact a, .footer a:not(.ib), .footer button, .crumbs a, .map a):hover { color: var(--link-hover); text-decoration-color: var(--p-500); }
+}
+:is(.prose a:not([class]):not(.tc a), main p:is(.t-body, .t-caption):not(.wa *, .credit) > a:not([class]), .search__empty > a, .cookie p > a, .meta a, .credit a, .keyfacts a, .info a, .banner__line a, .talk__lines a, .wa__alt a, .lb__cap a, .faq__a a, .day__text a, .quote__who a, .footer__contact a, .footer a:not(.ib), .footer button, .crumbs a, .map a):focus-visible { text-decoration-color: var(--p-500); }
+/* Guide contents: a list with a bar on its left instead of a line under; the bar turns orange on hover, as on the current section */
+.toc a { color: var(--link-rest, var(--text-2)); border-left: 2px solid var(--toc-bar, var(--border)); text-decoration: none; }
+@media (hover: hover) { .toc a:hover { color: var(--ink); --toc-bar: var(--p-500); } }

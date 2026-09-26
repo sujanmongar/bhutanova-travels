@@ -1,15 +1,16 @@
 ---
+import { pageBanner } from '../../config';
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import BannerImg from '../../components/BannerImg.astro';
+import Banner from '../../components/Banner.astro';
 import TabBar from '../../components/TabBar.astro';
 import PlaceCards from '../../components/PlaceCards.astro';
+import Section from '../../components/Section.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { DESTINATIONS, slug } from '../../utils';
 
 const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
-const hero = 'photo-1578556881786-851d4b79cb73';
+const { seo, ...b } = pageBanner('destinations', { heading: 'Where to go in Bhutan', line: 'Every region can be combined into one private trip — see which of our tours visit each place.', image: 'photo-1578556881786-851d4b79cb73', alt: 'Tiger\'s Nest monastery in Paro' });
 const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: destinations.map((d, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(`${DESTINATIONS}${d.id}/`, Astro.site).href, name: d.data.title })) };
 // Grouped by region, west to east; destinations without a region yet share one untitled group.
 const REGIONS = ['Western Bhutan', 'Central Bhutan', 'Eastern Bhutan', 'Northern Bhutan', ''];
@@ -18,21 +19,15 @@ const groups = REGIONS.map((r) => [r, destinations.filter((d) => (d.data.region 
 const names = destinations.map((d) => d.data.title);
 const places = new Intl.ListFormat('en-GB').format(names.length > 4 ? [...names.slice(0, 4), 'more'] : names);
 ---
-<Base title="Bhutan destinations" description={`Where to go in Bhutan — ${places}, with what to see, when to visit and which tours go there.`} image={hero} schema={list}>
-  <section class="banner">
-    <BannerImg src={hero} alt="Tiger's Nest monastery in Paro" />
-    <div><Breadcrumbs items={[['Destinations']]} light /><h1>Where to go in Bhutan</h1><p class="banner__line">Every region can be combined into one private trip — see which of our tours visit each place.</p></div>
-  </section>
+<Base title="Bhutan destinations" description={`Where to go in Bhutan — ${places}, with what to see, when to visit and which tours go there.`} image={b.image} seo={seo} schema={list}>
+  <Banner {...b} crumbs={[['Destinations']]} />
 
   {groups.length > 1 && <TabBar label="Regions" links={groups.map(([region]) => [region || 'All destinations', `#${slug(region || 'all')}`])} />}
 
   {groups.map(([region, list], i) => (
-    <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(region || 'all')}>
-      <div class="container">
-        <div class:list={['sh', { 'sr-only': groups.length === 1 }]}><h2>{region || 'All destinations'}</h2></div>
-        <PlaceCards items={list.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, image: d.data.image, title: d.data.title, text: d.data.excerpt }))} />
-      </div>
-    </section>
+    <Section heading={region || 'All destinations'} grey={i % 2 === 1} id={slug(region || 'all')} hideHeading={groups.length === 1}>
+      <PlaceCards kind="destination" items={list.map((d) => ({ href: `${DESTINATIONS}${d.id}/`, image: d.data.image, title: d.data.title, text: d.data.excerpt }))} />
+    </Section>
   ))}
   <WhatsAppCta about="where to go in Bhutan" />
 </Base>

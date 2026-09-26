@@ -1,0 +1,31 @@
+---
+// The "talk to us" block inside the three navy panels: the sidebar card (PlanCta), the closing contact card
+// (WhatsAppCta) and the homepage's Plan your trip (BookingSteps). The named trip planner (the Team member picked in the
+// homepage's Plan your trip, unless the panel passes its own), a line, then WhatsApp and the enquiry button: stacked
+// full width in the narrow panels, side by side in the closing card. The parts sit straight in the panel's own grid, so
+// the panel sets the gaps; each panel keeps its frame and its contact lines (the slot).
+import PersonSign from './PersonSign.astro';
+import WaButton from './WaButton.astro';
+import EnquireButton from './EnquireButton.astro';
+import { getPlanner, type Planner } from '../planner';
+interface Props {
+  person?: Planner | null; size?: 'md' | 'lg'; text?: string; about?: string; anchor?: string;
+  enquiry?: { label?: string; title?: string; tour?: string; href?: string }; layout?: 'stack' | 'row';
+}
+const { person = await getPlanner(), size, text, about, anchor, enquiry, layout = 'stack' } = Astro.props;
+const block = layout === 'stack';
+---
+{person && <PersonSign person={person} size={size} tone="dark" />}
+{text && <p class="talk-text t-body">{text}</p>}
+<div class:list={['talk-act', { 'talk-act--row': !block }]}>
+  <WaButton anchor={anchor} about={about} label="Chat on WhatsApp" tone="dark" block={block} />
+  <EnquireButton variant="light" block={block} {...enquiry} />
+</div>
+<slot />
+<style>
+  .talk-text { color: var(--on-dark-2); }
+  .talk-act { display: grid; gap: var(--space-3); }
+  .talk-act--row { display: flex; flex-wrap: wrap; }
+  .sign + .talk-act--row { margin-top: var(--space-2); }  /* only under the planner, so no gap is left without one */
+  @media (max-width: 479px) { .talk-act--row { width: 100%; } .talk-act--row .btn { flex: 1 1 100%; } }
+</style>

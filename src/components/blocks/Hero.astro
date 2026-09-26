@@ -1,19 +1,25 @@
 ---
 import Icon from '../Icon.astro';
-import { img, srcset, focal, wa, type BlockImage } from '../../config';
+import WaButton from '../WaButton.astro';
+import { img, srcset, focal, SITE, type BlockImage } from '../../config';
 interface Props { heading: string; text?: string; image?: BlockImage; primaryLabel?: string; secondaryLabel?: string; proof?: string[] }
-const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Chat on WhatsApp', proof = [] } = Astro.props;
-const chat = wa(new URL(Astro.url.pathname, Astro.site).href);
+const { heading, text, image, primaryLabel = 'Explore tours', secondaryLabel = 'Get a free trip plan', proof = [] } = Astro.props;
+// The WhatsApp chat opens with a short form to fill in, so the first message already carries the trip
+const chat = `https://wa.me/${SITE.whatsapp}?text=${encodeURIComponent(`${SITE.waPlan}\n${new URL(Astro.url.pathname, Astro.site).href}`)}`;
 // Proof line: each fact gets an icon by what it says; figures (licence no., years) in bold
 const ICONS: [RegExp, string][] = [[/licen[cs]e no|no\./i, 'identification-badge'], [/since|years/i, 'clock'], [/reply|hours/i, 'headset'], [/inclusive|price/i, 'receipt'], [/team|owned|based/i, 'users-three'], [/tripadvisor|google|rated|review/i, 'star'], [/representative|partner|member/i, 'handshake']];
 const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'seal-check';
+// The licence fact always shows Site settings' number (so it can't disagree with the footer), and is left out without one
+const LICENCE = /(licen[cs]e no\.?:?\s*)[^\s,;]*/i;
+const facts = proof.flatMap((p) => (!LICENCE.test(p) ? [p] : SITE.licence ? [p.replace(LICENCE, `$1${SITE.licence}`)] : []));
 ---
 <section class="hero">
   {/* Phones: the frame is portrait (about 9:16), so the CDN sends a portrait crop kept around the editor's focal point;
-     a landscape file drawn with cover there would be stretched about 2x. From 768px, the landscape photo. */}
+     a landscape file drawn with cover there would be stretched about 2x. Capped at 800 wide (about 2x): under the dark
+     gradient a 3x file looks the same and costs twice the bytes. From 768px, the landscape photo. */}
   {image?.url && (
     <picture>
-      <source media="(max-width: 767px) and (orientation: portrait)" sizes="100vw" srcset={srcset(image.url, [480, 800, 1200, 1600], 9 / 16, image.hotspot)} />
+      <source media="(max-width: 767px) and (orientation: portrait)" sizes="100vw" srcset={srcset(image.url, [480, 640, 800], 9 / 16, image.hotspot)} />
       <img src={img(image.url, 1600)} srcset={srcset(image.url)} sizes="100vw" alt={image.alt ?? ''} width="1600" height="900" style={`object-position:${focal(image.hotspot)}`} fetchpriority="high" decoding="async" />
     </picture>
   )}
@@ -22,9 +28,9 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
     {text && <p class="hero__line t-body">{text}</p>}
     <div class="hero__cta">
       <a class="btn btn--light btn--accent btn--lg" href="/bhutan-tours/">{primaryLabel}</a>
-      <a class="btn btn--on-dark btn--wa btn--lg" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />{secondaryLabel}<span class="sr-only"> (opens in a new tab)</span></a>
+      <WaButton href={chat} label={secondaryLabel} tone="dark" size="lg" />
     </div>
-    {proof.length > 0 && <ul class="hero__proof t-label">{proof.map((p) => <li><Icon name={iconOf(p)} /><span>{p.split(/(\d[\d,.–-]*\+?)/).map((bit, i) => (i % 2 ? <b>{bit}</b> : bit))}</span></li>)}</ul>}
+    {facts.length > 0 && <ul class="hero__proof t-label">{facts.map((p) => <li><Icon name={iconOf(p)} /><span>{p.split(/(\d[\d,.–-]*\+?)/).map((bit, i) => (i % 2 ? <b>{bit}</b> : bit))}</span></li>)}</ul>}
   </div>
 </section>
 
@@ -32,25 +38,25 @@ const iconOf = (fact: string) => ICONS.find(([re]) => re.test(fact))?.[1] ?? 'se
   /* Phones: as tall as its content (a band of photo above the title, then the words, buttons and facts), so the founder
      note follows straight after, with no empty white screen-end. From 768px: ~85% of the screen (capped), so the top of
      the next section shows below it as a cue to scroll; a minimum, so it grows rather than push words under the header. */
-  .hero { position: relative; display: grid; color: #fff; overflow: hidden; background: var(--s-800); isolation: isolate; }
+  .hero { position: relative; display: grid; color: var(--on-dark); overflow: hidden; background: var(--s-800); isolation: isolate; }
   .hero picture { position: absolute; inset: 0; z-index: -2; }  /* behind everything, not a grid row */
   .hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
   .hero::after { content: ''; position: absolute; inset: 0; pointer-events: none;
-    background: linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 32%, rgb(12 25 37 / .55) 52%, rgb(12 25 37 / .88)); }
+    background: linear-gradient(rgb(var(--scrim-rgb) / .6), transparent 22%, transparent 32%, rgb(var(--scrim-rgb) / .55) 52%, rgb(var(--scrim-rgb) / .88)); }
   /* Words and buttons sit at the foot; the top padding keeps at least --hero-gap of photo between them and the header
      (96px on phones, 128px from 768px): on a short laptop window the hero grows instead of crowding the header */
   .hero__in { position: relative; z-index: 1; display: grid; align-content: end; row-gap: var(--space-6); padding-block: calc(var(--header-h) + var(--hero-gap)) max(var(--space-8), env(safe-area-inset-bottom)); }
-  .hero__line { max-width: 48ch; color: #fff; }
+  .hero__line { max-width: 48ch; color: var(--on-dark); }
   .hero__cta { display: flex; flex-wrap: wrap; gap: var(--space-4); }
   /* Proof line: a hairline above, each fact with an orange icon, figures in white bold */
   .hero__proof { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-8); margin: var(--space-2) 0 0; padding: var(--space-4) 0 0; border-top: 1px solid rgb(255 255 255 / .24); list-style: none; color: var(--on-dark-2); }
   .hero__proof li { display: flex; align-items: center; gap: var(--space-2); }
-  .hero__proof :global(.icon) { flex: none; font-size: 20px; color: var(--p-500); }
-  .hero__proof b { color: #fff; font-weight: 600; }
+  .hero__proof :global(.icon) { flex: none; font-size: var(--icon-sm); color: var(--p-500); }
+  .hero__proof b { color: var(--on-dark); font-weight: 600; }
   /* Phones: the first fact on its own line, the short ones share the next */
   @media (max-width: 767px) { .hero__proof { column-gap: var(--space-6); } .hero__proof li:first-child { flex-basis: 100%; } }
   @media (min-width: 768px) {
-    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(12 25 37 / .55), transparent 80%), linear-gradient(rgb(12 25 37 / .3), transparent 20%, transparent 45%, rgb(12 25 37 / .5) 75%, rgb(12 25 37 / .7)); }
+    .hero::after { background: radial-gradient(75% 85% at 0 100%, rgb(var(--scrim-rgb) / .55), transparent 80%), linear-gradient(rgb(var(--scrim-rgb) / .58), transparent 22%, transparent 45%, rgb(var(--scrim-rgb) / .5) 75%, rgb(var(--scrim-rgb) / .7)); }
     .hero { min-height: max(560px, min(85svh, 800px)); }
     .hero__in { padding-bottom: var(--space-12); }
     .hero__proof { justify-self: start; }

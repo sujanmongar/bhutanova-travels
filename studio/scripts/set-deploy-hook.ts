@@ -41,7 +41,8 @@ await client.request({
     headers: github,
     rule: {
       on: ['create', 'update', 'delete'],
-      filter: '_type in ["page", "tour", "category", "destination", "sight", "post", "guide", "teamMember", "faqs", "reviews"]',
+      // Every published document (Site settings included) except Sanity's own asset and system records.
+      filter: '!(_type match "sanity.*") && !(_type match "system.*")',
       projection: '{"ref": "main"}',
     },
   },

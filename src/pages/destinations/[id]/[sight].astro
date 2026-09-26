@@ -1,23 +1,24 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../../layouts/Base.astro';
-import Breadcrumbs from '../../../components/Breadcrumbs.astro';
-import BannerImg from '../../../components/BannerImg.astro';
+import Banner from '../../../components/Banner.astro';
+import Checklist from '../../../components/Checklist.astro';
 import PlaceBody from '../../../components/PlaceBody.astro';
+import type { Fact } from '../../../components/FactList.astro';
 import Sights from '../../../components/Sights.astro';
 import PlaceTours from '../../../components/PlaceTours.astro';
 import WhatsAppCta from '../../../components/WhatsAppCta.astro';
 import { img } from '../../../config';
 import { DESTINATIONS } from '../../../utils';
 
-// Only sights ticked "Own page" get a page; the rest live on their destination's page.
+// Every sight has its own page. One with no text yet (only its short description) is kept out of Google until it has some.
 export async function getStaticPaths() {
   const destinations = await getCollection('destinations');
   const tours = await getCollection('tours');
   const sights = await getCollection('sights');
   return sights.flatMap((s) => {
     const d = destinations.find((x) => x.id === s.data.destination);
-    if (!s.data.page || !d) return [];
+    if (!d) return [];
     return [{
       params: { id: d.id, sight: s.id.split('/')[1] },
       props: {
@@ -25,11 +26,17 @@ export async function getStaticPaths() {
         d,
         others: sights.filter((o) => o.data.destination === d.id && o.id !== s.id),
         tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined),
+        // No set tour here yet: the tours of the places near its destination (the editor's picks, else the same region)
+        near: (() => {
+          const picked = d.data.nearby.map((id) => destinations.find((x) => x.id === id)).filter((x) => x !== undefined);
+          const nearby = picked.length ? picked : destinations.filter((x) => x.id !== d.id && d.data.region && x.data.region === d.data.region);
+          return [...new Set(nearby.flatMap((n) => n.data.tours))].map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined).slice(0, 6);
+        })(),
       },
     }];
   });
 }
-const { s, d, others, tours } = Astro.props;
+const { s, d, others, tours, near } = Astro.props;
 const { Content } = await render(s);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const image = s.data.image ?? d.data.image;
@@ -38,34 +45,36 @@ const schema = {
   image: img(image, 1200),
   containedInPlace: { '@type': 'TouristDestination', name: d.data.title, url: new URL(`${DESTINATIONS}${d.id}/`, Astro.site).href },
 };
-const facts: [string, string][] = [
-  s.data.altitude && ['mountains', `Altitude ${s.data.altitude}`],
-  s.data.timeNeeded && ['clock', s.data.timeNeeded],
-  s.data.difficulty && ['person-simple-hike', `Difficulty: ${s.data.difficulty.toLowerCase()}`],
-  s.data.bestTime && ['gauge', `Best time: ${s.data.bestTime}`],
-].filter((f): f is [string, string] => !!f);
+const facts = [
+  s.data.timeNeeded && { icon: 'hourglass', label: 'Time needed', value: s.data.timeNeeded },
+  s.data.openingHours && { icon: 'clock', label: 'Opening hours', value: s.data.openingHours },
+  s.data.entryFee && { icon: 'ticket', label: 'Entry fee', value: s.data.entryFee },
+  s.data.altitude && { icon: 'mountains', label: 'Altitude', value: s.data.altitude },
+  s.data.difficulty && { icon: 'person-simple-hike', label: 'Difficulty', value: s.data.difficulty },
+  s.data.bestTime && { icon: 'calendar-blank', label: 'Best time', value: s.data.bestTime },
+].filter((f): f is Fact => !!f);
+const hasBody = !!s.rendered?.html?.replace(/<[^>]*>/g, "").trim();
+const seo = hasBody ? s.data.seo : { ...s.data.seo, noindex: true };
 const reviewed = s.data.updated?.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
-<Base title={`${s.data.title}, ${d.data.title}`} description={s.data.excerpt} image={image} schema={schema} seo={s.data.seo}>
-  <section class="banner">
-    <BannerImg src={image} />
-    <div>
-      <Breadcrumbs items={[['Destinations', DESTINATIONS], [d.data.title, `${DESTINATIONS}${d.id}/`], [s.data.title]]} light />
-      <h1>{s.data.title}</h1>
-      <p class="banner__line">{[d.data.title, d.data.region].filter(Boolean).join(', ')}</p>
-    </div>
-  </section>
+<Base title={`${s.data.title}, ${d.data.title}`} description={s.data.excerpt} image={image} schema={schema} seo={seo}>
+  <Banner heading={s.data.title} image={image} alt={s.data.alt} crumbs={[['Destinations', DESTINATIONS], [d.data.title, `${DESTINATIONS}${d.id}/`], [s.data.title]]}>
+    <Fragment slot="line"><a href={`${DESTINATIONS}${d.id}/`}>{d.data.title}</a>{d.data.region && `, ${d.data.region}`}</Fragment>
+  </Banner>
 
-  <PlaceBody facts={facts} credit={s.data.image ? s.data.credit : d.data.credit}>
-    <div class="prose"><Content /></div>
+  <PlaceBody facts={facts} credit={s.data.image ? s.data.credit : d.data.credit} place={d.data.title} shareTitle={`${s.data.title}, ${d.data.title}`}>
+    {s.data.highlights.length > 0 && <Checklist class="hl" heading="Highlights" level="h2" cols={2} items={s.data.highlights} />}
+    {hasBody ? <div class="prose"><Content /></div> : <p class="t-body lead">{s.data.excerpt}</p>}
     {reviewed && <p class="reviewed t-caption subtle">Last reviewed {reviewed}</p>}
   </PlaceBody>
 
-  <Sights heading={`More to see in ${d.data.title}`} sights={others} fallbackImage={d.data.image} grey />
-  <PlaceTours heading={`Tours that visit ${d.data.title}`} tours={tours} grey={others.length === 0} />
-  <WhatsAppCta about={`visiting ${s.data.title}`} />
+  <Sights heading={`More to see in ${d.data.title}`} sights={others} fallbackImage={d.data.image} grey link={{ href: `${DESTINATIONS}${d.id}/#sights`, label: `All of ${d.data.title}` }} />
+  <PlaceTours place={d.data.title} tours={tours} near={near} grey={others.length === 0} />
+  <WhatsAppCta title={`Planning a trip that includes ${s.data.title}?`} text="Tell us when you would like to travel. We reply within 24 hours with a free day-by-day plan and a price." about={`visiting ${s.data.title}`} />
 </Base>
 <style>
+  .lead { max-width: 64ch; color: var(--text-2); }
+  .hl { margin-bottom: var(--space-10); }
   .reviewed { margin-top: var(--space-8); }
   .reviewed + :global(.credit) { margin-top: var(--space-2); }
 </style>

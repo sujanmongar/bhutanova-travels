@@ -1,11 +1,7 @@
 ---
-import Breadcrumbs from '../Breadcrumbs.astro';
-import BannerImg from '../BannerImg.astro';
+import Banner from '../Banner.astro';
 import { type BlockImage } from '../../config';
 interface Props { heading: string; text?: string; image?: BlockImage; pageTitle: string }
 const { heading, text, image, pageTitle } = Astro.props;
 ---
-<section class="banner">
-  {image?.url && <BannerImg src={image.url} alt={image.alt} hotspot={image.hotspot} />}
-  <div>{Astro.url.pathname !== '/' && <Breadcrumbs items={[[pageTitle]]} light />}<h1>{heading}</h1>{text && <p class="banner__line">{text}</p>}</div>
-</section>
+<Banner heading={heading} line={text} image={image?.url} alt={image?.alt} hotspot={image?.hotspot} crumbs={Astro.url.pathname !== '/' ? [[pageTitle]] : undefined} />

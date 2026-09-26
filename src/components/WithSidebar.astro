@@ -1,0 +1,30 @@
+---
+// A reading column with the plan card and share icons beside it from 1200px, pinned in view while you read (destination
+// and sight pages, Text sections with the sidebar ticked). Below 1200px the share icons follow the text under a hairline,
+// and the page's closing contact card does the plan card's job. The caller's class and scope land on the root.
+import PlanCta from './PlanCta.astro';
+import Share from './Share.astro';
+interface Props { share: string; plan?: { title?: string; text?: string; topic: string }; class?: string; [attr: string]: unknown }
+const { share, plan, class: cls, ...rest } = Astro.props;
+---
+<div class:list={['container', 'ws', cls]} {...rest}>
+  <div>
+    <slot />
+    <div class="ws__share"><Share title={share} /></div>
+  </div>
+  <aside class="ws__side" aria-label="Plan and share">
+    <PlanCta {...plan} />
+    <Share title={share} />
+  </aside>
+</div>
+<style>
+  .ws { display: grid; gap: var(--space-10); }
+  .ws > * { min-width: 0; }
+  .ws__share { max-width: 64ch; margin-top: var(--space-10); padding-top: var(--space-6); border-top: 1px solid var(--border); }
+  .ws__side { display: none; }
+  @media (min-width: 1200px) {
+    .ws { grid-template-columns: minmax(0, 1fr) 360px; gap: var(--space-16); }
+    .ws__side { display: grid; gap: var(--space-8); align-content: start; align-self: start; position: sticky; top: var(--sticky-top); }
+    .ws__share { display: none; }
+  }
+</style>

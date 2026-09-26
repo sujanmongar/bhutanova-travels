@@ -3,18 +3,23 @@
 // the tokens, so this page can't drift from what the site actually uses. Not linked anywhere; noindex.
 import Base from '../layouts/Base.astro';
 import Icon from '../components/Icon.astro';
+import IconButton from '../components/IconButton.astro';
+import LinkMore from '../components/LinkMore.astro';
+import WaButton from '../components/WaButton.astro';
+import AskCard from '../components/AskCard.astro';
+import EnquireButton from '../components/EnquireButton.astro';
 import { img, srcset } from '../config';
 const roles = [
   ['t-h1', 'H1', 'Hero headline and page titles', 'Bhutan tour packages'],
   ['t-h2', 'H2', 'Scale default (section titles use the H3 size)', 'Why travellers trust us'],
-  ['t-h3', 'H3 / Section title', 'Every section <h2>, sub-sections', 'Getting to Paro'],
+  ['t-h3', 'H3', 'Sub-sections outside content columns. Section titles are <h2>: 28.8 on phones, the H3 size (37.3) from 768', 'Getting to Paro'],
   ['t-h4', 'H4', 'Rare', 'Before you go'],
   ['t-card', 'Card title', 'Tour, blog, category and reason cards (h5 phones, h6 desktop)', 'Bhutan Cultural Extravaganza'],
-  ['t-title', 'H6 / Item title', 'FAQs, widgets, footer', 'Licensed and local'],
-  ['t-quote', 'Quote', 'Review quotes', '“Every day was paced exactly right.”'],
+  ['t-title', 'H6 / Item title', 'Widgets and sidebar item titles', 'Licensed and local'],
+  ['t-quote', 'Quote', 'Pull quotes in articles', '“Every day was paced exactly right.”'],
   ['t-body', 'Body', 'Reading text and every description (18px)', 'Private cultural journeys, treks and festival trips, planned by a licensed, Thimphu-based team.'],
   ['t-caption', 'Caption', 'Small print, secondary text (16px)', 'Prices are per person, based on two people sharing.'],
-  ['t-label', 'Label', 'Nav, breadcrumbs, dates, tags, checklists (500)', 'Plan and book · 19 Sept 2026'],
+  ['t-label', 'Label', 'Nav, breadcrumbs, dates, tags, form labels (500)', 'Plan and book · 19 Sept 2026'],
   ['t-button', 'Button', 'Button text (600); button styles keep their variants', 'Explore tours'],
   ['t-link', 'Link', 'Text CTAs — same text style as buttons', 'Learn more'],
   ['t-price', 'Price', 'Tour page price (sans, never serif); cards use body bold', 'USD 1,690'],
@@ -103,7 +108,7 @@ const photo = 'photo-1662547150045-7a8d3a9ad0b2';
       <h2>Corners</h2>
       <p class="t-body muted">Cards and card images take var(--radius) with corner-shape: squircle: 28px on phones, 36px from 768px. Browsers without the squircle (Safari, so every iPhone; Firefox) get the round corner that looks the same, 16px and 20px. Fields and thumbnails use var(--radius-sm); buttons are pills.</p>
       <ul class="shapes">
-        <li><div class="shape-card" data-shape><p class="t-card">Card</p><p class="t-caption muted">Hairline border, var(--card-pad) inside.</p></div><p class="t-label">Card</p><p class="t-caption subtle num" data-radius></p></li>
+        <li><AskCard level="p" title="Want a different trip?" text="Light grey, var(--card-pad) inside: the ask card (AskCard)." data-shape><EnquireButton label="Plan your own trip" /></AskCard><p class="t-label">Card</p><p class="t-caption subtle num" data-radius></p></li>
         <li><img class="shape-img" data-shape src={img(photo, 800, 533)} srcset={srcset(photo, [480, 800, 1200], 3 / 2)} sizes="(min-width: 1264px) 379px, (min-width: 768px) calc((100vw - 128px) / 3), calc(100vw - 32px)" alt="" width="800" height="533" loading="lazy" decoding="async" /><p class="t-label">Card image</p><p class="t-caption subtle num" data-radius></p></li>
         <li><input class="input" data-shape aria-label="Sample field" placeholder="Field" /><p class="t-label">Field</p><p class="t-caption subtle num" data-radius></p></li>
       </ul>
@@ -114,13 +119,26 @@ const photo = 'photo-1662547150045-7a8d3a9ad0b2';
         {buttons.map(([cls, name, use, sample]) => (
           <li>
             <div class="roles__meta"><p class="t-label">{name}</p><p class="t-caption muted">{use}</p><p class="t-caption subtle">.{cls.split(' ').join(' .')}</p><p class="t-caption subtle num" data-btn></p></div>
-            <div class:list={['btn-sample', { 'btn-sample--dark': /light|on-dark/.test(cls) }]}><button type="button" class={`btn ${cls}`}>{sample}</button></div>
+            <div class:list={['btn-sample', { 'btn-sample--dark': /light|on-dark/.test(cls) }]}>{/btn--wa/.test(cls) ? <WaButton label={sample} /> : <button type="button" class={`btn ${cls}`}>{sample}</button>}</div>
           </li>
         ))}
         <li>
           <div class="roles__meta"><p class="t-label">Text link</p><p class="t-caption muted">“Learn more / see all”: navy text, orange angle arrow, thin orange line that thickens on hover</p><p class="t-caption subtle">.link-more</p></div>
-          <div class="btn-sample"><a class="link-more" href="/bhutan-tours/"><span>See all tours</span><Icon name="arrow-up-right" /></a></div>
+          <div class="btn-sample"><LinkMore href="/bhutan-tours/" label="See all tours" /></div>
         </li>
+        {([
+          ['soft', 'Icon button', 'Search, menu, close: grey fill on white', 'search'],
+          ['line', 'Icon button, line', 'Carousel arrows and share icons: hairline on white', 'arrow-right'],
+          ['wa', 'Icon button, WhatsApp', 'Round WhatsApp: fills WhatsApp green on hover', 'social_whatsapp'],
+          ['light', 'Icon button, over a photo', 'Pause on the tour photos', 'pause'],
+          ['dark', 'Icon button, dark glass', 'Photo viewer controls', 'close'],
+          ['on-dark', 'Icon button, on navy', 'Footer social links, header over the hero', 'social_facebook'],
+        ] as const).map(([tone, name, use, icon]) => (
+          <li>
+            <div class="roles__meta"><p class="t-label">{name}</p><p class="t-caption muted">{use}</p><p class="t-caption subtle">&lt;IconButton tone="{tone}"&gt; · 48px (46 from 1200), 20px glyph, fill one step darker on hover, 98% press</p></div>
+            <div class:list={['btn-sample', { 'btn-sample--dark': tone === 'on-dark' || tone === 'dark' || tone === 'light' }]}><IconButton tone={tone} icon={icon} label={name} /></div>
+          </li>
+        ))}
       </ul>
 
       <h2>Icons</h2>
@@ -202,11 +220,10 @@ const photo = 'photo-1662547150045-7a8d3a9ad0b2';
   @media (min-width: 768px) { .shapes { grid-template-columns: repeat(3, 1fr); } }
   .shapes li { display: grid; align-content: start; gap: var(--space-1); }
   .shapes [data-shape] { margin-bottom: var(--space-2); }
-  .shape-card { display: grid; gap: var(--space-2); padding: var(--card-pad); border: 1px solid var(--border-dark); border-radius: var(--radius); corner-shape: squircle; }
   .shape-img { width: 100%; aspect-ratio: 3 / 2; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; }
   .btn-sample { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); }
   .btn-sample--dark { padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--s-500); }
   .icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr)); gap: var(--space-6) var(--space-4); }
   .icons li { display: grid; justify-items: start; gap: var(--space-2); color: var(--ink); }
-  .icons :global(.icon) { font-size: 32px; }
+  .icons :global(.icon) { font-size: var(--icon-xl); }
 </style>

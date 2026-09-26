@@ -1,16 +1,17 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import Icon from '../../components/Icon.astro';
-import BannerImg from '../../components/BannerImg.astro';
+import Checklist from '../../components/Checklist.astro';
+import Banner from '../../components/Banner.astro';
 import PlaceBody from '../../components/PlaceBody.astro';
+import type { Fact } from '../../components/FactList.astro';
 import Sights from '../../components/Sights.astro';
 import PlaceTours from '../../components/PlaceTours.astro';
 import PlaceCards from '../../components/PlaceCards.astro';
+import Section from '../../components/Section.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { img } from '../../config';
-import { DESTINATIONS } from '../../utils';
+import { DESTINATIONS, slug } from '../../utils';
 
 export async function getStaticPaths() {
   const destinations = await getCollection('destinations');
@@ -27,11 +28,13 @@ export async function getStaticPaths() {
         nearby,
         sights: sights.filter((s) => s.data.destination === d.id),
         tours: d.data.tours.map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined),
+        // No set tour here yet: the tours of the places near it
+        near: [...new Set(nearby.flatMap((n) => n.data.tours))].map((id) => tours.find((t) => t.id === id)).filter((t) => t !== undefined).slice(0, 6),
       },
     };
   });
 }
-const { d, nearby, sights, tours } = Astro.props;
+const { d, nearby, sights, tours, near } = Astro.props;
 const { Content } = await render(d);
 const url = new URL(Astro.url.pathname, Astro.site).href;
 const schema = {
@@ -39,53 +42,39 @@ const schema = {
   image: img(d.data.image, 1200),
   includesAttraction: (sights.length ? sights.map((s) => s.data.title) : d.data.highlights).map((name) => ({ '@type': 'TouristAttraction', name })),
 };
-const facts: [string, string][] = [
-  d.data.region && ['location-dot', d.data.region],
-  d.data.altitude && ['mountains', `Altitude ${d.data.altitude}`],
-  d.data.bestTime && ['gauge', `Best time: ${d.data.bestTime}`],
-  d.data.gettingThere && ['path', d.data.gettingThere],
-].filter((f): f is [string, string] => !!f);
+const facts = [
+  d.data.region && { icon: 'location-dot', label: 'Region', value: d.data.region, href: `${DESTINATIONS}#${slug(d.data.region)}` },
+  d.data.altitude && { icon: 'mountains', label: 'Altitude', value: d.data.altitude },
+  d.data.bestTime && { icon: 'calendar-blank', label: 'Best time', value: d.data.bestTime },
+  d.data.gettingThere && { icon: 'path', label: 'Getting there', value: d.data.gettingThere },
+].filter((f): f is Fact => !!f);
 // Sections after the article alternate grey and white, whichever of them this destination has.
 let grey = false;
 const next = (shown: boolean) => shown && (grey = !grey);
 const sightsGrey = next(sights.length > 0);
-const toursGrey = next(tours.length > 0);
+const toursGrey = next(tours.length > 0 || near.length > 0);
 const nearbyGrey = next(nearby.length > 0);
 ---
 <Base title={`${d.data.title} travel guide`} description={d.data.excerpt} image={d.data.image} schema={schema} seo={d.data.seo}>
-  <section class="banner">
-    <BannerImg src={d.data.image} />
-    <div><Breadcrumbs items={[['Destinations', DESTINATIONS], [d.data.title]]} light /><h1>{d.data.title}</h1><p class="banner__line">{d.data.excerpt}</p></div>
-  </section>
+  <Banner heading={d.data.title} line={d.data.excerpt} image={d.data.image} alt={d.data.alt} crumbs={[['Destinations', DESTINATIONS], [d.data.title]]} />
 
-  <PlaceBody facts={facts} credit={d.data.credit}>
+  <PlaceBody facts={facts} credit={d.data.credit} place={d.data.title} shareTitle={`${d.data.title}, Bhutan`}>
     <div class="prose"><Content /></div>
     {sights.length === 0 && d.data.highlights.length > 0 && (
-      <section class="block">
-        <h2>Highlights</h2>
-        <ul class="bullets">{d.data.highlights.map((h) => <li class="t-body"><Icon name="check" />{h}</li>)}</ul>
-      </section>
+      <Checklist class="block" heading="Highlights" level="h2" cols={2} items={d.data.highlights} />
     )}
   </PlaceBody>
 
   <Sights heading={`Things to see in ${d.data.title}`} sights={sights} fallbackImage={d.data.image} grey={sightsGrey} />
-  <PlaceTours heading={`Tours that visit ${d.data.title}`} tours={tours} grey={toursGrey} />
+  <PlaceTours place={d.data.title} tours={tours} near={near} grey={toursGrey} />
 
   {nearby.length > 0 && (
-    <section class:list={['section', { 'section--grey': nearbyGrey }]}>
-      <div class="container">
-        <div class="sh"><h2>Places near {d.data.title}</h2></div>
-        <PlaceCards items={nearby.map((n) => ({ href: `${DESTINATIONS}${n.id}/`, image: n.data.image, title: n.data.title, text: n.data.excerpt }))} />
-      </div>
-    </section>
+    <Section heading={`Places near ${d.data.title}`} grey={nearbyGrey}>
+      <PlaceCards kind="destination" items={nearby.map((n) => ({ href: `${DESTINATIONS}${n.id}/`, image: n.data.image, title: n.data.title, text: n.data.excerpt }))} />
+    </Section>
   )}
-  <WhatsAppCta about={`visiting ${d.data.title}`} />
+  <WhatsAppCta title={`Planning a trip that includes ${d.data.title}?`} text="Tell us when you would like to travel. We reply within 24 hours with a free day-by-day plan and a price." about={`visiting ${d.data.title}`} />
 </Base>
 <style>
   .block { margin-top: var(--space-10); }
-  .block h2 { margin-bottom: var(--space-6); }
-  .bullets { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
-  @media (min-width: 768px) { .bullets { grid-template-columns: 1fr 1fr; column-gap: var(--space-8); } }
-  .bullets li { display: flex; gap: var(--space-3); }
-  .bullets :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - 12px) / 2); font-size: 12px; color: var(--s-500); }
 </style>

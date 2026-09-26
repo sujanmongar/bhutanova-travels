@@ -1,0 +1,26 @@
+---
+// The site's one checklist (tour and place highlights, what a tour's price covers, the About intro's expertise): Body
+// text in --text-2, a tick sitting on the first line of each item, 12px apart. variant: check (navy tick), included
+// (green tick) or excluded (red cross). cols 2: two columns from 768px. heading: a title 16px over the list, at card
+// size as an h3, at content-title size as an h2 (inside a reading column). The caller's class and scope land on the root.
+import Icon from './Icon.astro';
+import { slug } from '../utils';
+interface Props { items: string[]; variant?: 'check' | 'included' | 'excluded'; cols?: 1 | 2; heading?: string; level?: 'h2' | 'h3'; class?: string; [attr: string]: unknown }
+const { items, variant = 'check', cols = 1, heading, level: Title = 'h3', class: cls, ...rest } = Astro.props;
+const Tag = heading ? 'section' : 'div';
+const id = heading && `checklist-${slug(heading)}`;
+---
+<Tag class:list={['checklist', `checklist--${variant}`, { 'checklist--2': cols === 2 }, cls]} aria-labelledby={id} {...rest}>
+  {heading && <Title id={id} class:list={{ 't-card': Title === 'h3' }}>{heading}</Title>}
+  <ul>{items.map((x) => <li class="t-body"><Icon name={variant === 'excluded' ? 'close' : 'check'} />{x}</li>)}</ul>
+</Tag>
+<style>
+  .checklist :is(h2, h3) { margin-bottom: var(--space-4); }
+  .checklist h2 { font-size: var(--fs-ctitle); line-height: var(--lh-ctitle); letter-spacing: var(--ls-ctitle); }
+  .checklist ul { display: grid; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .checklist--2 ul { grid-template-columns: 1fr 1fr; column-gap: var(--space-8); } }
+  .checklist li { display: flex; gap: var(--space-3); color: var(--text-2); }
+  .checklist :global(.icon) { flex: none; margin-top: calc((var(--lh-body) * var(--fs-body) - var(--icon-md)) / 2); font-size: var(--icon-md); color: var(--s-500); }
+  .checklist--included :global(.icon) { color: var(--success); }
+  .checklist--excluded :global(.icon) { color: var(--error); }
+</style>

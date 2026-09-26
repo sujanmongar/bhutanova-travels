@@ -1,20 +1,23 @@
 ---
-// The support card: the one "talk to us" card used in every sidebar (tour, destination, sight, guide and blog pages).
-// Defaults to planning a trip; the tour page passes its own title, text and main action (a phone call).
-import Icon from './Icon.astro';
-import { wa } from '../config';
-interface Props { title?: string; text?: string; action?: { href: string; label: string; icon?: string }; topic?: string }
+// The sidebar "talk to us" card (destination, sight, guide and Text-section pages): the compact twin of the closing
+// contact card (WhatsAppCta), navy, with the same named planner, WhatsApp and the
+// enquiry form. Pages pass their own title, line and chat topic.
+import TalkPanel from './TalkPanel.astro';
+import { SITE } from '../config';
+interface Props { title?: string; text?: string; topic?: string }
 const {
   title = 'Plan your Bhutan trip',
-  text = 'Tell us your dates and interests. We reply within 24 hours.',
-  action = { href: '/contact/', label: 'Send an enquiry' },
+  text = SITE.promise,
   topic = 'a trip',
 } = Astro.props;
-const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#w-plan`, topic);
 ---
-<section class="widget widget--cta" aria-labelledby="w-plan">
+<section class="widget widget--cta plan" aria-labelledby="w-plan">
   <p class="widget__h" id="w-plan">{title}</p>
-  <p>{text}</p>
-  <a class="btn btn--on-dark btn--wa btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-  <a class="btn btn--light btn--block" href={action.href} data-open-plan={action.href === '/contact/' ? '' : undefined}>{action.icon && <Icon name={action.icon} />}{action.label}</a>
+  <TalkPanel size="md" text={text} anchor="w-plan" about={topic} enquiry={{ title }}>
+    {SITE.hours && <p class="plan__hours t-label">{SITE.hours}</p>}
+  </TalkPanel>
 </section>
+<style>
+  .plan :global(.talk-text) { margin-bottom: var(--space-1); }
+  .plan .plan__hours { margin: var(--space-1) 0 0; color: var(--on-dark-2); }
+</style>

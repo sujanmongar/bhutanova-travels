@@ -6,19 +6,19 @@
 // and credit into the viewer (the licences ask for the credit to stay with the photo).
 // `fill` (tour pages): a tap or click on the photo fills the screen. While filled, the photo follows the mouse, or a
 // thumb drags it, to the part you want to see; another tap fits it again. A drag never changes photo while filled.
-import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
 export interface ViewerPhoto { src: string; srcset?: string; alt: string }
 interface Props { photos?: ViewerPhoto[]; label?: string; fill?: boolean }
 const { photos = [], label = 'Photos', fill = false } = Astro.props;
 ---
 <dialog class="lb" aria-label={label} data-lb data-fill={fill ? '' : undefined}>
-  <button type="button" class="lb__close" aria-label="Close photos" data-lb-close><Icon name="close" /></button>
-  {fill && <button type="button" class="lb__fit t-label" data-lb-fit>Fill screen</button>}
+  <IconButton tone="dark" class="lb__close" icon="close" label="Close photos" data-lb-close />
+  {fill && <button type="button" class="lb__fit t-button" data-lb-fit>Fill screen</button>}
   <div class="lb__track" data-lb-track tabindex="-1">
     {photos.map((p) => <figure><img src={p.src} srcset={p.srcset} sizes="100vw" alt={p.alt} loading="lazy" decoding="async" /></figure>)}
   </div>
-  <button type="button" class="lb__btn lb__btn--prev" aria-label="Previous photo" data-lb-step="-1"><Icon name="chevron-left" /></button>
-  <button type="button" class="lb__btn lb__btn--next" aria-label="Next photo" data-lb-step="1"><Icon name="chevron-right" /></button>
+  <IconButton tone="dark" class="lb__btn lb__btn--prev" icon="chevron-left" label="Previous photo" data-lb-step="-1" />
+  <IconButton tone="dark" class="lb__btn lb__btn--next" icon="chevron-right" label="Next photo" data-lb-step="1" />
   <p class="lb__count t-label" aria-live="polite" data-lb-count></p>
 </dialog>
 
@@ -48,7 +48,8 @@ const { photos = [], label = 'Photos', fill = false } = Astro.props;
   if (total) {
     lb.classList.toggle('is-single', total < 2);
     const at = () => Math.round(track.scrollLeft / track.clientWidth);
-    const go = (n: number, instant = false) => track.scrollTo({ left: Math.max(0, Math.min(total - 1, n)) * track.clientWidth, behavior: instant ? 'instant' : 'smooth' });
+    const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+    const go = (n: number, instant = false) => track.scrollTo({ left: Math.max(0, Math.min(total - 1, n)) * track.clientWidth, behavior: instant ? 'instant' : smooth });
     const closeBtn = lb.querySelector<HTMLElement>('[data-lb-close]')!;
     // The counter, and only the photo on screen is reachable by Tab and screen readers (the others are inert); if focus
     // was on a caption link of the photo you left, it moves to ×

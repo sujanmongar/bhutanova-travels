@@ -5,6 +5,10 @@
 import { getCollection } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import TourCard from './TourCard.astro';
+import TabBar from './TabBar.astro';
+import Section from './Section.astro';
+import AskCard from './AskCard.astro';
+import EnquireButton from './EnquireButton.astro';
 import { catPath, nextFestival } from '../utils';
 
 interface Props { current: CollectionEntry<'categories'> }
@@ -20,54 +24,42 @@ const lengths = DURATIONS.filter(([, , fits]) => all.some((t) => fits(t.data.day
 const lengthOf = (d: number) => lengths.find(([, , fits]) => fits(d))?.[0] ?? '';
 const festival = tours.some((t) => nextFestival(t.data.festivalDates));
 ---
-<div class="tabbar fbar">
-  <div class="container fbar__in">
-    <nav class="tabbar__in" aria-label="Tour themes" data-tabs>
-      {ordered.map((c) => <a class="t-label" href={catPath(c.id)} aria-current={c.id === current.id ? 'page' : undefined}>{c.data.menuTitle.replace(/ tours$/, '')}</a>)}
-    </nav>
-    {tours.length > 0 && (
-      <div class="tools" data-tools>
-        <p class="count t-label" aria-live="polite" data-count>{tours.length} tours</p>
-        <select class="input t-label" data-days aria-label="Trip length">
-          <option value="">Any length</option>
-          {lengths.map(([v, text, fits]) => <option value={v} disabled={!tours.some((t) => fits(t.data.days))}>{text}</option>)}
-        </select>
-        <select class="input t-label" data-sort data-default={festival ? 'festival' : 'popular'} aria-label="Sort tours">
-          {festival && <option value="festival">Festival date</option>}
-          <option value="popular">Most popular</option>
-          <option value="price">Price: low–high</option>
-          <option value="-price">Price: high–low</option>
-        </select>
-      </div>
-    )}
-  </div>
-</div>
+<TabBar label="Tour themes" links={ordered.map((c) => [c.data.menuTitle.replace(/ tours$/, ''), catPath(c.id), c.id === current.id])}>
+  <Fragment slot="tools">{tours.length > 0 && (
+    <div class="tools" data-tools>
+      <p class="count t-label" aria-live="polite" data-count>{tours.length} tours</p>
+      <select class="input" data-days aria-label="Trip length">
+        <option value="">Any length</option>
+        {lengths.map(([v, text, fits]) => <option value={v} disabled={!tours.some((t) => fits(t.data.days))}>{text}</option>)}
+      </select>
+      <select class="input" data-sort data-default={festival ? 'festival' : 'popular'} aria-label="Sort tours">
+        {festival && <option value="festival">Festival date</option>}
+        <option value="popular">Most popular</option>
+        <option value="price">Price: low–high</option>
+        <option value="-price">Price: high–low</option>
+      </select>
+    </div>
+  )}</Fragment>
+</TabBar>
 
-<section class="section results">
-  <div class="container">
-    <h2 class="sr-only">{current.data.menuTitle}</h2>
-    <ul class="grid-3 tours" data-reveal="stagger">
-      {tours.map((t) => (
-        <li data-days={lengthOf(t.data.days)} data-pop={t.data.popularity} data-price={t.data.price} data-fest={nextFestival(t.data.festivalDates)?.start ?? ''}>
-          <TourCard tour={t} />
-        </li>
-      ))}
-      <li class="own" data-always>
-        <h3 class="t-card">{tours.length ? 'Want a different trip?' : 'New trips coming soon'}</h3>
-        <p class="t-body muted">Tell us your days and who's coming, and the founder will shape a trip around you.</p>
-        <a class="btn btn--primary" href="/contact/" data-open-plan>Plan your own trip</a>
+<Section heading={current.data.menuTitle} hideHeading class="results">
+  <ul class="grid-3 tours" data-reveal="stagger">
+    {tours.map((t) => (
+      <li data-days={lengthOf(t.data.days)} data-pop={t.data.popularity} data-price={t.data.price} data-fest={nextFestival(t.data.festivalDates)?.start ?? ''}>
+        <TourCard tour={t} />
       </li>
-    </ul>
-  </div>
-</section>
+    ))}
+    <li data-always>
+      <AskCard class="own" title={tours.length ? 'Want a different trip?' : 'New trips coming soon'} text="Tell us your days and who's coming, and the founder will shape a trip around you.">
+        <EnquireButton label="Plan your own trip" />
+      </AskCard>
+    </li>
+  </ul>
+</Section>
 
 <script>
   // Duration and Sort work in place; the choices live in the address (?days=&sort=) so a list can be shared
   const tools = document.querySelector<HTMLElement>('[data-tools]');
-  const tabs = document.querySelector<HTMLElement>('[data-tabs]')!;
-  // Phones: the current theme's tab is scrolled into view
-  const on = tabs.querySelector<HTMLElement>('[aria-current]');
-  if (on && on.offsetLeft + on.offsetWidth > tabs.clientWidth) tabs.scrollLeft = on.offsetLeft - 16;
   if (tools) {
     const list = document.querySelector<HTMLElement>('.tours')!;
     const items = [...list.querySelectorAll<HTMLElement>(':scope > li:not([data-always])')];
@@ -106,28 +98,19 @@ const festival = tours.some((t) => nextFestival(t.data.festivalDates));
 
 <style>
   .results { padding-top: var(--space-8); }
-  /* The bar: tabs scroll sideways; the tools keep their place */
-  .fbar__in { display: flex; align-items: center; gap: 0 var(--space-6); }
-  .fbar__in > .tabbar__in { flex: 1 1 auto; min-width: 0; }
-  .tools { flex: none; display: flex; align-items: center; gap: var(--space-3); }
+  /* The bar's tools (TabBar lays out the line): the count, then Duration and Sort */
+  .tools { display: flex; align-items: center; gap: var(--space-3); }
   .count { margin-right: var(--space-2); color: var(--ink); white-space: nowrap; }
   /* Compact in the one desktop bar (40px, the small button height); the chevron keeps 12px of room on its right */
   .tools .input { width: auto; min-height: 40px; padding-block: var(--space-1); padding-inline: var(--space-3) var(--space-8); background-position: right var(--space-3) center; }
-  /* Below 1024px: tabs on top, then a slim line with the count, Duration and Sort */
+  /* Below 1024px: a slim line of its own under the tabs */
   @media (max-width: 1023px) {
-    .fbar__in { flex-direction: column; align-items: stretch; }
-    .fbar__in > .tabbar__in { margin-inline: calc(var(--gutter) * -1); padding-inline: var(--gutter); }  /* tabs run to the screen edges */
-    .tools { padding-block: var(--space-2); border-top: 1px solid var(--border); }
     .count { margin-right: auto; }
     .tools .input { flex: 0 1 auto; min-width: 0; min-height: 48px; }  /* on their own line: the standard field height */
   }
   /* Small phones: the two menus share the line */
   @media (max-width: 479px) { .tools .input { flex: 1 1 0; } .count { display: none; } }
-  .tours { row-gap: var(--space-10); }
-  .tours > li[hidden] { display: none; }
-  /* Last card: a trip of your own */
-  /* As tall as the tour photos beside it (it grows only if its words need more room) */
-  .own { align-self: start; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: var(--space-3); min-height: var(--card-photo); padding: var(--card-pad); border-radius: var(--radius); corner-shape: squircle; background: var(--surface); }
-  .own .btn { margin-top: var(--space-3); }
-  @media (scripting: none) { .tools { display: none; } }
+  /* Last card, a trip of your own: as tall as the tour photos beside it (it grows only if its words need more room) */
+  .own { min-height: var(--card-photo); }
+  @media (scripting: none) { :global(.tabbar__tools) { display: none; } }
 </style>

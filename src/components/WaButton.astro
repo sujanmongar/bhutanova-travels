@@ -1,0 +1,20 @@
+---
+// The site's one WhatsApp button. With a label it is a normal button whose logo takes the button's text colour
+// (light: outline on white, dark: on navy, soft: grey); without a label it is the round IconButton (grey circle,
+// green logo). Every kind fills WhatsApp green on hover. Always opens in a new tab.
+// The chat opens with this page's link (plus #anchor, the section it was sent from) and the topic (about) already in
+// the message; pass href only for a special message (the hero's plan template, the enquiry sheet's live one).
+import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
+import { wa } from '../config';
+interface Props { href?: string; about?: string; anchor?: string; label?: string; tone?: 'light' | 'dark' | 'soft'; size?: 'lg'; block?: boolean; class?: string; aria?: string; [attr: string]: unknown }
+const { href: link, about, anchor, label, tone = 'light', size, block = false, class: cls, aria, ...rest } = Astro.props;
+const href = link ?? wa(`${new URL(Astro.url.pathname, Astro.site).href}${anchor ? `#${anchor}` : ''}`, about);
+---
+{label ? (
+  <a class:list={['btn btn--wa', { 'btn--outline': tone === 'light', 'btn--on-dark': tone === 'dark', 'btn--soft': tone === 'soft', 'btn--lg': size === 'lg', 'btn--block': block }, cls]}
+    href={href} target="_blank" rel="noopener" {...rest}><Icon name="social_whatsapp" />{label}<span class="sr-only"> (opens in a new tab)</span></a>
+) : (
+  <IconButton tone="wa" icon="social_whatsapp" href={href} target="_blank" rel="noopener" class={cls}
+    label={aria ?? `Chat on WhatsApp${about ? ` about ${about}` : ''} (opens in a new tab)`} title="Chat on WhatsApp" {...rest} />
+)}

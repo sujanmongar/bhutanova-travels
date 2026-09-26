@@ -1,0 +1,12 @@
+---
+// The site's one enquiry button. A link to /contact/, so it works without JavaScript; TripPlanner (in the layout) opens
+// the enquiry sheet from it instead. tour: the sheet opens with that tour filled in (opened in a new tab, the contact
+// page opens it from ?customise=). title: the sheet's title. href: a plain link instead of the form (a Sanity button link).
+// Label and look stay per place (the header's "Enquire" with the orange accent, light on navy); the caller's class and
+// scope land on the link.
+interface Props { label?: string; variant?: 'primary' | 'light' | 'outline'; accent?: boolean; size?: 'lg'; block?: boolean; tour?: string; title?: string; href?: string; class?: string; [attr: string]: unknown }
+const { label = 'Send an enquiry', variant = 'primary', accent = false, size, block = false, tour, title, href, class: cls, ...rest } = Astro.props;
+---
+<a class:list={['btn', `btn--${variant}`, { 'btn--accent': accent, 'btn--lg': size === 'lg', 'btn--block': block }, cls]}
+  href={href ?? (tour ? `/contact/?customise=${tour}` : '/contact/')} data-open-plan={href || tour ? undefined : ''}
+  data-customise={tour} data-plan-title={title} {...rest}>{label}</a>

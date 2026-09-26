@@ -1,17 +1,25 @@
 ---
+// The FAQ section: the title, intro and "Ask us on WhatsApp" beside the questions. items: a page's own questions (the
+// shared list otherwise); ask={false} leaves the WhatsApp link out.
 import Faq from '../Faq.astro';
+import LinkMore from '../LinkMore.astro';
 import { ptParagraphs } from '../../pt';
-interface Props { heading: string; text?: any[]; grey?: boolean }
-const { heading, text, grey = true } = Astro.props;
+import { wa } from '../../config';
+interface Props { heading: string; text?: any[]; items?: { q: string; a: string }[]; grey?: boolean; ask?: boolean }
+const { heading, text, items, grey = true, ask = true } = Astro.props;
+const waHref = wa(`${new URL(Astro.url.pathname, Astro.site).href}#faq`);
 ---
-<section class:list={['section', { 'section--grey': grey }]}>
+<section class:list={['section', { 'section--grey': grey }]} id="faq">
   <div class="container">
-    <Faq>
+    <Faq items={items}>
       <div class="sh" data-reveal>
         <h2>{heading}</h2>
         {ptParagraphs(text).map((p) => <p class="t-body" set:html={p} />)}
+        {ask && <LinkMore class="faq-ask" href={waHref} external label="Ask us on WhatsApp" />}
       </div>
     </Faq>
   </div>
 </section>
-
+<style>
+  .faq-ask { margin-top: var(--space-6); }
+</style>

@@ -1,27 +1,15 @@
 ---
-import Base from '../layouts/Base.astro';
-import WhatsAppCta from '../components/WhatsAppCta.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Page from '../layouts/Page.astro';
+import EnquireButton from '../components/EnquireButton.astro';
 ---
-<Base title="Page not found" noindex>
-  <section class="section">
-    <div class="container">
-      <Breadcrumbs items={[['Page not found']]} />
-      <div class="sh">
-        <h1>Lost in the mountains?</h1>
-        <p>The page you're looking for doesn't exist or has moved.</p>
-      </div>
-      <form class="nf-search" action="/search/" method="get" role="search">
-        <label class="sr-only" for="nf-q">Search tours, guides and articles</label>
-        <input class="input" id="nf-q" type="search" name="q" placeholder="Search tours, guides, articles…" enterkeyhint="search" />
-      </form>
-      <div class="nf-actions"><a class="btn btn--primary" href="/bhutan-tours/">Tour packages</a><a class="btn btn--outline" href="/contact/">Contact us</a></div>
-    </div>
-  </section>
-  <WhatsAppCta />
-</Base>
+<Page title="Page not found" heading="Lost in the mountains?" lede="The page you're looking for doesn't exist or has moved." noindex>
+  <form class="nf-search" action="/search/" method="get" role="search">
+    <label class="sr-only" for="nf-q">Search tours, guides and articles</label>
+    <input class="input" id="nf-q" type="search" name="q" placeholder="Search tours, guides, articles…" enterkeyhint="search" />
+  </form>
+  <div class="nf-actions"><a class="btn btn--primary" href="/bhutan-tours/">Tour packages</a><EnquireButton variant="outline" label="Ask us" /></div>
+</Page>
 <style>
-  .container > :global(.crumbs) { margin-bottom: var(--space-4); }
   .nf-search { max-width: 56ch; }
   .nf-actions { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-6); }
 </style>

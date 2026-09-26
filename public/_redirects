@@ -2,3 +2,6 @@
 # The "Welcome to Bhutan" test post (deleted 2026-09-25)
 /blog/welcome-to-bhutan/  /blog/  301
 /blog/welcome-to-bhutan   /blog/  301
+
+# Old sitemap address (the sitemap now lives at /sitemap-index.xml)
+/sitemap.xml  /sitemap-index.xml  301

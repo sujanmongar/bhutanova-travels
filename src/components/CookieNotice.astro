@@ -9,7 +9,7 @@ import Icon from './Icon.astro';
 <div class="cookie" role="region" aria-labelledby="cookie-title" data-cookie hidden>
   <div class="cookie__head">
     <Icon name="shield-check" />
-    <p class="t-title" id="cookie-title">Your privacy</p>
+    <p class="t-card" id="cookie-title">Your privacy</p>
   </div>
   <p class="t-caption muted">We don't use tracking or advertising cookies. Maps and videos from Google, YouTube and Vimeo set their own cookies, so they only load if you allow them. <a href="/privacy/#cookies">Privacy policy</a></p>
 
@@ -45,7 +45,7 @@ import Icon from './Icon.astro';
   const read = () => document.cookie.match(new RegExp(`(?:^|; )${KEY}=(all|necessary)`))?.[1];
   const load = (frame: Element) => {
     const f = frame.querySelector<HTMLIFrameElement>('iframe[data-src]');
-    if (f && !f.src) f.src = f.dataset.src!;
+    if (f && !f.src) { f.src = f.dataset.src!; f.removeAttribute('tabindex'); }  // empty frames wait out of the Tab order
     frame.setAttribute('data-loaded', '');
   };
   const loadAll = () => document.querySelectorAll('.frame').forEach(load);
@@ -55,15 +55,32 @@ import Icon from './Icon.astro';
     $('[data-cookie-save]').hidden = !open;
     more.setAttribute('aria-expanded', String(open));
   };
-  const show = () => {
+  // Where focus goes back to once the card closes: the button that opened it, or the page's main content (never <body>)
+  let opener: HTMLElement | null = null;
+  const show = (from: HTMLElement | null = null) => {
+    opener = from;
     media.checked = read() === 'all';
     customise(false);
     card.hidden = false;
   };
+  const hide = () => {
+    const had = card.contains(document.activeElement) || document.activeElement === document.body;
+    card.hidden = true;
+    if (!had) return;
+    const main = document.getElementById('main');
+    main?.setAttribute('tabindex', '-1');
+    (opener ?? main)?.focus({ preventScroll: true });
+  };
+  // While the card is up, keyboard focus scrolls to above it, never under it (its height plus its offset from the bottom)
+  new ResizeObserver(() => {
+    document.documentElement.style.scrollPaddingBottom = card.hidden ? '' : `calc(${innerHeight - card.getBoundingClientRect().top}px + var(--space-4))`;
+  }).observe(card);
 
   const choice = read();
   if (choice === 'all') loadAll();
-  if (!choice) show();
+  // Asked only where there is something to allow: a page with a map or video. Elsewhere the site sets no cookies
+  // but this choice itself, so the card doesn't cover the page (the footer's Cookie preferences opens it anywhere).
+  if (!choice && document.querySelector('.frame')) show();
 
   card.addEventListener('click', (e) => {
     const t = e.target as Element;
@@ -73,7 +90,7 @@ import Icon from './Icon.astro';
     const pick = b.dataset.cookieChoice === 'save' ? (media.checked ? 'all' : 'necessary') : b.dataset.cookieChoice!;
     const was = read();
     document.cookie = `${KEY}=${pick}; max-age=31536000; path=/; SameSite=Lax${location.protocol === 'https:' ? '; Secure' : ''}`;
-    card.hidden = true;
+    hide();
     if (pick === 'all') loadAll();
     else if (was === 'all') location.reload();  // take back frames that already loaded
   });
@@ -81,7 +98,17 @@ import Icon from './Icon.astro';
     const t = e.target as Element;
     // One frame on its own ("Show the map"), without changing the site-wide choice
     const one = t.closest('[data-consent-load]');
-    if (one) { load(one.closest('.frame')!); return; }
-    if (t.closest('[data-cookie-prefs]')) { show(); customise(true); media.focus(); }
+    if (one) { const frame = one.closest('.frame')!; load(frame); frame.querySelector('iframe')?.focus(); return; }  // the button goes; focus the frame it opened
+    const from = t.closest<HTMLElement>('[data-cookie-prefs]');
+    if (from) { show(from); customise(true); media.focus(); }
+  });
+  // Esc puts the card away for this page view (no choice saved, so it asks again on the next page). An open dialog
+  // (menu, enquiry form, photo viewer) takes its own Esc first.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !card.hidden && !document.querySelector('dialog[open]')) hide();
   });
 </script>
+<style>
+  /* #main only takes focus (from script) so a closed card doesn't drop keyboard users on <body>; no ring round the whole page */
+  :global(#main:focus) { outline: none; }
+</style>

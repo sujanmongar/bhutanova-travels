@@ -1,0 +1,11 @@
+---
+// The site's one "see all / learn more" text link: navy words over a thin orange line and a small orange Bold glyph
+// (the angle arrow, or the chevron of a Show all). With href it is a link, otherwise a button (data-open-plan and the
+// like ride in through ...rest). external opens a new tab and says so. No margin of its own: the parent spaces it.
+// Its look lives in global.css (.link-more).
+import Icon from './Icon.astro';
+interface Props { label: string; href?: string; external?: boolean; icon?: 'arrow-up-right' | 'chevron-up'; class?: string; [attr: string]: unknown }
+const { label, href, external = false, icon = 'arrow-up-right', class: cls, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+<Tag class:list={['link-more', cls]} href={href} type={href ? undefined : 'button'} target={external ? '_blank' : undefined} rel={external ? 'noopener' : undefined} {...rest}><span>{label}</span><Icon name={icon} />{external && <span class="sr-only"> (opens in a new tab)</span>}</Tag>

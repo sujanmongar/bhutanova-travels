@@ -2,10 +2,10 @@
 // Plan your trip: how booking works beside how to reach us, in one navy closing section.
 // The contact panel names the trip planner picked in Sanity (a Team member).
 import Icon from '../Icon.astro';
-import { SITE, img, wa, tel, type BlockImage } from '../../config';
+import TalkPanel from '../TalkPanel.astro';
+import { SITE, tel, mailto, type BlockImage } from '../../config';
 interface Props { heading: string; text?: string; steps?: { _key: string; title: string; text?: string }[]; person?: { name: string; role: string; photo?: BlockImage} | null }
 const { heading, text, steps = [], person } = Astro.props;
-const chat = wa(new URL(Astro.url.pathname, Astro.site).href, 'planning a trip');
 const first = person?.name.split(' ')[0];
 ---
 <section class="section section--grey plan">
@@ -26,51 +26,36 @@ const first = person?.name.split(' ')[0];
       </ol>
     </div>
     <aside class="talk" data-reveal aria-label="Contact us">
-      {person && (
-        <div class="talk__who">
-          {person.photo && <img src={img(person.photo.url, 128, 128, person.photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
-          <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Bhutanova Travels</span></p>
-        </div>
-      )}
-      <p class="t-body talk__txt">{first ? `Your message comes to ${first}, who replies within 24 hours with a first plan and a price.` : 'We reply within 24 hours with a first plan and a price.'}</p>
-      <div class="talk__act">
-        <a class="btn btn--on-dark btn--wa btn--block" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-        <a class="btn btn--light btn--block" href="/contact/" data-open-plan>Send an enquiry</a>
-      </div>
-      <ul class="talk__lines t-label">
-        <li><Icon name="envelope" /><a href={`mailto:${SITE.email}`}>{SITE.email}</a></li>
-        <li><Icon name="phone" /><a href={tel(SITE.phone)}>{SITE.phone}</a></li>
-      </ul>
+      <TalkPanel person={person ?? null} text={first ? `Your message comes to ${first}. ${SITE.promise}` : SITE.promise} about="planning a trip">
+        <ul class="talk__lines t-label">
+          <li><Icon name="envelope" /><a href={mailto()}>{SITE.email}</a></li>
+          {SITE.hours && <li><Icon name="clock" /><span>{SITE.hours}</span></li>}
+          <li><Icon name="phone" /><a href={tel(SITE.phone)}>{SITE.phone}</a></li>
+        </ul>
+      </TalkPanel>
     </aside>
   </div>
 </section>
 
 <style>
-  .plan { background: var(--s-500); color: #fff; --focus: #fff; -webkit-font-smoothing: antialiased; }
-  .plan h2, .plan h3, .talk__who .t-card { color: #fff; }
+  .plan { background: var(--s-500); color: var(--on-dark); --focus: var(--on-dark); -webkit-font-smoothing: antialiased; }
+  .plan h2, .plan h3 { color: var(--on-dark); }
   .plan__in { display: grid; gap: var(--space-12); }
   .plan__lead { margin-top: var(--space-6); max-width: 56ch; color: var(--on-dark-2); }
   /* .section--grey only keeps the section spacing rule from treating this band as white; the navy wins */
   /* Steps: a number, then title → 12px → text; hairlines between */
-  .steps { list-style: none; margin: var(--stack) 0 0; padding: 0; border-bottom: 1px solid rgb(255 255 255 / .16); }
-  .steps li { display: grid; grid-template-columns: var(--space-10) minmax(0, 1fr); gap: var(--space-4); padding-block: var(--space-6); border-top: 1px solid rgb(255 255 255 / .16); }
+  .steps { list-style: none; margin: var(--stack) 0 0; padding: 0; border-bottom: 1px solid var(--on-dark-line); }
+  .steps li { display: grid; grid-template-columns: var(--space-10) minmax(0, 1fr); gap: var(--space-4); padding-block: var(--space-6); border-top: 1px solid var(--on-dark-line); }
   .steps__n { color: var(--on-dark-2); }
   .steps p { margin-top: var(--space-3); color: var(--on-dark-2); }
   /* Contact: a panel with a named planner, two buttons, then email and phone */
-  .talk { display: grid; gap: var(--space-6); align-content: start; padding: var(--card-pad); border: 1px solid rgb(255 255 255 / .16); border-radius: var(--radius); corner-shape: squircle; background: rgb(255 255 255 / .04); }
-  .talk__who { display: flex; align-items: center; gap: var(--space-4); }
-  .talk__who img { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-800); }
-  .talk__who p { display: grid; gap: var(--space-1); }
-  .talk__who .t-label, .talk__txt { color: var(--on-dark-2); }
-  .talk__act { display: grid; gap: var(--space-3); }
-  .talk__act :global(.icon) { font-size: 18px; }
+  .talk { display: grid; gap: var(--space-6); align-content: start; padding: var(--card-pad); border: 1px solid var(--on-dark-line); border-radius: var(--radius); corner-shape: squircle; background: var(--on-dark-tint); }
   .talk__lines { display: grid; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
   .talk__lines li { display: flex; align-items: center; gap: var(--space-3); }
-  .talk__lines :global(.icon) { flex: none; font-size: 20px; color: var(--on-dark-2); }
-  .talk__lines a { display: inline-flex; align-items: center; min-height: 44px; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 4px; overflow-wrap: anywhere; }
-  @media (hover: hover) { .talk__lines a:hover { text-decoration-color: var(--p-500); } }
+  .talk__lines :global(.icon) { flex: none; font-size: var(--icon-sm); color: var(--on-dark-2); }
+  .talk__lines a { display: inline-flex; align-items: center; min-height: 44px; overflow-wrap: anywhere; }
   @media (min-width: 1024px) {
     .plan__in { grid-template-columns: 7fr 5fr; gap: var(--space-16); align-items: start; }
-    .talk { position: sticky; top: calc(var(--header-h) + var(--space-6)); padding: var(--space-8); }
+    .talk { position: sticky; top: var(--sticky-top); padding: var(--space-8); }
   }
 </style>

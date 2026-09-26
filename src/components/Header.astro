@@ -1,16 +1,18 @@
 ---
 import { getCollection } from 'astro:content';
+import WaButton from './WaButton.astro';
+import EnquireButton from './EnquireButton.astro';
 import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
 import Logo from './Logo.astro';
-import { SITE, wa, ldJson } from '../config';
-import { TOURS, DESTINATIONS, catPath, tourPath } from '../utils';
+import { SITE, tel } from '../config';
+import { TOURS, DESTINATIONS, catPath } from '../utils';
 
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
 const allGuides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 // Guides the client puts in the menu (Sanity → "Show in the menu"): under Bhutan after Destinations, or under Travel guide.
 const menuLinks = (menu: 'bhutan' | 'guide') =>
   allGuides.filter((g) => g.data.menu === menu).map((g) => ({ href: `/travel-guide/${g.id}/`, label: g.data.menuTitle ?? g.data.title }));
-const destinations = (await getCollection('destinations')).sort((a, b) => a.data.order - b.data.order);
 // Tours, the country, how to plan, who we are. The drawer and the footer's Explore list follow the same order.
 // An item without children is a plain link (no dropdown).
 const nav: { href: string; label: string; all?: string; children: { href: string; label: string }[] }[] = [
@@ -41,24 +43,6 @@ const match = nav
 const active = (item: (typeof nav)[number]) => match?.i === nav.indexOf(item);
 // Tour pages have their own booking bar, and /contact/ is where the button goes.
 const showFab = !/^\/(contact\/|bhutan-tours\/[^/]+\/[^/]+\/)/.test(path);
-const tel = `tel:${SITE.phone.replace(/\s/g, '')}`;
-
-// A small client-side search: title + type + url for everything a visitor might look for.
-// Built from the same collections at build time — nothing fetched at runtime, no server involved.
-const tours = await getCollection('tours');
-const posts = await getCollection('blog');
-const sights = await getCollection('sights');
-const searchIndex = [
-  { t: 'About Bhutan', k: 'Page', u: '/about-bhutan/' },
-  { t: 'About us', k: 'Page', u: '/about/' },
-  { t: 'Contact', k: 'Page', u: '/contact/' },
-  ...cats.map((c) => ({ t: c.data.menuTitle, k: 'Category', u: catPath(c.id) })),
-  ...tours.map((t) => ({ t: t.data.title, k: 'Tour', u: tourPath(t) })),
-  ...destinations.map((d) => ({ t: d.data.title, k: 'Destination', u: `${DESTINATIONS}${d.id}/` })),
-  ...sights.filter((x) => x.data.page).map((x) => ({ t: x.data.title, k: 'Sight', u: `${DESTINATIONS}${x.id}/` })),
-  ...allGuides.map((g) => ({ t: g.data.title, k: 'Guide', u: `/travel-guide/${g.id}/` })),
-  ...posts.map((p) => ({ t: p.data.title, k: 'Article', u: `/blog/${p.id}/` })),
-];
 ---
 <header class="nav" data-nav>
   <div class="container nav__in">
@@ -92,33 +76,36 @@ const searchIndex = [
     </div>
 
     <div class="nav__cta">
-      <button class="icon-btn nav__search" type="button" aria-expanded="false" aria-controls="search-q" data-search-toggle>
+      <IconButton class="nav__search" aria-expanded="false" aria-controls="search-q" data-search-toggle>
         <Icon name="search" class="i-open" /><Icon name="close" class="i-close" /><span class="sr-only" data-search-label>Search</span>
-      </button>
-      <a href="/contact/" class="btn btn--primary btn--accent nav__book" data-open-plan>Enquire</a>
-      <button class="burger" type="button" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false" data-burger>
-        <Icon name="bars" /><span class="sr-only">Menu</span>
-      </button>
+      </IconButton>
+      <EnquireButton label="Enquire" accent class="nav__book" />
+      <IconButton class="burger" icon="bars" aria-haspopup="dialog" aria-controls="drawer" aria-expanded="false" data-burger><span class="sr-only">Menu</span></IconButton>
     </div>
 
     <div class="search-panel" data-search-panel hidden>
-      <p class="search__empty t-caption" data-search-empty hidden>No matches. Try a different word, or <a href="/contact/">ask us directly</a>.</p>
+      <p class="search__empty t-caption" data-search-empty hidden>No matches. Try a different word, or <a href="/contact/" data-open-plan>ask us directly</a>.</p>
       <ul class="search__suggestions" data-search-results></ul>
     </div>
+    <p class="sr-only" role="status" data-search-status></p>
   </div>
 </header>
-<script type="application/json" id="search-index" set:html={ldJson(searchIndex)} />
 
-<!-- Mobile/tablet only: Enquire follows you down the page instead of living in the (now tighter) top bar. -->
-{showFab && <a href="/contact/" class="btn btn--primary fab-enquire" data-open-plan>Enquire</a>}
+<!-- Mobile/tablet only: WhatsApp and Enquire follow you down the page instead of living in the (now tighter) top bar. -->
+{showFab && (
+  <div class="fab">
+    <WaButton class="fab__wa" />
+    <EnquireButton label="Enquire" />
+  </div>
+)}
 
 <!-- Mobile/tablet menu: native modal dialog → focus trap, Esc, inert page, backdrop for free.
      Links and CTAs sit in the lower half where the thumb rests. -->
 <dialog id="drawer" class="sheet drawer" aria-labelledby="drawer-t">
   <div class="sheet__in">
     <div class="sheet__head">
-      <p id="drawer-t" class="drawer__kicker t-title">Menu</p>
-      <button type="button" class="sheet__close" aria-label="Close menu" data-close><Icon name="close" /></button>
+      <p id="drawer-t" class="drawer__kicker t-card">Menu</p>
+      <IconButton icon="close" label="Close menu" data-close />
     </div>
     <nav aria-label="Main">
       <ul class="drawer__list">
@@ -135,7 +122,7 @@ const searchIndex = [
             )}
             {item.children.length > 0 && (
               <ul class="d-sub" id={`d-sub-${i}`} hidden>
-                {item.children.map((c) => <li><a href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
+                {item.children.map((c) => <li><a class="t-body" href={c.href} aria-current={path === c.href ? 'page' : undefined}>{c.label}</a></li>)}
                 {item.all && <li class="d-sub__all"><a href={item.href} class="see-all t-link" aria-current={path === item.href ? 'page' : undefined}><span>{item.all}</span><Icon name="arrow-up-right" /></a></li>}
               </ul>
             )}
@@ -145,9 +132,9 @@ const searchIndex = [
     </nav>
     <!-- Pinned to the foot of the sheet: always in thumb reach, however long the list gets -->
     <div class="drawer__cta" style={`--i:${nav.length}`}>
-      <a class="btn btn--soft" href={tel}><Icon name="phone" />Call us</a>
-      <a class="btn btn--soft btn--wa" href={wa(new URL(Astro.url.pathname, Astro.site).href)} target="_blank" rel="noopener"><Icon name="social_whatsapp" />WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-      <a class="btn btn--primary btn--lg" href="/contact/" data-open-plan>Enquire</a>
+      <a class="btn btn--soft" href={tel(SITE.phone)}><Icon name="phone-bold" />Call us</a>
+      <WaButton label="WhatsApp" tone="soft" />
+      <EnquireButton label="Enquire" size="lg" />
     </div>
   </div>
 </dialog>
@@ -186,7 +173,8 @@ const searchIndex = [
     if (item.contains(document.activeElement)) item.querySelector<HTMLAnchorElement>('.menu__link')?.focus();
   });
   nav.querySelectorAll('.has-sub').forEach((i) => i.addEventListener('mouseenter', () => i.classList.remove('is-closed')));
-  nav.addEventListener('focusout', (e) => { const i = (e.target as Element).closest('.has-sub'); if (i && !i.contains(e.relatedTarget as Node)) i.classList.remove('is-closed'); });
+  // Closed with Esc stays closed only while focus is on its top link: Tab into the list, or out of the item, reopens it
+  nav.addEventListener('focusout', (e) => { const i = (e.target as Element).closest('.has-sub'); if (i && e.relatedTarget !== i.querySelector('.menu__link')) i.classList.remove('is-closed'); });
   // Transparent over hero/banner photos; frosted glass once the page scrolls
   const onScroll = () => nav.classList.toggle('is-stuck', scrollY > 8);
   addEventListener('scroll', onScroll, { passive: true });
@@ -194,7 +182,7 @@ const searchIndex = [
 
   // Floating Enquire hides while the hero (it has its own Enquire button) or the footer (same navy) is on screen.
   // It stays hidden until this first check runs (.is-ready), so it never flashes over the hero on load.
-  const fab = document.querySelector<HTMLAnchorElement>('.fab-enquire');
+  const fab = document.querySelector<HTMLElement>('.fab');
   if (fab) {
     const over = new Set<Element>();
     const io = new IntersectionObserver((entries) => {
@@ -202,13 +190,13 @@ const searchIndex = [
       fab.classList.toggle('is-hidden', over.size > 0);
       fab.classList.add('is-ready');
     });
-    document.querySelectorAll('.hero, .footer').forEach((el) => io.observe(el));
+    document.querySelectorAll('.hero, .footer, .wa').forEach((el) => io.observe(el));  // and over the closing contact card, which has the same buttons
   }
 
   // Search: a classic expand-in-place field (not a side panel) — the toggle button swaps its own icon and
-  // never moves, so it always marks where to click to get back out. A small built-in index (see the JSON
-  // script above), grouped by kind as you type; nothing fetched at runtime. Enter (or a phone's own
-  // keyboard "search"/"go" key — the native `search` event covers both) goes to the full results page.
+  // never moves, so it always marks where to click to get back out. A small index (/search-index.json, built
+  // with the site) is fetched the first time search opens, then grouped by kind as you type. Enter (or a phone's
+  // own keyboard "search"/"go" key — the native `search` event covers both) goes to the full results page.
   const toggle = nav.querySelector<HTMLButtonElement>('[data-search-toggle]')!;
   const searchLabel = toggle.querySelector<HTMLElement>('[data-search-label]')!;
   const field = document.querySelector<HTMLElement>('[data-search-field]')!;
@@ -216,12 +204,21 @@ const searchIndex = [
   const panel = nav.querySelector<HTMLElement>('[data-search-panel]')!;
   const results = panel.querySelector<HTMLUListElement>('[data-search-results]')!;
   const empty = panel.querySelector<HTMLParagraphElement>('[data-search-empty]')!;
-  const index: SearchItem[] = JSON.parse(document.getElementById('search-index')!.textContent!);
+  const status = nav.querySelector<HTMLElement>('[data-search-status]')!;  // outside the panel, so it's in the page even while the panel is hidden
+  let index: SearchItem[] | undefined;
+  let loading: Promise<void> | undefined;
+  // Once per page; a failed fetch is tried again on the next open. What's typed while it loads shows when it lands.
+  const load = () => (loading ??= fetch('/search-index.json').then((r) => r.json()).then(
+    (d: SearchItem[]) => { index = d; if (nav.classList.contains('is-searching')) render(searchQ.value); },
+    () => { loading = undefined; },
+  ));
   const render = (q: string) => {
+    if (!index) return;
     const found = matches(index, q);
     results.innerHTML = suggestionsHTML(groupByKind(found), q);
     empty.hidden = found.length > 0 || q.trim() === '';
     panel.hidden = q.trim() === '';
+    status.textContent = q.trim() === '' ? '' : found.length ? `${found.length} result${found.length > 1 ? 's' : ''}` : 'No matches';
   };
   const setOpen = (open: boolean) => {
     nav.classList.toggle('is-searching', open);
@@ -231,7 +228,7 @@ const searchIndex = [
     // scroll to where that element WOULD sit in normal document flow (the very top of the page) — it doesn't
     // account for sticky already having pinned it on-screen wherever you are.
     // Focus inside the tap itself (not a frame later): iPhone only opens the keyboard for focus that comes straight from a tap
-    if (open) { searchQ.value = ''; render(''); searchQ.focus({ preventScroll: true }); }
+    if (open) { load(); searchQ.value = ''; render(''); searchQ.focus({ preventScroll: true }); }
     else { panel.hidden = true; toggle.focus({ preventScroll: true }); }
   };
   toggle.addEventListener('click', () => setOpen(!nav.classList.contains('is-searching')));
@@ -259,17 +256,16 @@ const searchIndex = [
   /* Once the page scrolls: a very faint line and soft shadow under the bar (none at the top) */
   .nav.is-stuck { box-shadow: 0 1px 0 rgb(12 25 37 / .06), 0 8px 24px -16px rgb(12 25 37 / .2); }
   :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) {
-    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: #fff; --focus: #fff;
+    background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; color: var(--on-dark); --focus: var(--on-dark);
   }
   /* White panels inside the bar keep the navy focus ring */
   .sub__list, .search-panel { --focus: var(--s-500); }
-  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: #fff; color: var(--ink); }
-  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) :is(.burger, .icon-btn) { background: rgb(255 255 255 / .16); color: #fff; }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book { background: var(--white); color: var(--ink); }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) :global(.ib) { --ib-bg: var(--on-dark-bg); --ib-hover: var(--on-dark-hover); color: var(--on-dark); }
   @media (hover: hover) {
-    :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); color: var(--s-800); }
+    :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .nav__book:hover { background: var(--p-500); color: var(--ink); }
   }
   .nav__in { position: relative; display: flex; align-items: center; gap: var(--space-2); height: var(--header-h); }
-  .burger:active, .icon-btn:active { scale: .98; }
   .nav__logo { flex: none; transition: opacity var(--dur-2); }
   .nav__middle { position: relative; flex: 1; min-width: 0; display: flex; align-items: center; justify-content: flex-end; }
   /* The menu fades out and the field fades in over the same space, instead of one instantly vanishing
@@ -278,12 +274,6 @@ const searchIndex = [
   .menu { transition: opacity var(--dur-2) var(--ease-out), visibility 0s; }
   .nav.is-searching .menu { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity var(--dur-2) var(--ease-out), visibility 0s var(--dur-2); }
   .nav__cta { flex: none; display: flex; align-items: center; gap: var(--space-2); }
-  .burger, .icon-btn {
-    display: grid; place-items: center; width: 48px; height: 48px; border: 0; border-radius: 50%;
-    background: var(--icon-bg); color: inherit; font-size: 22px; cursor: pointer; -webkit-tap-highlight-color: transparent;
-    transition: background var(--dur-1), color var(--dur-3), scale var(--dur-1) var(--ease-out);
-  }
-  @media (hover: hover) { .burger:hover, .icon-btn:hover { background: var(--icon-bg-hover); } }
   /* Search toggle: one button at a fixed spot in the header, its icon swaps instead of a second button appearing. */
   .nav__search { position: relative; }
   .nav__search :global(.i-close) { display: none; }
@@ -297,22 +287,25 @@ const searchIndex = [
   .search-field {
     position: absolute; left: 0; right: 0; top: 50%; translate: 0 -50%; height: 44px;
     display: flex; align-items: center; border-bottom: 1px solid transparent;
-    opacity: 0; pointer-events: none;
-    transition: opacity var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out);
+    /* visibility (like .menu above) so the closed field is no Tab stop; it turns visible at once on open, before
+       setOpen() focuses the input, so the iPhone keyboard still opens */
+    opacity: 0; visibility: hidden; pointer-events: none;
+    transition: opacity var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out), visibility 0s var(--dur-2);
   }
-  .nav.is-searching .search-field { opacity: 1; pointer-events: auto; border-bottom-color: var(--border); }
-  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck).is-searching .search-field { border-bottom-color: rgb(255 255 255 / .35); }
+  .nav.is-searching .search-field { opacity: 1; visibility: visible; pointer-events: auto; border-bottom-color: var(--border); transition-delay: 0s; }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck).is-searching .search-field { border-bottom-color: var(--on-dark-line-strong); }
   .search-field__input {
     width: 100%; border: 0; background: none; color: inherit;
     padding: 0 var(--space-1);
   }
-  .search-field__input::placeholder { color: currentColor; opacity: .55; }
+  .search-field__input::placeholder { color: var(--text-2); opacity: 1; }
+  :global(html:has(main > :is(.hero, .banner):first-child)) .nav:not(.is-stuck) .search-field__input::placeholder { color: var(--on-dark-2); }
   .search-field__input:focus { outline: none; }
   /* The header's own close icon is the one way to dismiss search — no second (native) clear-x competing with it. */
   .search-field__input::-webkit-search-cancel-button, .search-field__input::-webkit-search-decoration { display: none; }
 
   /* Results: a full-width panel under the whole bar, like a classic expanding search, not a side sheet. */
-  .search-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1; background: #fff; border-top: 1px solid var(--border); box-shadow: var(--sh-lg); max-height: 70vh; overflow-y: auto; }
+  .search-panel { position: absolute; top: 100%; left: 0; right: 0; z-index: 1; background: var(--white); border-top: 1px solid var(--border); box-shadow: var(--sh-lg); max-height: 70vh; overflow-y: auto; }
   .search-panel[hidden] { display: none; }
   .search__empty { padding: var(--space-4) var(--gutter); color: var(--text-2); }
   .search__suggestions { list-style: none; margin: 0; padding: var(--space-1) calc(var(--gutter) - var(--space-1)) var(--space-2); }
@@ -325,21 +318,26 @@ const searchIndex = [
     display: block; min-height: 48px; padding: var(--space-3); border-radius: var(--r-md);
     font-family: var(--ff); font-size: var(--fs-caption); line-height: var(--lh-caption); letter-spacing: var(--ls-caption); font-weight: var(--fw-caption); color: var(--ink); transition: background var(--dur-1);
   }
-  :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
+  :global(.search__group a:hover), :global(.search__group a:focus-visible) { background: var(--surface); text-decoration: underline 1.5px var(--p-500); text-underline-offset: var(--space-1); }
   :global(.search__see-all) {
     display: flex; align-items: center; gap: var(--space-2); margin-top: var(--space-2); padding: var(--space-3);
     border-top: 1px solid var(--border); font-family: var(--ff); font-size: var(--fs-link); line-height: var(--lh-link); letter-spacing: var(--ls-link); font-weight: var(--fw-link); color: var(--ink);
   }
 
   /* Mobile/tablet: Enquire floats over the page instead of squeezing into the bar. */
-  .fab-enquire {
+  .fab {
     position: fixed; right: var(--gutter); bottom: calc(var(--space-6) + env(safe-area-inset-bottom)); z-index: 40;
-    box-shadow: var(--sh-lg);
+    display: flex; gap: var(--space-3);
   }
-  @media (min-width: 1024px) { .fab-enquire { display: none; } }
+  .fab :global(:is(.btn, .ib)) { box-shadow: var(--sh-lg); }
+  /* Over the page the grey circle is solid, so it reads on photos and grey sections alike */
+  .fab :global(.ib) { --ib-bg: var(--surface); }
+  @media (min-width: 1024px) { .fab { display: none; } }
+  /* Keyboard focus scrolls to above the floating buttons, never under them (48px buttons + their offset + a gap) */
+  @media (max-width: 1023px) { :global(html:has(.fab)) { scroll-padding-bottom: calc(var(--space-12) + var(--space-6) + var(--space-4) + env(safe-area-inset-bottom)); } }
   /* Hidden over the hero and the footer (see the script). With JS on it waits for that first check. */
-  .fab-enquire.is-hidden { display: none; }
-  @media (scripting: enabled) { .fab-enquire:not(.is-ready) { display: none; } }
+  .fab.is-hidden { display: none; }
+  @media (scripting: enabled) { .fab:not(.is-ready) { display: none; } }
   /* display:none (not a fade) — on mobile .menu is already hidden outright, so unlike the crossfade above
      there's nothing else animating here for this to clash with; it just frees the logo's width for the field. */
   @media (max-width: 1023px) { .nav.is-searching .nav__logo { display: none; } }
@@ -351,38 +349,36 @@ const searchIndex = [
      64px rows; their links 18px (Body), 52px rows. The sheet rises from the bottom, so they sit where the thumb rests. */
   .d-link {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); width: 100%; min-height: 64px; padding: 0 var(--space-3); border: 0; border-radius: var(--r-md); background: none; text-align: left; cursor: pointer;
-    font-family: var(--ff); font-size: var(--fs-card); line-height: 1.3; letter-spacing: 0; font-weight: var(--fw-label); color: var(--ink);
+    font-family: var(--ff); font-size: var(--fs-card); line-height: var(--lh-card); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--ink);
     -webkit-tap-highlight-color: transparent; transition: background var(--dur-1);
   }
   /* Press feedback only while the finger is down (phones keep :hover after a tap, which would look like the current page) */
   .d-link:active { background: var(--surface); }
-  @media (hover: hover) { .d-link:hover { background: var(--surface); text-decoration: underline 2px var(--p-500); text-underline-offset: 7px; } }
-  .d-link.is-active { text-decoration: underline 2px var(--p-500); text-underline-offset: 7px; }
+  @media (hover: hover) { .d-link:hover { background: var(--surface); text-decoration: underline 2px var(--p-500); text-underline-offset: var(--space-2); } }
+  .d-link.is-active { text-decoration: underline 2px var(--p-500); text-underline-offset: var(--space-2); }
   /* The chevron at the row's end turns when the list opens */
-  .d-link :global(.chev) { flex: none; font-size: 16px; color: var(--s-300); rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
+  .d-link :global(.chev) { flex: none; font-size: var(--icon-xs); color: var(--s-300); rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
   .d-link[aria-expanded='true'] :global(.chev) { rotate: 0deg; }
   .d-sub { list-style: none; margin: 0 0 var(--space-3); padding: 0 var(--space-3); display: grid; }
   .d-sub[hidden] { display: none; }
   .d-sub a {
     display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); min-height: 52px; padding: var(--space-2) 0;
-    font-size: var(--fs-body); line-height: var(--lh-body); font-weight: var(--fw-body);  /* Body 18 */
     color: var(--text); transition: color var(--dur-1);
   }
   .d-sub li + li { border-top: 1px solid var(--border); }
   .d-sub a:hover, .d-sub a:active { color: var(--ink); }
-  .d-sub li:not(.d-sub__all) a:is(:hover, :active) { text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
-  .d-sub a[aria-current='page'] { font-weight: 600; color: var(--ink); }
+  .d-sub li:not(.d-sub__all) a:is(:hover, :active) { text-decoration: underline 1px var(--p-500); text-underline-offset: var(--space-1); }
+  .d-sub a[aria-current='page'] { color: var(--ink); }
   .d-sub__all a { justify-content: flex-start; color: var(--ink); }  /* the "see all" row: .see-all look (global.css), arrow beside the words */
   /* The call, WhatsApp and Enquire buttons stay pinned at the bottom of the sheet (thumb reach), on white, over a hairline */
   .drawer .sheet__in { padding-bottom: 0; }
   .drawer__cta {
     position: sticky; bottom: 0; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);
     margin: var(--space-6) calc(var(--card-pad) * -1) 0; padding: var(--space-4) var(--card-pad) calc(var(--space-4) + env(safe-area-inset-bottom));
-    background: #fff; border-top: 1px solid var(--border);
+    background: var(--white); border-top: 1px solid var(--border);
   }
   @media (min-width: 768px) { .drawer__cta { margin-inline: calc(var(--space-8) * -1); padding-inline: var(--space-8); } }
   .drawer__cta .btn--primary { grid-column: 1 / -1; }
-  .drawer__cta :global(.icon) { font-size: 18px; }
   /* Drawer: the rows fade up quickly, 30ms apart */
   @media (prefers-reduced-motion: no-preference) {
     .drawer[open] :is(.drawer__list > li, .drawer__cta) { --rise: 8px; animation: rise var(--dur-3) var(--ease-out) backwards; animation-delay: calc(60ms + var(--i, 6) * 30ms); }
@@ -390,7 +386,6 @@ const searchIndex = [
 
   /* Desktop */
   @media (min-width: 1024px) {
-    .icon-btn { width: 44px; height: 44px; font-size: 18px; }  /* desktop: the smaller round button beside the menu */
     .burger, .drawer { display: none; }
     .nav__book { display: inline-flex; }
     .menu { display: block; }
@@ -406,24 +401,26 @@ const searchIndex = [
       content: ''; position: absolute; left: 0; right: 0; bottom: var(--space-6); height: 3px; border-radius: 3px 3px 0 0; background: var(--p-500);
       scale: 0 1; transform-origin: left; transition: scale var(--dur-3) var(--ease-out);
     }
-    .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link::after { scale: 1 1; }
-    .menu :global(.chev) { font-size: 10px; rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
-    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .menu__link :global(.chev) { rotate: 0deg; }
+    .menu__link:hover::after, .menu__link.is-active::after, .has-sub:is(:hover, :focus-within):not(.is-closed) > .menu__link::after { scale: 1 1; }
+    .menu :global(.chev) { font-size: var(--icon-xs); rotate: 180deg; transition: rotate var(--dur-2) var(--ease-out); }
+    .has-sub:is(:hover, :focus-within):not(.is-closed) > .menu__link :global(.chev) { rotate: 0deg; }
+    /* Closed = see-through and click-through, never display:none or visibility:hidden: its links stay in the Tab order
+       and open the panel as focus reaches them (:focus-within), so focus never drops to <body> between menu items */
     .sub__list {
-      display: none; position: absolute; top: calc(100% - var(--space-4)); left: calc(var(--space-4) * -1); min-width: 272px; margin: 0; padding: var(--space-2); list-style: none;
-      background: #fff; border: 1px solid rgb(12 25 37 / .06); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
+      opacity: 0; pointer-events: none; position: absolute; top: calc(100% - var(--space-4)); left: calc(var(--space-4) * -1); min-width: 272px; margin: 0; padding: var(--space-2); list-style: none;
+      background: var(--white); border: 1px solid var(--border); border-radius: var(--r-lg); box-shadow: var(--sh-lg);
     }
-    .has-sub:is(:hover, :has(:focus-visible)):not(.is-closed) > .sub__list { display: block; --rise: -4px; animation: rise var(--dur-2) var(--ease-out); }
+    .has-sub:is(:hover, :focus-within):not(.is-closed) > .sub__list { opacity: 1; pointer-events: auto; --rise: -4px; animation: rise var(--dur-2) var(--ease-out); }
     /* The item under the pointer wins, so two panels never show at once */
-    .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .sub__list { display: none; }
+    .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .sub__list { opacity: 0; pointer-events: none; animation: none; }
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link :global(.chev) { rotate: 180deg; }
     .menu__list:has(> .has-sub:hover) > .has-sub:not(:hover) > .menu__link:not(.is-active)::after { scale: 0 1; }
     .sub__list a {
       display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--r-sm);
       color: var(--text); transition: background var(--dur-1), color var(--dur-1);
     }
-    .sub__list a:not(.sub__all):hover { background: var(--surface); color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: 4px; }
-    .sub__list a[aria-current='page'] { color: var(--ink); font-weight: 600; }
+    .sub__list a:not(.sub__all):hover { background: var(--surface); color: var(--ink); text-decoration: underline 1px var(--p-500); text-underline-offset: var(--space-1); }
+    .sub__list a[aria-current='page'] { color: var(--ink); }
     .sub__list a.sub__all { justify-content: flex-start; gap: var(--space-2); color: var(--ink); border-top: 1px solid var(--border); border-radius: 0 0 var(--r-sm) var(--r-sm); margin-top: var(--space-1); }
   }
 </style>

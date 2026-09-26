@@ -1,40 +1,17 @@
 ---
-// A destination's sights: the ones with their own page as photo cards, the rest as a short list underneath.
+// A place's sights, every one linking to its own page, as attraction cards (square photo, name, two lines): sights with
+// their own photo first, then the editor's order; one without a photo shows the place's. id="sights" is where
+// "All of <place>" lands.
 import type { CollectionEntry } from 'astro:content';
+import Section from './Section.astro';
 import PlaceCards from './PlaceCards.astro';
 import { DESTINATIONS } from '../utils';
-interface Props { heading: string; sights: CollectionEntry<'sights'>[]; fallbackImage: string; grey?: boolean }
-const { heading, sights, fallbackImage, grey = false } = Astro.props;
-const sorted = [...sights].sort((a, b) => a.data.order - b.data.order);
-const pages = sorted.filter((s) => s.data.page);
-const others = sorted.filter((s) => !s.data.page);
+interface Props { heading: string; sights: CollectionEntry<'sights'>[]; fallbackImage: string; grey?: boolean; link?: { href: string; label: string }; id?: string }
+const { heading, sights, fallbackImage, grey = false, link, id = 'sights' } = Astro.props;
+const sorted = [...sights].sort((a, b) => Number(!a.data.image) - Number(!b.data.image) || a.data.order - b.data.order);
 ---
 {sorted.length > 0 && (
-  <section class:list={['section', { 'section--grey': grey }]}>
-    <div class="container">
-      <div class="sh"><h2>{heading}</h2></div>
-      {pages.length > 0 && (
-        <PlaceCards items={pages.map((s) => ({ href: `${DESTINATIONS}${s.id}/`, image: s.data.image ?? fallbackImage, title: s.data.title, text: s.data.excerpt }))} />
-      )}
-      {others.length > 0 && (
-        <ul class:list={['more', { 'more--after': pages.length > 0 }]} data-reveal="stagger">
-          {others.map((s) => (
-            <li>
-              <h3 class="t-card">{s.data.title}</h3>
-              <p class="t-body muted">{s.data.excerpt}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  </section>
+  <Section heading={heading} grey={grey} link={link} id={id}>
+    <PlaceCards kind="attraction" items={sorted.map((s) => ({ href: `${DESTINATIONS}${s.id}/`, image: s.data.image ?? fallbackImage, title: s.data.title, text: s.data.excerpt }))} />
+  </Section>
 )}
-<style>
-  .more { display: grid; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
-  .more--after { margin-top: var(--stack); }
-  .more li { padding-block: var(--space-6); border-bottom: 1px solid var(--border); }
-  .more p { margin-top: var(--space-3); }
-  @media (min-width: 768px) {
-    .more { grid-template-columns: 1fr 1fr; column-gap: var(--grid-gap); }
-  }
-</style>

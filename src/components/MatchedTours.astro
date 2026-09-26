@@ -1,0 +1,24 @@
+---
+// "Tours to consider" under an article or a guide: tours from the themes it links to in its text, then the themes
+// passed in (from its topic or subject), then featured tours. Three cards, with a link to the first theme (or all tours).
+import { getCollection, getEntry } from 'astro:content';
+import TourCard from './TourCard.astro';
+import Section from './Section.astro';
+import { TOURS, catPath } from '../utils';
+interface Props { html?: string; themes?: string[]; grey?: boolean; heading?: string }
+const { html = '', themes = [], grey = true, heading = 'Tours to consider' } = Astro.props;
+const linked = [...html.matchAll(/\/bhutan-tours\/([a-z-]+)\//g)].map((m) => m[1]);
+const cats = [...new Set([...linked, ...themes])];
+const rank = (t: { data: { category: { id: string }; featured?: boolean; popularity: number } }) => {
+  const i = cats.indexOf(t.data.category.id);
+  return (i >= 0 ? i : t.data.featured ? 90 : 99) * 1000 + t.data.popularity;
+};
+const tours = (await getCollection('tours')).toSorted((a, b) => rank(a) - rank(b)).slice(0, 3);
+const cat = cats[0] ? await getEntry('categories', cats[0]) : undefined;
+const [allHref, allText] = cat ? [catPath(cat.id), `All ${cat.data.menuTitle.toLowerCase().replace(/( tours)?$/, ' tours')}`] : [TOURS, 'All tours'];
+---
+{tours.length > 0 && (
+  <Section heading={heading} grey={grey} link={{ href: allHref, label: allText }} rail="tours" railLabel="tours">
+    {tours.map((r) => <TourCard tour={r} rail />)}
+  </Section>
+)}

@@ -1,26 +1,25 @@
 ---
+// /privacy/ always comes from this file, so it can never be missing or built twice: the Studio page (slug "privacy")
+// once it's published (astro dev shows its draft), otherwise the short policy below. [slug].astro skips "privacy".
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import WhatsAppCta from '../components/WhatsAppCta.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
-import { SITE } from '../config';
+import Blocks from '../components/Blocks.astro';
+import Page from '../layouts/Page.astro';
+import { SITE, coverImage, mailto } from '../config';
+// getCollection, not getEntry: no warning in the build log while the Studio page isn't published yet
+const [page] = await getCollection('pages', (p) => p.id === 'privacy');
 ---
-<Base title="Privacy policy" description="How Bhutanova Travels collects and uses your personal information.">
-  <section class="section">
-    <div class="container">
-      <Breadcrumbs items={[['Privacy policy']]} />
-      <div class="prose">
-      <h1>Privacy policy</h1>
-      <p>We collect only the details you send us through our forms or by email — such as your name, contact details, travel dates and passport information needed for your visa — and use them solely to plan and operate your trip.</p>
-      <p>We share your details only with the parties needed to deliver your booking (for example the Department of Immigration, hotels and airlines). We never sell your data.</p>
-      <p>To access or delete your data, email <a href={`mailto:${SITE.email}`}>{SITE.email}</a>.</p>
-      <h2 id="cookies">Cookies</h2>
-      <p>This website does not use advertising or tracking cookies. Some pages show maps and videos from Google Maps, YouTube and Vimeo, and those services may set their own cookies when they load. They load only after you choose Accept all (or switch on Maps and videos under Customise), or press Show on a single map or video. Reject all keeps them off.</p>
-      <p>Your choice is kept in one small cookie on your device (bn_consent) for a year. You can change it at any time with Cookie preferences at the bottom of every page.</p>
-      </div>
-    </div>
-  </section>
-  <WhatsAppCta />
-</Base>
-<style>
-  .container > :global(.crumbs) { margin-bottom: var(--space-4); }
-</style>
+{page ? (
+  <Base title={page.data.title} image={coverImage(page.data.sections)} seo={page.data.seo}>
+    <Blocks sections={page.data.sections} title={page.data.title} />
+  </Base>
+) : (
+<Page title="Privacy policy" description="How Bhutanova Travels collects and uses your personal information." prose>
+  <p>We collect only the details you send us through our forms or by email — such as your name, contact details, travel dates and passport information needed for your visa — and use them solely to plan and operate your trip.</p>
+  <p>We share your details only with the parties needed to deliver your booking (for example the Department of Immigration, hotels and airlines). We never sell your data.</p>
+  <p>To access or delete your data, email <a href={mailto()}>{SITE.email}</a>.</p>
+  <h2 id="cookies">Cookies</h2>
+  <p>This website does not use advertising or tracking cookies. Some pages show maps and videos from Google Maps, YouTube and Vimeo, and those services may set their own cookies when they load. They load only after you choose Accept all (or switch on Maps and videos under Customise), or press Show on a single map or video. Reject all keeps them off.</p>
+  <p>Your choice is kept in one small cookie on your device (bn_consent) for a year. You can change it at any time with Cookie preferences at the bottom of every page.</p>
+</Page>
+)}

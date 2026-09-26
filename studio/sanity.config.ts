@@ -6,8 +6,8 @@ import {HomeIcon} from '@sanity/icons/Home'
 import {schemaTypes} from './schemaTypes'
 
 // FAQs and Reviews are one fixed document each: no "create new", no delete, no duplicate.
-// The Homepage and About page are always linked from the site, so they get the same protection.
-const SINGLETONS = new Set(['faqs', 'reviews'])
+// The Homepage, About us and About Bhutan are always linked from the site, so they get the same protection.
+const SINGLETONS = new Set(['faqs', 'reviews', 'settings'])
 
 export default defineConfig({
   name: 'default',
@@ -39,7 +39,7 @@ export default defineConfig({
             S.divider(),
             ...[...SINGLETONS].map((id) =>
               S.listItem()
-                .title(id === 'faqs' ? 'FAQs' : 'Reviews')
+                .title(id === 'faqs' ? 'FAQs' : id === 'reviews' ? 'Reviews' : 'Site settings')
                 .id(id)
                 .schemaType(id)
                 .child(S.document().schemaType(id).documentId(id)),
@@ -58,7 +58,7 @@ export default defineConfig({
 
   document: {
     actions: (actions, {schemaType, documentId}) =>
-      SINGLETONS.has(schemaType) || ['home', 'page-about'].includes(documentId ?? '')
+      SINGLETONS.has(schemaType) || ['home', 'page-about', 'page-about-bhutan'].includes(documentId ?? '')
         ? actions.filter(({action}) => action && ['publish', 'discardChanges', 'restore'].includes(action))
         : actions,
   },

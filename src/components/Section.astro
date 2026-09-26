@@ -1,0 +1,27 @@
+---
+// One page section: the section and its container, the title (with its intro and anything passed in the 'head' slot),
+// then the body (the default slot). rail wraps the body in a swipe row (id rail-<rail>) with arrows in the title row;
+// link puts a "see all" beside the title from 768px and a copy under the body on phones. hideHeading keeps the title for
+// screen readers only. The section carries ...rest (id, the caller's scope), so a caller's class can style it.
+import LinkMore from './LinkMore.astro';
+import Arrows from './Arrows.astro';
+interface Props {
+  heading: string; text?: string; grey?: boolean; hideHeading?: boolean; link?: { href: string; label: string };
+  rail?: string; railLabel?: string; railClass?: string; class?: string; [attr: string]: unknown;
+}
+// slot: a caller's slot="…" names where the section goes in its layout; it isn't an attribute of the section
+const { heading, text, grey = false, hideHeading = false, link, rail, railLabel = 'items', railClass, class: cls, slot: _slot, ...rest } = Astro.props;
+const railId = rail && `rail-${rail}`;
+---
+<section class:list={['section', { 'section--grey': grey }, cls]} {...rest}>
+  <div class="container">
+    <div class:list={['sh', { 'sh--row': link || rail, 'sr-only': hideHeading }]} data-reveal>
+      <h2>{heading}</h2>
+      {text && <p>{text}</p>}
+      <slot name="head" />
+      {(link || railId) && <div class="sh__act">{link && <LinkMore {...link} />}{railId && <Arrows target={railId} label={railLabel} />}</div>}
+    </div>
+    {railId ? <div class:list={['rail', railClass]} id={railId} data-reveal="stagger"><slot /></div> : <slot />}
+    {link && <LinkMore class="m-only" {...link} />}
+  </div>
+</section>

@@ -1,19 +1,20 @@
 ---
 // Every page on one list, grouped like the menu (linked from the footer). Search engines read /sitemap-index.xml.
 import { getCollection } from 'astro:content';
-import Base from '../layouts/Base.astro';
-import WhatsAppCta from '../components/WhatsAppCta.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Page from '../layouts/Page.astro';
 import { TOURS, DESTINATIONS, catPath, tourPath, topicName, slug } from '../utils';
 
 const byOrder = <T extends { data: { order: number } }>(a: T, b: T) => a.data.order - b.data.order;
 const cats = (await getCollection('categories')).sort(byOrder);
 const tours = await getCollection('tours');
 const destinations = (await getCollection('destinations')).sort(byOrder);
-const sights = (await getCollection('sights')).filter((s) => s.data.page);
+const sights = await getCollection('sights');
 const guides = (await getCollection('guides')).sort(byOrder);
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
-const pages = (await getCollection('pages', (p) => p.id !== 'home')).sort((a, b) => a.data.title.localeCompare(b.data.title));
+// /privacy/ always exists (privacy.astro), so it's listed by hand; the booking terms only once their Studio page is published.
+const pages = (await getCollection('pages', (p) => !['home', 'privacy'].includes(p.id))).sort((a, b) => a.data.title.localeCompare(b.data.title));
+const isLegal = (p: (typeof pages)[number]) => ['privacy', 'cancellation-policy'].includes(p.id);
+const pageLink = (p: (typeof pages)[number]): Link => [p.data.title, `/${p.id}/`];
 
 type Link = [string, string, Link[]?];
 const groups: [string, Link[]][] = [
@@ -24,43 +25,36 @@ const groups: [string, Link[]][] = [
   ['Travel guide', [['All guides', '/travel-guide/'], ...[...new Set(guides.map((g) => g.data.group))].map((g): Link => [topicName(g), `/travel-guide/#${slug(g)}`,
     guides.filter((x) => x.data.group === g).map((x): Link => [x.data.title, `/travel-guide/${x.id}/`])])]],
   ['Blog', [['All articles', '/blog/'], ...posts.map((p): Link => [p.data.title, `/blog/${p.id}/`])]],
-  ['About', [['Home', '/'], ...pages.map((p): Link => [p.data.title, `/${p.id}/`]), ['Contact us', '/contact/'], ['Search', '/search/'], ['Privacy policy', '/privacy/'], ['Cancellation policy', '/cancellation-policy/']]],
+  ['About', [['Home', '/'], ...pages.filter((p) => !isLegal(p)).map(pageLink), ['Contact us', '/contact/'], ['Search', '/search/'], ['Privacy policy', '/privacy/'], ['Cancellation policy', '/cancellation-policy/']]],
 ];
 ---
-<Base title="Sitemap" description="Every page on the Bhutanova Travels website: tours, destinations, travel guides and articles.">
-  <section class="section">
-    <div class="container">
-      <Breadcrumbs items={[['Sitemap']]} />
-      <h1>Sitemap</h1>
-      <div class="map">
-        {groups.map(([title, links]) => (
-          <nav aria-labelledby={`sm-${title}`}>
-            <h2 id={`sm-${title}`} class="t-card">{title}</h2>
-            <ul class="t-body">
-              {links.map(([text, href, sub]) => (
-                <li>
-                  <a href={href}>{text}</a>
-                  {sub && sub.length > 0 && <ul>{sub.map(([t, h]) => <li><a href={h}>{t}</a></li>)}</ul>}
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
-      </div>
-    </div>
-  </section>
-  <WhatsAppCta />
-</Base>
+<Page title="Sitemap" description="Every page on the Bhutanova Travels website: tours, destinations, travel guides and articles.">
+  <div class="map">
+    {groups.map(([title, links]) => (
+      <nav aria-labelledby={`sm-${title}`}>
+        <h2 id={`sm-${title}`} class="t-card">{title}</h2>
+        <ul class="t-body">
+          {links.map(([text, href, sub]) => (
+            <li>
+              <a href={href}>{text}</a>
+              {sub && sub.length > 0 && <ul>{sub.map(([t, h]) => <li><a href={h}>{t}</a></li>)}</ul>}
+            </li>
+          ))}
+        </ul>
+      </nav>
+    ))}
+  </div>
+</Page>
 <style>
-  .container > :global(.crumbs) { margin-bottom: var(--space-4); }
-  .map { display: grid; gap: var(--space-12) var(--grid-gap); margin-top: var(--stack); }
-  @media (min-width: 768px) { .map { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (min-width: 1200px) { .map { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  /* The groups flow down balanced columns (Destinations is three times longer than the rest), never split mid-group */
+  .map { columns: 1; column-gap: var(--grid-gap); }
+  .map > * { break-inside: avoid; margin-bottom: var(--space-12); }
+  @media (min-width: 768px) { .map { columns: 2; } }
+  @media (min-width: 1200px) { .map { columns: 3; } }
   h2 { margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom: 1px solid var(--border); }
   ul { list-style: none; margin: 0; padding: 0; color: var(--text-2); }
   li + li { margin-top: var(--space-2); }
   ul ul { margin: var(--space-2) 0 var(--space-3); padding-left: var(--space-4); border-left: 1px solid var(--border); }
-  a { color: var(--ink); text-decoration: underline 1px transparent; text-underline-offset: 4px; transition: text-decoration-color var(--dur-1); }
-  ul ul a { color: var(--text-2); }
-  @media (hover: hover) { a:hover { color: var(--ink); text-decoration-color: var(--p-500); } }
+  a { --link-rest: var(--ink); }
+  ul ul a { --link-rest: var(--text-2); }
 </style>

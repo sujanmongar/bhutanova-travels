@@ -1,7 +1,8 @@
 ---
 // A short signed note from the founder. Desktop: portrait beside the note. Phones: the portrait shrinks into the
 // signature, so the note isn't pushed a screen down. Name, role and photo come from the Team member it's signed by.
-import Icon from '../Icon.astro';
+import LinkMore from '../LinkMore.astro';
+import PersonSign from '../PersonSign.astro';
 import { img, srcset, focal, type BlockImage } from '../../config';
 import { ptParagraphs } from '../../pt';
 interface Props { heading: string; text?: any[]; person?: { name: string; role: string; photo?: BlockImage} | null; linkLabel?: string; linkHref?: string; grey?: boolean }
@@ -20,13 +21,8 @@ const photo = person?.photo;
     <div class="fn__txt" data-reveal>
       <h2>{heading}</h2>
       <div class="fn__body">{ptParagraphs(text).map((p) => <p class="t-body" set:html={p} />)}</div>
-      {person && (
-        <div class="fn__sign">
-          {photo && <img class="fn__avatar" src={img(photo.url, 128, 128, photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
-          <p><span class="t-card">{person.name}</span><span class="t-label muted">{person.role}, Bhutanova Travels</span></p>
-        </div>
-      )}
-      {linkLabel && linkHref && <a class="link-more" href={linkHref}><span>{linkLabel}</span><Icon name="arrow-up-right" /></a>}
+      {person && <PersonSign person={person} class="fn__sign" />}
+      {linkLabel && linkHref && <LinkMore href={linkHref} label={linkLabel} />}
     </div>
   </div>
 </section>
@@ -37,15 +33,12 @@ const photo = person?.photo;
   .fn__photo img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   .fn__body { display: grid; gap: var(--space-4); margin-top: var(--space-6); max-width: 60ch; }
   .fn__body p { color: var(--text-2); }
-  .fn__sign { display: flex; align-items: center; gap: var(--space-4); margin-top: var(--space-8); }
-  .fn__sign p { display: grid; gap: var(--space-1); }
-  .fn__avatar { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-50); }
+  .fn__sign { margin-top: var(--space-8); }
   .link-more { margin-top: var(--space-6); }
   @media (min-width: 768px) {
     .fn { grid-template-columns: 5fr 7fr; gap: var(--space-12); }
     .fn__photo { display: block; }
-    .fn__note { margin-top: var(--space-3); }
-  .fn__avatar { display: none; }
+    .fn__sign :global(img) { display: none; }  /* the portrait is beside the note here */
   }
   @media (min-width: 1024px) { .fn { gap: var(--space-20); } }
 </style>

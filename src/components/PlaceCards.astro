@@ -1,33 +1,59 @@
 ---
-// Photo cards for places — destinations and sights. One style everywhere a place links to its page.
+// Cards for places, shaped so each kind reads differently from the tour cards (photo, name, days and price):
+//   destination: a wide card, the photo beside the name and two lines (a place to go); tour themes keep the tall
+//                photo with the name on it, tours the landscape photo with days and price
+//   attraction:  a square photo beside the name and two lines, in columns (a stop inside a place); the photos are small,
+//                so a sight showing its destination's photo until it has its own doesn't fill rows with the same picture
 import { img, srcset } from '../config';
-interface Props { items: { href: string; image: string; title: string; text: string }[] }
-const { items } = Astro.props;
+interface Props { items: { href: string; image: string; title: string; text: string }[]; kind: 'destination' | 'attraction' }
+const { items, kind } = Astro.props;
 ---
-<ul class="grid-3 places" data-reveal="stagger">
-  {items.map((p) => (
-    <li>
-      <a href={p.href}>
-        <img src={img(p.image, 800, 600)} srcset={srcset(p.image, [400, 600, 900, 1200], 4 / 3)}
-          sizes="(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, calc(100vw - 32px)"
-          alt="" width="800" height="600" loading="lazy" decoding="async" />
-        <div class="places__body">
-          <h3 class="t-card">{p.title}</h3>
-          <p class="t-body">{p.text}</p>
-        </div>
-      </a>
-    </li>
-  ))}
-</ul>
+{kind === 'destination' ? (
+  <ul class="dest" data-reveal="stagger">
+    {items.map((p) => (
+      <li>
+        <a href={p.href}>
+          <img src={img(p.image, 720, 540)} srcset={srcset(p.image, [360, 540, 720, 1080], 4 / 3)}
+            sizes="(min-width:1200px) 300px, (min-width:768px) calc(25vw - 16px), calc(100vw - 32px)" alt="" width="720" height="540" loading="lazy" decoding="async" />
+          <div class="dest__txt">
+            <h3 class="t-card">{p.title}</h3>
+            <p class="t-body">{p.text}</p>
+          </div>
+        </a>
+      </li>
+    ))}
+  </ul>
+) : (
+  <ul class="att" data-reveal="stagger">
+    {items.map((p) => (
+      <li>
+        <a href={p.href}>
+          <img src={img(p.image, 240, 240)} srcset={srcset(p.image, [120, 240, 360], 1)} sizes="120px" alt="" width="120" height="120" loading="lazy" decoding="async" />
+          <div><h3 class="t-card">{p.title}</h3><p class="t-body">{p.text}</p></div>
+        </a>
+      </li>
+    ))}
+  </ul>
+)}
 <style>
-  .places { row-gap: var(--space-12); }
-  .places a { display: block; color: inherit; }
-  /* Same photo height as every other card */
-  .places img { width: 100%; height: var(--card-photo); object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
-  .places__body { padding-top: var(--space-4); }
-  .places p { margin-top: var(--space-3); color: var(--text-2); }
-  @media (hover: hover) {
-    .places a:hover img { scale: 1.02; }
-    .places a:hover h3 { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
-  }
+  /* Destinations: wide cards, the photo on one side and the name (a size up from the card title) with two lines beside it;
+     two per row from 768px. Phones: photo on top. Attractions below are the small version of the same idea. */
+  .dest { display: grid; gap: var(--space-10) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .dest { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .dest a { display: grid; gap: var(--space-4); color: inherit; }
+  .dest img { width: 100%; aspect-ratio: 4 / 3; height: auto; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
+  .dest__txt { display: grid; gap: var(--space-3); align-content: center; }
+  .dest p { color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  /* From 1024px the photo sits beside the words */
+  @media (min-width: 1024px) { .dest a { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-6); align-items: center; } }
+
+  /* Attractions: square photo + name + two lines, spaced without lines; one column, two from 768px, three from 1200px */
+  .att { display: grid; gap: var(--space-8) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
+  @media (min-width: 768px) { .att { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (min-width: 1200px) { .att { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .att a { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--space-4); align-items: start; color: inherit; }
+  .att img { width: 120px; height: 120px; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); transition: scale var(--dur-4) var(--ease-out); }
+  .att p { margin-top: var(--space-2); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  @media (max-width: 479px) { .att a { grid-template-columns: 96px minmax(0, 1fr); } .att img { width: 96px; height: 96px; } }
+
 </style>

@@ -1,19 +1,25 @@
 // Shared by the header's live suggestions and the full /search/ page, so both group results the same way.
-import arrowSvg from '../icons/arrow-up-right.svg?raw';
+import { arrowIcon as arrow } from '../utils';
 
-export type SearchItem = { t: string; k: string; u: string };
-export type Group = { key: string; label: string; items: SearchItem[] };
+export type SearchItem = { t: string; k: string; u: string; x?: string };
+type Group = { key: string; label: string; items: SearchItem[] };
 
 const KIND: Record<string, string> = { Tour: 'Tours', Category: 'Tour themes', Destination: 'Destinations', Sight: 'Places to see', Guide: 'Travel guides', Article: 'Blog articles', Page: 'Pages' };
 const ORDER = Object.keys(KIND);
 
-const arrow = arrowSvg.replace('<svg', '<svg class="icon" aria-hidden="true" focusable="false"');
+const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-export const escHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+// Lower case, apostrophes and punctuation dropped ("Tiger's Nest" = "tigers nest"), so typing the way people do still finds it
+const norm = (s: string) => s.toLowerCase().replace(/['’`]/g, '').replace(/[^a-z0-9]+/g, ' ');
+const COSTS = /\b(price|prices|cost|costs|budget|cheap|fee|fees)\b/;
 
+/** Every word typed must appear in the title or the extra words (theme, days, region, a guide's summary); title hits first. */
 export function matches(index: SearchItem[], q: string): SearchItem[] {
-  const needle = q.trim().toLowerCase();
-  return needle ? index.filter((r) => r.t.toLowerCase().includes(needle)) : [];
+  const words = norm(q).split(' ').filter(Boolean).map((w) => (COSTS.test(w) ? 'cost' : w));
+  if (!words.length) return [];
+  const hay = (r: SearchItem) => norm(`${r.t} ${r.x ?? ''} ${COSTS.test(norm(`${r.t} ${r.x ?? ''}`)) ? 'cost' : ''}`);
+  const found = index.filter((r) => words.every((w) => hay(r).includes(w)));
+  return found.sort((a, b) => Number(!words.every((w) => norm(a.t).includes(w))) - Number(!words.every((w) => norm(b.t).includes(w))));
 }
 
 export function groupByKind(items: SearchItem[]): Group[] {
@@ -37,7 +43,7 @@ export function suggestionsHTML(groups: Group[], q: string, perGroup = 4): strin
 /** The full /search/ page — every match, grouped, no cap. */
 export function resultsHTML(groups: Group[]): string {
   return groups
-    .map((g) => `<li class="results__group"><h2>${g.label}<span class="num">${g.items.length}</span></h2><ul>${g.items
+    .map((g) => `<li class="results__group"><p>${g.label}<span class="num">${g.items.length}</span></p><ul>${g.items
       .map((r) => `<li><a href="${r.u}">${escHtml(r.t)}</a></li>`)
       .join('')}</ul></li>`)
     .join('');

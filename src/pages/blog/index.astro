@@ -1,34 +1,31 @@
 ---
+import { pageBanner } from '../../config';
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
+import MatchedTours from '../../components/MatchedTours.astro';
 import BlogCard from '../../components/BlogCard.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import BannerImg from '../../components/BannerImg.astro';
+import Banner from '../../components/Banner.astro';
 import TabBar from '../../components/TabBar.astro';
+import Section from '../../components/Section.astro';
 import { slug } from '../../utils';
 const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
 const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
-const hero = 'photo-1585904194096-15ef66ccd234';
+const { seo, ...b } = pageBanner('blog', { heading: 'Blog', line: 'Articles on festivals, food, trekking and travelling in Bhutan, from our team in Thimphu.', image: 'photo-1585904194096-15ef66ccd234', alt: 'Masked dancers at a Bhutanese tshechu' });
 ---
-<Base title="Blog – articles from Bhutan" description="Articles on festivals, food, trekking and hidden valleys, from our team in Thimphu." image={hero}>
-  <section class="banner">
-    <BannerImg src={hero} alt="Masked dancers at a Bhutanese tshechu" />
-    <div><Breadcrumbs items={[['Blog']]} light /><h1>Blog</h1><p class="banner__line">Articles on festivals, food, trekking and travelling in Bhutan, from our team in Thimphu.</p></div>
-  </section>
+<Base title="Blog – articles from Bhutan" description="Articles on festivals, food, trekking and hidden valleys, from our team in Thimphu." image={b.image} seo={seo}>
+  <Banner {...b} crumbs={[['Blog']]} />
   <TabBar label="Filter articles by topic" filter>
     <button class="t-label" type="button" aria-pressed="true" data-topic="">All articles</button>
     {tags.map((t) => <button class="t-label" type="button" aria-pressed="false" data-topic={slug(t)}>{t}</button>)}
   </TabBar>
-  <section class="section">
-    <div class="container">
-      <h2 class="sr-only">All articles</h2>
-      <p class="sr-only" aria-live="polite" data-status></p>
-      <ul class="grid-3 posts" data-reveal="stagger">
-        {posts.map((p) => <li data-tags={p.data.tags.map(slug).join(' ')}><BlogCard post={p} /></li>)}
-      </ul>
-    </div>
-  </section>
+  <Section heading="All articles" hideHeading>
+    <p class="sr-only" aria-live="polite" data-status></p>
+    <ul class="grid-3 posts" data-reveal="stagger">
+      {posts.map((p) => <li data-tags={p.data.tags.map(slug).join(' ')}><BlogCard post={p} /></li>)}
+    </ul>
+  </Section>
+  <MatchedTours heading="Where to start" />
   <WhatsAppCta />
 </Base>
 <script>
@@ -49,7 +46,7 @@ const hero = 'photo-1585904194096-15ef66ccd234';
     const url = new URL(location.href);
     topic ? url.searchParams.set('topic', topic) : url.searchParams.delete('topic');
     history.replaceState(null, '', url);
-    if (announce) status.textContent = `${shown} ${shown === 1 ? 'post' : 'posts'} shown`;
+    if (announce) status.textContent = `${shown} ${shown === 1 ? 'article' : 'articles'} shown`;
   };
   // Changing topic while the tabs are stuck to the top: bring the start of the list back up under them
   const list = document.querySelector<HTMLElement>('.posts')!;
@@ -64,6 +61,4 @@ const hero = 'photo-1585904194096-15ef66ccd234';
 <style>
   /* The filter needs JS; without it every post simply shows */
   @media (scripting: none) { :global(.tabbar) { display: none; } }
-  .posts { row-gap: var(--space-10); }
-  .posts > li[hidden] { display: none; }
 </style>

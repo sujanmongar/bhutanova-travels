@@ -1,6 +1,6 @@
 ---
 import '../styles/global.css';
-import serifUrl from '@fontsource-variable/fraunces/files/fraunces-latin-opsz-normal.woff2?url';
+import serifUrl from '../fonts/fraunces-latin-opsz-normal-400.woff2?url';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import TripPlanner from '../components/TripPlanner.astro';
@@ -23,28 +23,41 @@ interface Props {
 }
 const { title, type = 'website', published, schema, seo = {}, photos } = Astro.props;
 const description = seo.description || Astro.props.description || SITE.description;
-const image = seo.image || Astro.props.image || 'photo-1578556881786-851d4b79cb73';
+// Default share image: the one set in Site settings, else a stock photo
+const shareImage = SITE.ogImage || 'photo-1578556881786-851d4b79cb73';
+const image = seo.image || Astro.props.image || shareImage;
 const noindex = Astro.props.noindex || seo.noindex;
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const fullTitle = seo.title || (Astro.url.pathname === '/' ? `${SITE.name} | ${SITE.tagline}` : `${title} | ${SITE.name}`);
 const ogImage = img(image, 1200, 630);
 
+// SITE.address as typed in Site settings ("4730 Babesa, Thimphu, Bhutan"): the last part is the town, the rest the street
+const street = SITE.address.split(',').map((p) => p.trim()).filter((p) => p && !/^bhutan$/i.test(p));
+const town = street.length > 1 ? street.pop() : undefined;
+// Real profiles only: '#', empty or a bare network home page (https://facebook.com/) is a placeholder
+const sameAs = Object.entries(SITE.social).filter(([k, u]) => k !== 'whatsapp' && /^https?:\/\/[^/]+\/./.test(u || '')).map(([, u]) => u);
+const orgId = new URL('/#org', Astro.site).href;
 const org = {
   '@context': 'https://schema.org',
   '@type': 'TravelAgency',
-  '@id': new URL('/#org', Astro.site).href,
+  '@id': orgId,
   name: SITE.name,
   url: Astro.site?.href,
   logo: new URL('/favicon.svg', Astro.site).href,
-  image: ogImage,
+  image: img(shareImage, 1200, 630),  // one brand image, not each page's photo
   email: SITE.email,
   telephone: SITE.phone,
-  address: { '@type': 'PostalAddress', streetAddress: '4730 Babesa', addressLocality: 'Thimphu', addressCountry: 'BT' },
+  address: { '@type': 'PostalAddress', streetAddress: street.join(', '), addressLocality: town, addressCountry: 'BT' },
   areaServed: { '@type': 'Country', name: 'Bhutan' },
-  // Real profiles only: a bare network home page (https://facebook.com/) is a placeholder
-  sameAs: Object.entries(SITE.social).filter(([k, u]) => k !== 'whatsapp' && u.startsWith('http')).map(([, u]) => u),
+  // Only while the hours shown still read Mon–Sat 9am–6pm, so an edit in Site settings can't leave Google wrong hours
+  openingHoursSpecification: /^mon\S*\s*[–-]\s*sat\S*,?\s*9\s*am\s*[–-]\s*6\s*pm/i.test(SITE.hours)
+    ? { '@type': 'OpeningHoursSpecification', dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'], opens: '09:00', closes: '18:00' }
+    : undefined,
+  sameAs: sameAs.length ? sameAs : undefined,
 };
-const ld = [org, ...(schema ? [schema].flat() : [])];
+// Home page: WebSite, so Google shows the brand (not the domain) as the site name
+const site = Astro.url.pathname === '/' && { '@context': 'https://schema.org', '@type': 'WebSite', '@id': new URL('/#website', Astro.site).href, name: SITE.name, alternateName: 'Bhutanova', url: Astro.site?.href, publisher: { '@id': orgId } };
+const ld = [org, ...(site ? [site] : []), ...(schema ? [schema].flat() : [])];
 ---
 <!doctype html>
 <html lang="en">
@@ -53,10 +66,12 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
+    {SITE.verify?.google && <meta name="google-site-verification" content={SITE.verify.google} />}
+    {SITE.verify?.bing && <meta name="msvalidate.01" content={SITE.verify.bing} />}
     <meta name="theme-color" content="#162e44" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="preload" href={serifUrl} as="font" type="font/woff2" crossorigin />
     <link rel="preconnect" href="https://images.unsplash.com" />
@@ -68,7 +83,7 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!noindex && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -82,12 +97,13 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
+    {/* First after the skip link, so while the card shows it's the first Tab stop, not one hidden behind it */}
+    <CookieNotice />
     <Header />
     <main id="main"><slot /></main>
     <Footer />
     {/* The one short enquiry form: every Enquire / Plan / Customise button on the site opens it */}
     <TripPlanner tours={await getCollection('tours')} />
-    <CookieNotice />
     <Lightbox photos={photos} fill={!!photos?.length} label={photos?.length ? `${title} photos` : 'Photos'} />
     <script>
       const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
@@ -121,6 +137,14 @@ const ld = [org, ...(schema ? [schema].flat() : [])];
         prev.onclick = () => box.scrollBy({ left: -step(), behavior: smooth });
         next.onclick = () => box.scrollBy({ left: step(), behavior: smooth });
         box.addEventListener('scroll', sync, { passive: true });
+        // Tabbing to a card half off-screen: bring it in (scroll-snap would otherwise snap back to the first card)
+        box.addEventListener('focusin', (e) => {
+          const card = [...box.children].find((c) => c.contains(e.target as Node));
+          if (!card) return;
+          const r = card.getBoundingClientRect(), b = box.getBoundingClientRect();
+          // Next frame: the browser's own focus scroll runs after this event and would cancel a smooth scroll started now
+          if (r.left < b.left - 1 || r.right > b.right + 1) requestAnimationFrame(() => card.scrollIntoView({ inline: 'start', block: 'nearest', behavior: smooth }));
+        });
         addEventListener('resize', sync);
         sync();
       });

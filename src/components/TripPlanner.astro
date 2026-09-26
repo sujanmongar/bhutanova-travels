@@ -7,14 +7,15 @@
 // sets the sheet's title.
 // Inline (the contact page): the same form on the page, where any message can be sent, so the trip fields are optional.
 import type { CollectionEntry } from 'astro:content';
+import WaButton from './WaButton.astro';
 import Form from './Form.astro';
-import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
 import { SITE, img } from '../config';
+import { usd } from '../utils';
 
 interface Props { tours?: CollectionEntry<'tours'>[]; inline?: boolean }
 const { tours = [], inline = false } = Astro.props;
-const presets = Object.fromEntries(tours.map((t) => [t.id, { title: t.data.title, days: t.data.days, price: t.data.price, image: img(t.data.image, 288, 216) }]));
-const waNumber = SITE.phone.replace(/\D/g, '');
+const presets = Object.fromEntries(tours.map((t) => [t.id, { title: t.data.title, days: t.data.days, price: usd(t.data.price), image: img(t.data.image, 288, 216) }]));
 const now = new Date();
 const months = Array.from({ length: 18 }, (_, i) => new Date(now.getFullYear(), now.getMonth() + i, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }));
 const id = (name: string) => `${inline ? 'c' : 'p'}-${name}`;  // the sheet is on the contact page too
@@ -26,7 +27,7 @@ const Tag = inline ? 'div' : 'dialog';
     {!inline && (
       <div class="sheet__head">
         <p class="t-card" id="plan-title" data-title>Plan your trip</p>
-        <button type="button" class="sheet__close" aria-label="Close" data-close><Icon name="close" /></button>
+        <IconButton icon="close" label="Close" data-close />
       </div>
     )}
     {!inline && (
@@ -35,31 +36,30 @@ const Tag = inline ? 'div' : 'dialog';
           <img src="" alt="" width="96" height="72" data-based-img />
           <div><p class="t-title" data-based-title></p><p class="t-label muted" data-based-meta></p></div>
         </div>
-        <a class="btn btn--outline btn--wa btn--lg btn--block" href={`https://wa.me/${waNumber}`} target="_blank" rel="noopener" data-wa-link data-wa={waNumber}>
-          <Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span>
-        </a>
+        <WaButton href={`https://wa.me/${SITE.whatsapp}`} label="Chat on WhatsApp" size="lg" block data-wa-link data-wa={SITE.whatsapp} />
         <p class="or t-caption muted">Or send your details by email</p>
       </>
     )}
     <Form subject={inline ? 'Website message' : 'Trip enquiry'} class="planner__form">
       <input type="hidden" name="tour" value="" data-tour />
+      <p class="t-caption subtle">* Required</p>
       {/* Who you are first, then the trip (travellers, days, when) and anything else. The contact page, where any message
           can be sent: who you are, the message, then the trip details as optional. */}
       {inline ? (
         <>
         <div class="field who"><label for={id('name')}>Full name *</label><input class="input" id={id('name')} name="name" autocomplete="name" required /></div>
-        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required /></div>
-        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
-        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="muted">(optional)</span></>}</label>
-          <textarea class="input" id={id('notes')} name="notes" rows={inline ? 4 : 3}
+        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="A full email address, like name@gmail.com" /></div>
+        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="t-caption muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
+        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="t-caption muted">(optional)</span></>}</label>
+          <textarea class="input" id={id('notes')} name="notes" rows={inline ? 4 : 3} aria-required="true"
             placeholder={inline ? 'Your question, or the trip you have in mind: places, hotels, a festival…' : "Places you'd like to see, the kind of hotels, a festival, children's ages…"}></textarea>
         </div>
         <p class="sub t-label">Planning a trip? <span class="muted">(optional)</span></p>
         <div class="row trip">
           <div class="field"><label for={id('guests')}>{inline ? 'Travellers' : 'Travellers *'}</label>
             <input class="input" id={id('guests')} name="travellers" type="number" inputmode="numeric" min="1" value={inline ? undefined : '2'} placeholder={inline ? 'e.g. 2' : undefined} required={!inline} /></div>
-          <div class="field"><label for={id('days')}>{inline ? 'Days' : 'Days *'}</label>
-            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="2" max="30" placeholder="e.g. 7" required={!inline} /></div>
+          <div class="field"><label for={id('days')}>Days <span class="t-caption muted">(if you know)</span></label>
+            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="1" max="30" placeholder="e.g. 7" /></div>
         </div>
         <div class="field when"><label for={id('when')}>When</label>
           <select class="input" id={id('when')} name="when"><option value="">Flexible / not decided yet</option>{months.map((m) => <option>{m}</option>)}</select>
@@ -68,27 +68,28 @@ const Tag = inline ? 'div' : 'dialog';
       ) : (
         <>
         <div class="field who"><label for={id('name')}>Full name *</label><input class="input" id={id('name')} name="name" autocomplete="name" required /></div>
-        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required /></div>
-        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
+        <div class="field"><label for={id('email')}>Email *</label><input class="input" id={id('email')} name="email" type="email" autocomplete="email" required pattern="[^@\s]+@[^@\s]+\.[^@\s]+" title="A full email address, like name@gmail.com" /></div>
+        <div class="field"><label for={id('phone')}>Phone or WhatsApp <span class="t-caption muted">(optional)</span></label><input class="input" id={id('phone')} name="phone" type="tel" autocomplete="tel" placeholder="With country code, e.g. +1 555 0000" /></div>
         <div class="row trip">
           <div class="field"><label for={id('guests')}>{inline ? 'Travellers' : 'Travellers *'}</label>
             <input class="input" id={id('guests')} name="travellers" type="number" inputmode="numeric" min="1" value={inline ? undefined : '2'} placeholder={inline ? 'e.g. 2' : undefined} required={!inline} /></div>
-          <div class="field"><label for={id('days')}>{inline ? 'Days' : 'Days *'}</label>
-            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="2" max="30" placeholder="e.g. 7" required={!inline} /></div>
+          <div class="field"><label for={id('days')}>Days <span class="t-caption muted">(if you know)</span></label>
+            <input class="input" id={id('days')} name="days" type="number" inputmode="numeric" min="1" max="30" placeholder="e.g. 7" /></div>
         </div>
         <div class="field when"><label for={id('when')}>When</label>
           <select class="input" id={id('when')} name="when"><option value="">Flexible / not decided yet</option>{months.map((m) => <option>{m}</option>)}</select>
         </div>
-        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="muted">(optional)</span></>}</label>
+        <div class="field msg"><label for={id('notes')}>{inline ? 'Your message *' : <>Anything else <span class="t-caption muted">(optional)</span></>}</label>
           <textarea class="input" id={id('notes')} name="notes" rows={inline ? 4 : 3}
             placeholder={inline ? 'Your question, or the trip you have in mind: places, hotels, a festival…' : "Places you'd like to see, the kind of hotels, a festival, children's ages…"}></textarea>
         </div>
         </>
       )}
-      <button class="btn btn--primary btn--lg btn--block">Send enquiry</button>
-      <p class="t-caption muted">{inline
-        ? 'We reply within 24 hours.'
-        : 'We reply with a day-by-day plan, then the price once places and stays are settled.'}</p>
+      <button class="btn btn--primary btn--lg btn--block">Send an enquiry</button>
+      <p class="t-caption muted">{SITE.promise}</p>
+      {/* The contact page (inline) prints its own line under the form. .meta gives the link global.css's text-link look,
+          which otherwise only reaches captions inside <main> (the sheet is outside it). */}
+      {!inline && <p class="meta t-caption subtle">By sending you agree to our <a href="/privacy/">privacy policy</a>.</p>}
     </Form>
   </div>
 </Tag>
@@ -113,10 +114,23 @@ const Tag = inline ? 'div' : 'dialog';
 
     // The sheet: opened empty, or for a tour
     const sheet = root as HTMLDialogElement;
-    const presets = JSON.parse(sheet.dataset.presets!) as Record<string, { title: string; days: number; price: number; image: string }>;
+    const presets = JSON.parse(sheet.dataset.presets!) as Record<string, { title: string; days: number; price: string; image: string }>;
     const based = $<HTMLElement>('[data-based]', sheet);
     const waLink = $<HTMLAnchorElement>('[data-wa-link]', sheet);
+    // The sheet's WhatsApp button sends what the visitor has already typed, so nothing has to be written twice
+    const chat = () => {
+      const v = (n: string) => field(n).value.trim();
+      const text = [
+        v('tour') ? `Hi Bhutanova Travels, I'd like a free plan for ${v('tour')}.` : "Hi Bhutanova Travels, I'd like a free trip plan.",
+        v('travellers') && `Travellers: ${v('travellers')}`, v('days') && `Days: ${v('days')}`, v('when') && `When: ${v('when')}`, v('notes'),
+        location.href.split('?')[0],
+      ].filter(Boolean).join('\n');
+      waLink.href = `https://wa.me/${waLink.dataset.wa}?text=${encodeURIComponent(text)}`;
+    };
+    form.addEventListener('input', chat);
     const open = (id: string | null, title?: string) => {
+      // After a sent enquiry the sheet showed its thank-you; opening it again starts a fresh form
+      if (form.hidden) { form.reset(); form.hidden = false; (form.nextElementSibling as HTMLElement).hidden = true; }
       const p = id ? presets[id] : undefined;
       field('days').value = p ? String(p.days) : '';
       field('tour').value = p ? `${p.title} (${p.days} days)` : '';
@@ -124,10 +138,9 @@ const Tag = inline ? 'div' : 'dialog';
       if (p) {
         $<HTMLImageElement>('[data-based-img]', based).src = p.image;
         $('[data-based-title]', based).textContent = p.title;
-        $('[data-based-meta]', based).textContent = `${p.days} days · from $${p.price.toLocaleString('en-US')} per person`;
+        $('[data-based-meta]', based).textContent = `${p.days} days · from ${p.price} per person`;
       }
-      const hello = p ? `Hello Bhutanova, I'm interested in ${p.title} (${p.days} days).` : 'Hello Bhutanova, I would like to plan a trip.';
-      waLink.href = `https://wa.me/${waLink.dataset.wa}?text=${encodeURIComponent(`${hello}\n${location.href.split('?')[0]}`)}`;
+      chat();
       $('[data-title]', sheet).textContent = title ?? (p ? 'Customise this trip' : 'Plan your trip');
       document.querySelectorAll<HTMLDialogElement>('dialog[open]').forEach((d) => d !== sheet && d.close());
       sheet.showModal();
@@ -135,9 +148,9 @@ const Tag = inline ? 'div' : 'dialog';
     sheet.addEventListener('click', (e) => { const t = e.target as Element; if (t === sheet || t.closest('[data-close]')) sheet.close(); });
     document.addEventListener('click', (e) => {
       const t = (e.target as Element).closest<HTMLElement>('[data-open-plan], [data-customise]');
-      if (!t) return;
-      e.preventDefault();
-      open(t.dataset.customise ?? null, t.dataset.planTitle);
+      if (!t || (t instanceof HTMLAnchorElement && (e.metaKey || e.ctrlKey || e.shiftKey))) return;
+      e.preventDefault();  // a link (href="/contact/", the no-JavaScript way in) opens the sheet instead of navigating
+      open(t.dataset.customise ?? document.querySelector<HTMLElement>('[data-page-tour]')?.dataset.pageTour ?? null, t.dataset.planTitle);
     });
     const start = new URL(location.href).searchParams.get('customise');
     if (start && presets[start]) open(start);
@@ -149,13 +162,11 @@ const Tag = inline ? 'div' : 'dialog';
   .planner :global(.planner__form) { display: grid; gap: var(--space-6); }
   .sub { padding-top: var(--space-6); border-top: 1px solid var(--border); color: var(--ink); }
   .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6) var(--space-4); }
-  .field .muted { font-weight: var(--fw-caption); }
   /* The chosen tour, as on the old enquiry sheet: photo, name, days and price */
   .enq-tour { display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-6); padding: var(--space-3); border-radius: var(--r-md); background: var(--surface); }
   .enq-tour[hidden] { display: none; }
   .enq-tour img { flex: none; width: 96px; height: 72px; border-radius: var(--r-sm); object-fit: cover; }
   .enq-tour .t-title { color: var(--ink); }
-  .planner > .sheet__in > .btn :global(.icon) { font-size: 20px; }
   .or { margin: var(--space-4) 0 var(--space-6); text-align: center; }
   @media (min-width: 768px) { .sheet.planner { width: min(480px, 100%); } }
 </style>

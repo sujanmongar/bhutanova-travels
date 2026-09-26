@@ -1,36 +1,95 @@
 ---
 import { SITE } from '../config';
 interface Props { subject: string; class?: string; id?: string }
-const { subject, class: cls, id } = Astro.props;
-// No endpoint yet → fall back to the visitor's mail app so enquiries are never lost.
-const action = SITE.formEndpoint || `mailto:${SITE.email}?subject=${encodeURIComponent(subject)}`;
+const { class: cls, id } = Astro.props;
+// Enquiries carry the owner's subject line (Studio → Site settings); the contact page's message keeps its own
+const subject = Astro.props.subject === 'Website message' ? Astro.props.subject : SITE.formSubject;
+// With a Web3Forms key the form sends in the page and says thanks. Without one (or if sending fails) the visitor's
+// mail app opens with the details written out, so an enquiry is never lost.
 ---
-<form class={cls} id={id} action={action} method="post" enctype={SITE.formEndpoint ? undefined : 'text/plain'} data-form data-email={SITE.email}>
-  <input type="hidden" name="_subject" value={subject} />
-  <input type="text" name="_gotcha" tabindex="-1" autocomplete="off" hidden />
+<form class={cls} id={id} method="post" action="https://api.web3forms.com/submit" data-form data-key={SITE.formKey} data-own={SITE.ownMailer ? '' : undefined} data-email={SITE.email} data-email-to={SITE.emailTo} data-subject={subject}>
+  <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" hidden />
+  {SITE.formKey && <input type="hidden" name="access_key" value={SITE.formKey} />}
+  <input type="hidden" name="subject" value={subject} />
   <slot />
-  <p class="form__status t-caption" aria-live="polite" data-form-status hidden></p>
+  <p class="form__status t-caption" role="status" data-form-status></p>
 </form>
+<div class="form__done" tabindex="-1" data-form-done hidden>
+  <p class="t-card" data-done-title>Thank you</p>
+  <p class="muted">{SITE.promise}</p>
+</div>
 
 <script>
-  // After a valid submit the button shows it is working (a double tap can't send twice) and one line says what happens
-  // next: "Sending…" to the form service, or that the email app is opening while there is no form service yet.
-  document.querySelectorAll<HTMLFormElement>('form[data-form]').forEach((form) => form.addEventListener('submit', () => {
+  const LABELS: Record<string, string> = { name: 'Name', email: 'Email', phone: 'Phone or WhatsApp', tour: 'Tour', travellers: 'Travellers', days: 'Days', when: 'When', notes: 'Message' };
+  // The details as plain lines, for the email fallback (skips empty fields and the spam trap)
+  const lines = (form: HTMLFormElement) => [...new FormData(form)].filter(([k, v]) => LABELS[k] && String(v).trim()).map(([k, v]) => `${LABELS[k]}: ${v}`).join('\n');
+  // The email's subject: the owner's subject, the guest's name, then the tour when there is one, so enquiries sort in the inbox
+  const title = (subject: string, d: FormData) => `${subject}: ${[String(d.get('name') || '').trim() || 'website', String(d.get('tour') || '').trim()].filter(Boolean).join(', ')}`;
+
+  document.querySelectorAll<HTMLFormElement>('form[data-form]').forEach((form) => {
     const btn = form.querySelector<HTMLButtonElement>('button:not([type="button"])');
-    const status = form.querySelector<HTMLElement>('[data-form-status]');
-    const mail = form.getAttribute('action')?.startsWith('mailto:');
-    if (btn) {
-      btn.setAttribute('aria-busy', 'true');
-      requestAnimationFrame(() => (btn.disabled = true));
-      setTimeout(() => { btn.disabled = false; btn.removeAttribute('aria-busy'); }, 4000);
-    }
-    if (status) {
-      status.hidden = false;
-      status.textContent = mail ? `Your email app should open with your details filled in. If it doesn't, write to ${form.dataset.email}.` : 'Sending your enquiry…';
-    }
-  }));
+    const status = form.querySelector<HTMLElement>('[data-form-status]')!;
+    const done = form.nextElementSibling as HTMLElement;
+    const { key, email, emailTo, subject } = form.dataset;
+    const useOwn = 'own' in form.dataset;
+    // The status stays in the page (empty until needed), so screen readers hear each message as it's set
+    const say = (text: string) => { status.textContent = text; };
+    const mail = () => {
+      location.href = `mailto:${emailTo}?subject=${encodeURIComponent(title(subject!, new FormData(form)))}&body=${encodeURIComponent(lines(form))}`;
+      say(`Your email app should open with your details filled in. If it doesn't, write to ${email}.`);
+    };
+
+    form.addEventListener('submit', async (e) => {
+      if (e.defaultPrevented) return;  // another check on the page (the contact form) stopped it
+      e.preventDefault();
+      btn?.setAttribute('aria-busy', 'true');
+      if (btn) btn.disabled = true;
+      say('Sending…');
+      const raw = new FormData(form);
+      if (raw.get('botcheck')) return;
+      raw.set('page', location.href);
+      raw.set('kind', subject === 'Website message' ? 'message' : 'enquiry');
+      // 1. The site's own sender (branded email, functions/api/enquiry.js)
+      const own = async () => {
+        const res = await fetch('/api/enquiry', { method: 'POST', body: raw, headers: { Accept: 'application/json' } });
+        return res.ok && (await res.json()).ok;
+      };
+      // 2. Web3Forms, if the own sender isn't set up or fails: clear labels in a set order, the guest as "Reply to"
+      const web3 = async () => {
+        if (!key) return false;
+        const data = new FormData();
+        data.set('access_key', key);
+        data.set('subject', title(subject!, raw));
+        data.set('from_name', 'Bhutanova Travels website');
+        data.set('replyto', String(raw.get('email') || ''));
+        for (const [k, label] of Object.entries(LABELS)) { const v = String(raw.get(k) ?? '').trim(); if (v) data.set(label, v); }
+        data.set('Sent from', location.href);
+        const res = await fetch('https://api.web3forms.com/submit', { method: 'POST', body: data, headers: { Accept: 'application/json' } });
+        return res.ok && (await res.json()).success;
+      };
+      try {
+        if (!(useOwn && (await own().catch(() => false))) && !(await web3())) throw new Error('not sent');
+        const first = String(raw.get('name') || '').trim().split(/\s+/)[0];
+        done.querySelector('[data-done-title]')!.textContent = first ? `Thank you, ${first}` : 'Thank you';
+        status.textContent = '';
+        form.hidden = true;
+        done.hidden = false;
+        done.focus();
+        form.dispatchEvent(new CustomEvent('form:sent', { bubbles: true }));
+      } catch {
+        mail();
+      } finally {
+        btn?.removeAttribute('aria-busy');
+        if (btn) btn.disabled = false;
+      }
+    });
+  });
 </script>
 <style>
   .form__status { grid-column: 1 / -1; color: var(--text-2); }
+  /* Empty: out of the grid (no gap for it) but still in the accessibility tree, like .sr-only */
+  .form__status:empty { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .form__done { display: grid; gap: var(--space-2); padding: var(--space-6); border-radius: var(--r-md); background: var(--surface); outline: none; }
+  .form__done[hidden], :global(form[data-form][hidden]) { display: none !important; }
   :global(.btn[aria-busy='true']) { opacity: .7; cursor: progress; }
 </style>

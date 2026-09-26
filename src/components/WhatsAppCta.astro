@@ -1,27 +1,20 @@
 ---
 // The closing "talk to us" card on every page: the full-width version of the sidebar support card (PlanCta), navy.
 // Heading and a line on the left; on the right the trip planner (the Team member picked in the homepage's "Plan your
-// trip" section), WhatsApp, a second button, phone and email. Sanity's WhatsApp card and Call to action blocks render it.
-import { getEntry } from 'astro:content';
-import Icon from './Icon.astro';
-import { SITE, img, wa, tel } from '../config';
+// trip" section; left out while it's a sample profile), WhatsApp, a second button, phone and email.
+// Sanity's WhatsApp card and Call to action blocks render it.
+import TalkPanel from './TalkPanel.astro';
+import { SITE, tel, mailto } from '../config';
 interface Props { title?: string; text?: string; about?: string; id?: string; cta?: string; href?: string; customise?: string }
 const {
   title = 'Not sure which trip fits?',
-  text = 'Message us on WhatsApp. We reply within 24 hours.',
+  text = `Message us on WhatsApp. ${SITE.promise}`,
   about,
   id = 'whatsapp',
   cta = 'Send an enquiry',
   href = '/contact/',
   customise,  // a tour id: the enquiry form opens with that tour filled in
 } = Astro.props;
-// The chat opens with this page's link (and this section's anchor) already in the message.
-const chat = wa(`${new URL(Astro.url.pathname, Astro.site).href}#${id}`, about);
-const home = await getEntry('pages', 'home');
-const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps') as any)?.person as
-  | { name: string; role: string; photo?: { url: string; hotspot?: { x: number; y: number } }}
-  | null
-  | undefined;
 ---
 <section class="section wa" id={id}>
   <div class="container">
@@ -31,17 +24,11 @@ const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps')
         {text && <p class="t-body">{text}</p>}
       </div>
       <div class="wa__talk">
-        {person && (
-          <div class="wa__who">
-            {person.photo && <img src={img(person.photo.url, 128, 128, person.photo.hotspot)} alt="" width="64" height="64" loading="lazy" decoding="async" />}
-            <p><span class="t-card">{person.name}</span><span class="t-label">{person.role}, Bhutanova Travels</span></p>
-          </div>
-        )}
-        <div class="wa__act">
-          <a class="btn btn--on-dark btn--wa" href={chat} target="_blank" rel="noopener"><Icon name="social_whatsapp" />Chat on WhatsApp<span class="sr-only"> (opens in a new tab)</span></a>
-          <a class="btn btn--light" href={href} data-open-plan={href === '/contact/' && !customise ? '' : undefined} data-customise={customise} data-plan-title={customise ? 'Enquire about this tour' : undefined}>{cta}</a>
-        </div>
-        <p class="wa__alt t-label"><span>Or call <a href={tel(SITE.phone)}>{SITE.phone}</a></span><span class="wa__dot" aria-hidden="true"> · </span><span><a href={`mailto:${SITE.email}`}>{SITE.email}</a></span></p>
+        <TalkPanel layout="row" anchor={id} about={about}
+          enquiry={{ label: cta, href: href === '/contact/' ? undefined : href, tour: customise, title: customise ? 'Enquire about this tour' : undefined }}>
+          <p class="wa__alt t-label"><span>Or call <a href={tel(SITE.phone)}>{SITE.phone}</a></span><span class="wa__dot" aria-hidden="true"> · </span><span><a href={mailto()}>{SITE.email}</a></span></p>
+          {SITE.hours && <p class="wa__alt t-label">{SITE.hours}</p>}
+        </TalkPanel>
       </div>
     </div>
   </div>
@@ -49,28 +36,18 @@ const person = (home?.data.sections.find((s: any) => s._type === 'bookingSteps')
 <style>
   .wa__card {
     display: grid; gap: var(--space-10); padding: var(--space-10) var(--space-6); border-radius: var(--radius); corner-shape: squircle;
-    background: var(--s-500); color: #fff; -webkit-font-smoothing: antialiased; --focus: #fff;
+    background: var(--s-500); color: var(--on-dark); -webkit-font-smoothing: antialiased; --focus: var(--on-dark);
   }
-  .wa__txt h2 { max-width: 18ch; color: #fff; }
+  .wa__txt h2 { max-width: 18ch; color: var(--on-dark); }
   .wa__txt p { margin-top: var(--space-4); max-width: 44ch; color: var(--on-dark-2); }
   .wa__talk { display: grid; gap: var(--space-4); justify-items: start; }
-  .wa__who { display: flex; align-items: center; gap: var(--space-4); }
-  .wa__who img { flex: none; width: 64px; height: 64px; border-radius: var(--r-full); object-fit: cover; background: var(--s-800); }
-  .wa__who p { display: grid; gap: var(--space-1); }
-  .wa__who .t-card { color: #fff; }
-  .wa__who .t-label, .wa__alt { color: var(--on-dark-2); }
-  .wa__act { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
-  .wa__act :global(.icon) { font-size: 18px; }
+  .wa__alt { color: var(--on-dark-2); }
   /* 44px tap targets for the phone and email */
-  .wa__alt a { display: inline-flex; align-items: center; min-height: 44px; color: #fff; text-decoration: underline 1px rgb(255 255 255 / .4); text-underline-offset: 4px; }
-  @media (hover: hover) { .wa__alt a:hover { text-decoration-color: var(--p-500); } }
-  @media (max-width: 479px) {
-    .wa__act { width: 100%; } .wa__act .btn { flex: 1 1 100%; }
-    /* Phone and email on their own lines, so no line ends in a dot */
-    .wa__alt span:not(.wa__dot) { display: block; } .wa__dot { display: none; }
-  }
+  .wa__alt a { display: inline-flex; align-items: center; min-height: 44px; }
+  /* Phone and email on their own lines at every width, so no line ever ends in a dot */
+  .wa__alt span:not(.wa__dot) { display: block; } .wa__dot { display: none; }
   @media (min-width: 768px) { .wa__card { padding: var(--space-12); } }
-  @media (min-width: 1024px) {
-    .wa__card { grid-template-columns: 7fr 5fr; gap: var(--space-16); align-items: center; padding: var(--space-16); }
-  }
+  /* Laptops: two even halves, so the planner and both buttons fit on one line each */
+  @media (min-width: 1024px) { .wa__card { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-12); align-items: center; } }
+  @media (min-width: 1200px) { .wa__card { grid-template-columns: 7fr 5fr; gap: var(--space-16); padding: var(--space-16); } }
 </style>

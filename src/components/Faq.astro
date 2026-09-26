@@ -2,17 +2,19 @@
 import { getEntry } from 'astro:content';
 import Icon from './Icon.astro';
 import { ldJson } from '../config';
+import { md, plainMd } from '../utils';
+interface Props { items?: { q: string; a: string }[]; open?: number }
 const { items = (await getEntry('faqs', 'faqs'))?.data.items ?? [], open = 0 } = Astro.props;
 const split = Astro.slots.has('default');
-const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f: { q: string; a: string }) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
+const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: plainMd(f.a) } })) };
 ---
 <div class:list={['faq', { 'faq--split': split }]}>
   {split && <div class="faq__head"><slot /></div>}
   <div class="faq__list">
-    {items.map((f: { q: string; a: string }, i: number) => (
+    {items.map((f, i) => (
       <details open={i === open} name="faq">
         <summary><h3 class="t-card">{f.q}</h3><Icon name="close" class="faq__tog" /></summary>
-        <p class="faq__a t-body">{f.a}</p>
+        <div class="faq__a t-body" set:html={md(f.a)} />
       </details>
     ))}
   </div>
@@ -25,20 +27,20 @@ const schema = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntit
   summary {
     display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-6); padding: var(--space-6) 0; cursor: pointer; list-style: none;
     color: var(--ink); -webkit-tap-highlight-color: transparent;
-    transition: color var(--dur-1);
   }
   summary::-webkit-details-marker { display: none; }
-  summary:hover { color: var(--s-500); }
   /* Phosphor X (Bold) turned 45° reads as a plus while closed, and turns back into an X when open */
-  summary :global(.faq__tog) { margin-top: var(--space-1); font-size: 14px; color: var(--s-500); rotate: 45deg; transition: rotate var(--dur-3) var(--ease-out); }
+  summary :global(.faq__tog) { margin-top: calc((var(--lh-card) * var(--fs-card) - var(--icon-md)) / 2); font-size: var(--icon-md); color: var(--s-500); rotate: 45deg; transition: rotate var(--dur-3) var(--ease-out); }
   details[open] :global(.faq__tog) { rotate: 0deg; }
   /* Same order as the why-us and booking-step items: title → 12px → answer in the muted colour */
   details[open] summary { padding-bottom: var(--space-3); }
-  .faq__a { padding: 0 var(--space-10) var(--space-6) 0; max-width: 64ch; color: var(--text-2); }
+  .faq__a { display: grid; gap: var(--space-3); padding: 0 var(--space-10) var(--space-6) 0; max-width: 64ch; color: var(--text-2); }
+  .faq__a :global(p), .faq__a :global(ul) { margin: 0; }
+  .faq__a :global(strong) { color: var(--ink); }
   .faq--split { max-width: none; display: grid; gap: var(--stack); }
   .faq__head :global(.sh) { margin-bottom: 0; }
   @media (min-width: 1024px) {
     .faq--split { grid-template-columns: 4fr 7fr; column-gap: var(--space-20); align-items: start; }
-    .faq__head { position: sticky; top: calc(var(--header-h) + var(--space-8)); }
+    .faq__head { position: sticky; top: var(--sticky-top); }
   }
 </style>

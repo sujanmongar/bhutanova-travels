@@ -1,7 +1,7 @@
 import { toHTML } from '@portabletext/to-html';
 import GithubSlugger from 'github-slugger';
 import { img, srcset } from './config';
-import { tourPathOf } from './utils';
+import { tourPathOf, usd } from './utils';
 
 // Typographic quotes, as Astro's markdown did: it's → it’s, "x" → “x”. `prev` carries context across spans.
 // ponytail: no decade/abbreviation rules ('90s becomes ‘90s); swap in retext-smartypants if that ever matters.
@@ -38,7 +38,7 @@ const openable = (p: Photo, inner: string) =>
 // embed address, so a maps link with a query, a place, a search or coordinates is turned into one. Google's short share
 // links (maps.app.goo.gl) can't be framed or resolved here, so they become a plain link. Any other https page is framed
 // sandboxed. Throws on a malformed link (the renderer skips it).
-export function embedSrc(link: string): { src: string; kind: 'video' | 'map' | 'page' | 'link' } {
+function embedSrc(link: string): { src: string; kind: 'video' | 'map' | 'page' | 'link' } {
   const u = new URL(link);
   const host = u.hostname.replace(/^(www|m)\./, '');
   if (/(^|\.)youtube(-nocookie)?\.com$/.test(host) && u.pathname === '/playlist' && u.searchParams.get('list'))
@@ -113,12 +113,12 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
           // The frame waits for cookie consent (CookieNotice.astro); until then a panel says who it's from, with a Show button
           const from = kind === 'map' ? ['Google Maps', 'map'] : /vimeo/.test(src) ? ['Vimeo', 'video'] : kind === 'video' ? ['YouTube', 'video'] : [new URL(src).hostname.replace(/^www\./, ''), 'content'];
           const gate = `<div class="frame__gate"><p>This ${from[1]} is from ${esc(from[0])}, which may set cookies when it loads.</p><button type="button" class="btn btn--outline" data-consent-load>Show the ${from[1]}</button></div>`;
-          return `<figure class="embed embed--${kind}"><div class="frame"><iframe data-src="${attr(src)}" title="${attr(value.title ?? 'Embedded content')}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"${extra}></iframe>${gate}</div>${caption(value.caption)}</figure>`;
+          return `<figure class="embed embed--${kind}"><div class="frame"><iframe data-src="${attr(src)}" tabindex="-1" title="${attr(value.title ?? 'Embedded content')}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"${extra}></iframe>${gate}</div>${caption(value.caption)}</figure>`;
         },
         tourCard: ({ value }: any) => {
           const t = value?.tour;
           if (!t?.id) return '';
-          return `<div class="tc"><img src="${attr(img(t.image, 192, 192))}" srcset="${attr(srcset(t.image, [96, 192, 288], 1) ?? '')}" sizes="96px" alt="" width="96" height="96" loading="lazy" decoding="async"><div><p class="t-label">Tour</p><p class="t-card"><a href="${attr(tourPathOf(t.category, t.days, t.id))}">${esc(t.title)}</a></p><p class="t-body">${t.days} days · from <b>$${Number(t.price).toLocaleString('en-US')}</b> per person</p></div></div>`;
+          return `<div class="tc"><img src="${attr(img(t.image, 192, 192))}" srcset="${attr(srcset(t.image, [96, 192, 288], 1) ?? '')}" sizes="96px" alt="" width="96" height="96" loading="lazy" decoding="async"><div><p class="t-label">Tour</p><p class="t-card"><a href="${attr(tourPathOf(t.category, t.days, t.id))}">${esc(t.title)}</a></p><p class="t-body">${t.days} days · from <b class="num">${usd(Number(t.price))}</b> per person</p></div></div>`;
         },
         pullQuote: ({ value }: any) =>
           value?.text ? `<figure class="pq"><blockquote><p>${esc(curl(value.text))}</p></blockquote>${value.attribution ? `<figcaption>${esc(curl(value.attribution))}</figcaption>` : ''}</figure>` : '',
@@ -129,7 +129,7 @@ export function ptHtml(blocks: any[] = [], slugger = new GithubSlugger(), shift 
           // **bold** in a cell (e.g. a Total row) renders bold instead of showing the asterisks
           const cell = (c: string, tag: string) => `<${tag}${(c ?? '').length <= 24 ? ' class="nw"' : ''}>${esc(c ?? '').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')}</${tag}>`;
           const tr = (r: any, tag: string) => `<tr>${(r.cells ?? []).map((c: string) => cell(c, tag)).join('')}</tr>`;
-          return `<table>${head ? `<thead>${tr(head, 'th')}</thead>` : ''}<tbody>${rows.map((r: any) => tr(r, 'td')).join('')}</tbody></table>`;
+          return `<div class="table-wrap"><table>${head ? `<thead>${tr(head, 'th')}</thead>` : ''}<tbody>${rows.map((r: any) => tr(r, 'td')).join('')}</tbody></table></div>`;
         },
       },
     },

@@ -1,25 +1,18 @@
 ---
-import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
 import { SITE } from '../config';
 const { class: cls = '' } = Astro.props;
-const names = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X', whatsapp: 'WhatsApp' } as const;
-// Every network shows; one whose profile isn't set up yet has href '#' and stays in this tab.
-const links = Object.entries(SITE.social);
+const names = { facebook: 'Facebook', instagram: 'Instagram', linkedin: 'LinkedIn', twitter: 'X', google: 'Google', tripadvisor: 'Tripadvisor', whatsapp: 'WhatsApp' } as const;
+// Google and Tripadvisor use their official full-colour logos (the same files as the review badges).
+const icons: Record<string, string> = { google: 'logo_google', tripadvisor: 'logo_tripadvisor' };
+// Only profiles that exist: a network still set to '#' (or empty) in SITE.social stays hidden until its page is live.
+const links = Object.entries(SITE.social).filter(([, href]) => href && href !== '#');
 ---
 <ul class:list={['social', cls]}>
   {links.map(([k, href]) => (
-    <li>{href === '#'
-      ? <a href="#" aria-disabled="true" aria-label={`${names[k as keyof typeof names]} (coming soon)`} data-soon><Icon name={`social_${k}`} /></a>
-      : <a href={href} target="_blank" rel="noopener" aria-label={`${names[k as keyof typeof names]} (opens in a new tab)`}><Icon name={`social_${k}`} /></a>}</li>
+    <li><IconButton tone="on-dark" href={href} target="_blank" rel="noopener" icon={icons[k] ?? `social_${k}`} label={`${names[k as keyof typeof names]} (opens in a new tab)`} /></li>
   ))}
 </ul>
-<script>
-  // Profiles not set up yet: the icon stays, but clicking it doesn't jump to the top of the page.
-  document.querySelectorAll('[data-soon]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
-</script>
 <style>
-  .social { display: flex; gap: 0; list-style: none; margin: 0 calc(var(--space-3) * -1); padding: 0; }
-  .social a { display: block; padding: var(--space-3); font-size: 20px; color: rgb(255 255 255 / .82); transition: color var(--dur-1); }
-  .social a:not([aria-disabled]):hover { color: #fff; }
-  .social [aria-disabled] { opacity: .4; cursor: default; }  /* not set up yet: dimmed, no hover */
+  .social { display: flex; flex-wrap: wrap; gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
 </style>

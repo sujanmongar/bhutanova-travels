@@ -1,8 +1,8 @@
 ---
+import { pageBanner } from '../../config';
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import BannerImg from '../../components/BannerImg.astro';
+import Banner from '../../components/Banner.astro';
 import CategoryTiles from '../../components/blocks/CategoryTiles.astro';
 import TourRail from '../../components/blocks/TourRail.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
@@ -10,18 +10,11 @@ import { catPath } from '../../utils';
 
 // The hub leads with themes, not every package: the tour list keeps growing, and each theme page lists its own tours.
 const cats = (await getCollection('categories')).sort((a, b) => a.data.order - b.data.order);
-const hero = 'photo-1578556881786-851d4b79cb73';
+const { seo, ...b } = pageBanner('tours', { heading: 'Bhutan tour packages', line: 'Private tours with the Sustainable Development Fee, visa, licensed guide, private vehicle and certified hotels included.', image: 'photo-1578556881786-851d4b79cb73', alt: 'Tiger\'s Nest monastery in Paro' });
 const list = { '@context': 'https://schema.org', '@type': 'ItemList', itemListElement: cats.map((c, i) => ({ '@type': 'ListItem', position: i + 1, url: new URL(catPath(c.id), Astro.site).href, name: c.data.menuTitle })) };
 ---
-<Base title="Bhutan tour packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={hero} schema={list}>
-  <section class="banner">
-    <BannerImg src={hero} alt="Tiger's Nest monastery in Paro" />
-    <div>
-      <Breadcrumbs items={[['Tours']]} light />
-      <h1>Bhutan tour packages</h1>
-      <p class="banner__line">Private tours with the Sustainable Development Fee, visa, licensed guide, private vehicle and certified hotels included.</p>
-    </div>
-  </section>
+<Base title="Bhutan tour packages" description="Browse Bhutan tour packages by theme — cultural, festival, trekking, luxury, family and off-the-beaten-path journeys. SDF, visa, guide and hotels included." image={b.image} seo={seo} schema={list}>
+  <Banner {...b} crumbs={[['Tours']]} />
 
   <CategoryTiles heading="Tour themes" grey grid hideHeading />
 

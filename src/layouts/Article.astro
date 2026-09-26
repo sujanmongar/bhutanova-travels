@@ -1,12 +1,17 @@
 ---
+// One reading column for guides and blog posts: breadcrumbs, title, lede, a meta line → a wide cover → the text → the
+// 'share' slot. The 'aside' slot is either a sidebar column beside the text from 1024px (guides, at 64ch) or, with
+// aside="gutter", a list floating in the free space right of a centred --measure column from 1200px and following the
+// text below that (blog posts). Slots: 'meta' replaces the default "Published <date> · <author>" line; 'after' follows.
 import Base from './Base.astro';
 import Breadcrumbs from '../components/Breadcrumbs.astro';
 import { img, srcset, type Seo } from '../config';
-interface Props { title: string; description: string; image: string; date: Date; kicker: string; back: [string, string]; author?: string; updatedLabel?: string; seo?: Seo }
-const { title, description, image, date, kicker, back, author = 'Bhutanova Travels', updatedLabel = 'Published', seo } = Astro.props;
+interface Props { title: string; description: string; image: string; alt?: string; date: Date; back: [string, string]; author?: string; updatedLabel?: string; seo?: Seo; schema?: object; aside?: 'column' | 'gutter'; progress?: boolean }
+const { title, description, image, alt, date, back, author = 'Bhutanova Travels', updatedLabel = 'Published', seo, aside = 'column', progress = true } = Astro.props;
 const hasAside = Astro.slots.has('aside');
+const col = hasAside && aside === 'column';
 const url = new URL(Astro.url.pathname, Astro.site).href;
-const schema = {
+const schema = Astro.props.schema ?? {
   '@context': 'https://schema.org', '@type': 'Article', headline: title, description, image: img(image, 1200), url,
   datePublished: date.toISOString(), dateModified: date.toISOString(),
   author: { '@type': 'Organization', name: author }, publisher: { '@id': new URL('/#org', Astro.site).href },
@@ -15,49 +20,63 @@ const schema = {
 const fmt = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 ---
 <Base title={title} description={description} image={image} type="article" published={date} schema={schema} seo={seo}>
-  <div class="progress" aria-hidden="true"></div>
-  <div class:list={['container', 'post', { 'post--aside': hasAside }]}>
-    <article class="post__main">
+  {progress && <div class="progress" aria-hidden="true"></div>}
+  <div class:list={['container', 'post', { 'post--aside': col, 'post--gutter': aside === 'gutter' }]}>
+    <article>
       <header class="ah">
         <Breadcrumbs items={[[back[1], back[0]], [title]]} />
         <h1>{title}</h1>
         <p class="lede t-body">{description}</p>
-        <p class="meta t-label">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · <b>{author}</b></p>
+        <p class="meta t-label"><slot name="meta">{updatedLabel} <time datetime={date.toISOString()}>{fmt}</time> · <b>{author}</b></slot></p>
       </header>
       {/* The CDN crops to the frame at each breakpoint: 16:10 phones, 2:1 from 768px, 16:9 beside the sidebar */}
-      <button type="button" class="lb-open lb-open--cover" data-lb-item data-src={img(image, 1600)} data-srcset={srcset(image, [800, 1200, 1600, 2400])} data-alt={title} aria-label={`View photo: ${title}`}>
+      <button type="button" class="lb-open lb-open--cover" data-lb-item data-src={img(image, 1600)} data-srcset={srcset(image, [800, 1200, 1600, 2400])} data-alt={alt || title} aria-label={`View photo: ${alt || title}`}>
         <picture>
           <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(image, [480, 800, 1200], 16 / 10)} />
-          {hasAside && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
+          {col && <source media="(min-width: 1024px)" sizes="(min-width:1140px) 712px, calc(100vw - 428px)" srcset={srcset(image, [800, 1200, 1600], 16 / 9)} />}
           <img class="cover" src={img(image, 1200, 600)} srcset={srcset(image, [800, 1200, 1600, 2000, 2400], 2)}
-            sizes={hasAside ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
-            alt="" width="1200" height="600" fetchpriority="high" />
+            sizes={col ? 'calc(100vw - 64px)' : '(min-width:1264px) 1200px, calc(100vw - 64px)'}
+            alt={alt ?? ''} width="1200" height="600" fetchpriority="high" />
         </picture>
       </button>
-      <div class="prose body t-body"><slot /></div>
+      <div class="post__body">
+        <div class="prose body t-body"><slot /></div>
+        {Astro.slots.has('share') && <div class="post__share"><slot name="share" /></div>}
+        {hasAside && !col && <div class="post__gutter"><slot name="aside" /></div>}
+      </div>
     </article>
-    {hasAside && <aside class="post__aside" aria-label="Related"><slot name="aside" /></aside>}
+    {col && <aside class="post__aside" aria-label="Related"><slot name="aside" /></aside>}
   </div>
   <slot name="after" />
 </Base>
 <style>
-  .post { padding-block: var(--stack) var(--section); }
-  .ah, .body { max-width: 64ch; margin-inline: auto; }
-  .ah :global(.crumbs) { margin-bottom: var(--space-4); }
+  .post { --col: 64ch; padding-block: var(--stack) var(--section); }
+  .post--gutter { --col: var(--measure); }
+  .ah, .body, .post__share, .post__gutter { max-width: var(--col); margin-inline: auto; }
   .lede { margin-top: var(--space-4); max-width: 60ch; color: var(--text-2); }
-  .meta { margin: var(--space-4) 0 var(--space-8); color: var(--text-3); }
-  .meta b { color: var(--text-2); }
+  .meta { margin: var(--space-4) 0 var(--space-8); color: var(--text-2); }
+  .meta :global(a) { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); }  /* 48px tap area */
   .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
   .body { margin-top: var(--space-10); color: var(--text); }
+  /* Share buttons after the text: a hairline, a label, then one button per network */
+  .post__share { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--border); }
+  .post__gutter { margin-top: var(--space-12); }
   .post__aside { display: grid; gap: var(--space-10); align-content: start; margin-top: var(--space-16); padding-top: var(--space-10); border-top: 1px solid var(--border); }
   @media (min-width: 768px) { .cover { aspect-ratio: 2 / 1; } }
   @media (min-width: 1024px) {
-    .post--aside { display: grid; grid-template-columns: minmax(0, 64ch) 300px; column-gap: var(--space-12); justify-content: center; }
+    .post--aside { display: grid; grid-template-columns: minmax(0, var(--col)) 300px; column-gap: var(--space-12); justify-content: center; }
     .post--aside :is(.ah, .body) { margin-inline: 0; }
     .post--aside .cover { aspect-ratio: 16 / 9; }
     .post__aside { margin-top: 0; padding-top: 0; border-top: 0; }
   }
-  @media (min-width: 1200px) { .post--aside { grid-template-columns: minmax(0, 64ch) 336px; column-gap: var(--space-16); } }
+  @media (min-width: 1200px) {
+    .post--aside { grid-template-columns: minmax(0, var(--col)) 336px; column-gap: var(--space-16); }
+    /* Gutter: the text keeps the centre and the aside floats in the free space to its right, staying in view */
+    .post--gutter .post__body { display: grid; grid-template-columns: minmax(0, 1fr) var(--col) minmax(0, 1fr); column-gap: var(--space-8); }
+    /* auto side margins would shrink a grid item to its content, so they go */
+    .post--gutter :is(.body, .post__share) { grid-column: 2; max-width: none; margin-inline: 0; }
+    .post__gutter { grid-column: 3; grid-row: 1 / span 2; align-self: start; position: sticky; top: var(--sticky-top); max-width: none; margin: var(--space-10) 0 0; }
+  }
   /* Reading progress: a 2px line under the header that fills as you read (CSS scroll-linked, Chrome 115+, Safari 26+) */
   .progress { display: none; }
   @keyframes grow { from { scale: 0 1; } }

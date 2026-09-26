@@ -1,0 +1,13 @@
+---
+// A page banner (.banner, the first child of <main>): the photo, breadcrumbs, the page's h1 and a line under it.
+// crumbs is the trail after Home (omit it for none); a line with links goes in the 'line' slot instead of `line`.
+import Breadcrumbs from './Breadcrumbs.astro';
+import BannerImg from './BannerImg.astro';
+interface Props { heading: string; line?: string; image?: string; alt?: string; hotspot?: { x: number; y: number }; crumbs?: Array<[string, string?]> }
+const { heading, line, image, alt, hotspot, crumbs } = Astro.props;
+const slotLine = Astro.slots.has('line');
+---
+<section class="banner">
+  {image && <BannerImg src={image} alt={alt} hotspot={hotspot} />}
+  <div>{crumbs && <Breadcrumbs items={crumbs} light />}<h1>{heading}</h1>{slotLine ? <p class="banner__line"><slot name="line" /></p> : line && <p class="banner__line">{line}</p>}</div>
+</section>

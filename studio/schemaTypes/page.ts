@@ -1,6 +1,6 @@
 import {defineArrayMember, defineField, defineType} from 'sanity'
 import {linkRules} from './blockContent'
-import {lines} from './documents'
+import {lines, photoFields, needsAlt} from './documents'
 import {CheckmarkCircleIcon} from '@sanity/icons/CheckmarkCircle'
 import {CommentIcon} from '@sanity/icons/Comment'
 import {BlockContentIcon} from '@sanity/icons/BlockContent'
@@ -31,18 +31,9 @@ const photo = (name = 'image', title = 'Photo', required = true, alt = true) =>
     type: 'image',
     options: {hotspot: true},
     description: 'Click the crop icon and drag the circle to the subject — it stays in frame on every screen size.',
-    fields: alt
-      ? [
-          defineField({
-            name: 'alt',
-            title: 'Describe the photo',
-            type: 'string',
-            description: 'For Google and screen readers, e.g. "Punakha Dzong between two rivers".',
-          }),
-        ]
-      : [],
+    fields: alt ? photoFields : [],
     // assetRequired: removing a photo keeps its alt text, which plain required() would accept as "filled in".
-    validation: required ? (r) => r.required().assetRequired() : undefined,
+    validation: (r) => (required ? [r.required().assetRequired(), needsAlt(r)] : needsAlt(r)),
   })
 // Phosphor Regular (outline, one colour) so the reasons read as a family
 const ICONS = ['seal-check', 'path', 'receipt', 'identification-badge', 'stamp', 'headset', 'users-three', 'handshake', 'plant']
@@ -85,7 +76,7 @@ const hero = defineType({
     defineField({name: 'text', title: 'Short line', type: 'string', validation: (r) => r.max(120).warning('One short sentence works best.')}),
     photo(),
     defineField({name: 'primaryLabel', title: 'Main button text', type: 'string', initialValue: 'Explore tours', description: 'Opens the tours page.', validation: (r) => r.required()}),
-    defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Chat on WhatsApp', description: 'Opens WhatsApp with this page’s link (the header already has Enquire).', validation: (r) => r.required()}),
+    defineField({name: 'secondaryLabel', title: 'Second button text', type: 'string', initialValue: 'Get a free trip plan', description: 'Opens WhatsApp with a short message asking for a free trip plan (when, travellers, interests). The header already has Enquire.', validation: (r) => r.required()}),
     defineField({
       name: 'proof',
       title: 'Proof line',
@@ -153,7 +144,7 @@ const reasons = defineType({
   title: 'Reasons to choose us',
   type: 'object',
   icon: CheckmarkCircleIcon,
-  description: 'Short, concrete reasons in a row: a few words, then one sentence. Icons are optional (the homepage uses none).',
+  description: 'Short, concrete reasons in a row: a few words, then one sentence. Each reason needs an icon. Use 4 or 8 reasons for full rows on desktop.',
   fields: [heading('Why travel with us'), points('items', 'Reasons', 8, true), grey(true)],
   preview: preview('Reasons to choose us'),
 })
@@ -196,6 +187,7 @@ const richText = defineType({
   fields: [
     defineField({name: 'heading', title: 'Heading (optional)', type: 'string'}),
     defineField({name: 'body', title: 'Text', type: 'blockContent', validation: (r) => r.required()}),
+    defineField({name: 'aside', title: 'Plan card and share buttons beside the text', type: 'boolean', initialValue: false, description: 'For long texts: from wide screens, the plan card and share icons stay in view beside the text. Below that, the share icons follow the text.'}),
     grey(),
   ],
   preview: preview('Text'),
@@ -248,8 +240,8 @@ const reviewList = defineType({
   title: 'Reviews',
   type: 'object',
   icon: StarIcon,
-  description: 'Every review as a quote card (stars, words, a small round photo, name and trip): all six on desktop, swipe on phones. Google and Tripadvisor links at the top right. Reviews come from Content → Reviews.',
-  fields: [heading('What travelers say'), grey()],
+  description: 'Every review as a quote card (stars, words, a small round photo, name and trip): every review, two or three across on larger screens, swiped on phones. Google and Tripadvisor links at the top right. Reviews come from Content → Reviews.',
+  fields: [heading('What travellers say'), grey()],
   preview: preview('Reviews'),
 })
 
@@ -258,7 +250,7 @@ const team = defineType({
   title: 'Team',
   type: 'object',
   icon: UsersIcon,
-  description: 'Office team as cards, then guides and drivers as a row of portraits. People are added under Team in the menu.',
+  description: 'Everyone in Team as photo cards, grouped office team, guides, drivers. People are added under Team in the menu.',
   fields: [
     defineField({name: 'heading', title: 'Heading', type: 'string', initialValue: 'Meet the team', validation: (r) => r.required()}),
     defineField({name: 'text', title: 'Intro', type: 'text', rows: 2}),
@@ -272,7 +264,7 @@ const bookingSteps = defineType({
   title: 'Plan your trip (steps + contact)',
   type: 'object',
   icon: OlistIcon,
-  description: 'A navy closing section: three or four numbered steps from first message to arrival, beside a contact panel with a named trip planner, WhatsApp, the enquiry form, email and phone.',
+  description: 'A navy closing section: up to five numbered steps from first message to arrival, beside a contact panel with a named trip planner, WhatsApp, the enquiry form, email and phone.',
   fields: [
     heading('Plan your trip'),
     defineField({name: 'text', title: 'Intro', type: 'string'}),
@@ -323,7 +315,7 @@ const whatsapp = defineType({
   description: 'The closing contact section with the trip planner and a WhatsApp button; the chat opens with a link to this page.',
   fields: [
     heading('Not sure which trip fits?'),
-    defineField({name: 'text', title: 'Text', type: 'string', initialValue: 'Message a planner in Thimphu on WhatsApp. We usually reply within the hour.'}),
+    defineField({name: 'text', title: 'Text', type: 'string', initialValue: 'Message a planner in Thimphu on WhatsApp. We reply within 24 hours.'}),
     defineField({name: 'topic', title: 'Chat topic (optional)', type: 'string', description: 'Adds “I’d like to ask about …” to the message, e.g. “corporate retreats”.'}),
   ],
   preview: preview('WhatsApp contact card'),
@@ -349,7 +341,7 @@ const partners = defineType({
           fields: [
             defineField({name: 'name', title: 'Organisation', type: 'string', validation: (r) => r.required()}),
             defineField({name: 'image', title: 'Logo (PNG or SVG with transparent background)', type: 'image', validation: (r) => r.required()}),
-            defineField({name: 'url', title: 'Website', type: 'url', description: 'Their official site. The logo links to it in a new tab.'}),
+            defineField({name: 'url', title: 'Link', type: 'url', validation: (r) => r.uri({allowRelative: true, scheme: ['https', 'http']}), description: 'Their official site (opens in a new tab), or a page on this site such as /travel-guide/flight-schedules/. Empty = no link.'}),
           ],
           preview: {select: {title: 'name', media: 'image'}},
         }),
@@ -366,9 +358,10 @@ const TOP = ['hero', 'pageBanner']
 const TOP_NAME: Record<string, string> = {hero: 'hero', pageBanner: 'page banner'}
 const ONCE: Record<string, string> = {founderNote: 'Founder note', bookingSteps: 'Plan your trip section', faqList: 'FAQs section', reviewList: 'Reviews section', ctaBanner: 'Call to action', whatsapp: 'WhatsApp card'}
 // URLs already used by the site's own pages.
-const RESERVED = ['home', 'index', 'tours', 'blog', 'travel-guide', 'contact', 'privacy', '404', 'admin', 'images', 'sitemap-index', 'sitemap-0', 'robots']
+const RESERVED = ['home', 'index', 'tours', 'bhutan-tours', 'blog', 'travel-guide', 'destinations', 'contact', 'search', 'sitemap', 'styleguide', '404', 'admin', 'images', 'sitemap-index', 'sitemap-0', 'robots']
 const isHome = (id?: string) => id?.replace(/^drafts\./, '') === 'home'
-const isAbout = (id?: string) => id?.replace(/^drafts\./, '') === 'page-about'
+// Addresses the site links to by hand (menu, footer, cookie card) can't be changed in the Studio.
+const fixedSlug = (id?: string) => ['page-about', 'page-about-bhutan', 'page-privacy', 'page-cancellation-policy'].includes(id?.replace(/^drafts\./, '') ?? '')
 
 export const page = defineType({
   name: 'page',
@@ -396,7 +389,7 @@ export const page = defineType({
       options: {source: 'title', maxLength: 60},
       description: 'The page’s address: bhutanova-travels.pages.dev/<this>/. Avoid changing it once live.',
       hidden: ({document}) => isHome(document?._id),
-      readOnly: ({document}) => isAbout(document?._id),
+      readOnly: ({document}) => fixedSlug(document?._id),
       validation: (r) =>
         r.custom((slug: {current?: string} | undefined, ctx) => {
           if (isHome(ctx.document?._id)) return true

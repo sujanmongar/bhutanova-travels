@@ -1,13 +1,17 @@
 ---
-// The photo behind a page banner (.banner). Phones get a 4:5 crop from the CDN (the banner is taller than wide there),
-// kept around the editor's focal point when there is one; tablets/desktops get the landscape photo. It is the page's LCP image.
-import { img, srcset, focal } from '../config';
+// The photo behind a page banner (.banner). Phones get a 4:5 crop from the CDN (the banner is taller than wide there), at most
+// 800 wide (2x on a phone: under the dark scrim and white words 3x looks the same and costs twice the bytes),
+// kept around the editor's focal point when there is one; tablets get the landscape photo, and from 1200px a 2:1 crop, the
+// banner's shape there (1200 x 600 at its minimum height, wider on bigger screens), so no bytes go on rows it hides.
+// It is the page's LCP image.
+import { img, srcset, focal, fpOf } from '../config';
 interface Props { src: string; alt?: string; hotspot?: { x: number; y: number } }
-const { src, alt = '', hotspot } = Astro.props;
+const { src, alt = '', hotspot = fpOf(src) } = Astro.props;
 const pos = hotspot && focal(hotspot);
 ---
 <picture>
-  <source media="(max-width: 767px) and (orientation: portrait)" sizes="100vw" srcset={srcset(src, [480, 800, 1200], 4 / 5, hotspot)} />
+  <source media="(max-width: 767px) and (orientation: portrait)" sizes="100vw" srcset={srcset(src, [480, 640, 800], 4 / 5, hotspot)} />
+  <source media="(min-width: 1200px)" sizes="100vw" srcset={srcset(src, [1200, 1600, 2000, 2400], 2, hotspot)} />
   <img src={img(src, 1600)} srcset={srcset(src, [800, 1200, 1600, 2000, 2400])} sizes="100vw" alt={alt} width="1600" height="700"
     fetchpriority="high" decoding="async" style={pos ? `object-position:${pos}` : undefined} />
 </picture>

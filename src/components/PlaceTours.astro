@@ -1,21 +1,18 @@
 ---
-// "Tours that visit …" as a swipe rail, for destination and sight pages.
+// "Tours that visit …" as a swipe rail, for destination and sight pages. A place no set tour visits yet shows the tours
+// of the places near it ("Tours near …") with one line saying so. No enquiry card here: the page already has the plan
+// card beside the text and the closing contact card, and one ask while reading plus one at the end is enough.
 import type { CollectionEntry } from 'astro:content';
-import Icon from './Icon.astro';
+import Section from './Section.astro';
 import TourCard from './TourCard.astro';
 import { TOURS } from '../utils';
-interface Props { heading: string; tours: CollectionEntry<'tours'>[]; grey?: boolean }
-const { heading, tours, grey = false } = Astro.props;
+interface Props { place: string; tours: CollectionEntry<'tours'>[]; near?: CollectionEntry<'tours'>[]; grey?: boolean }
+const { place, tours, near = [], grey = false } = Astro.props;
+const list = tours.length ? tours : near;
 ---
-{tours.length > 0 && (
-  <section class:list={['section', { 'section--grey': grey }]}>
-    <div class="container">
-      <div class="sh sh--row">
-        <h2>{heading}</h2>
-        <div class="sh__act"><a class="link-more" href={TOURS}><span>All tours</span><Icon name="arrow-up-right" /></a></div>
-      </div>
-      <div class="rail" data-reveal="stagger">{tours.map((t) => <TourCard tour={t} rail />)}</div>
-      <a class="link-more m-only" href={TOURS}><span>All tours</span><Icon name="arrow-up-right" /></a>
-    </div>
-  </section>
+{list.length > 0 && (
+  <Section heading={tours.length ? `Tours that visit ${place}` : `Tours near ${place}`} text={tours.length ? undefined : `${place} isn't on a set tour yet. These tours pass close by, and any of them can include it.`}
+    grey={grey} link={{ href: TOURS, label: 'All tours' }} rail="place-tours" railLabel="tours">
+    {list.map((t) => <TourCard tour={t} rail />)}
+  </Section>
 )}

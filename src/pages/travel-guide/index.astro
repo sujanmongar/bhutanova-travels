@@ -1,60 +1,44 @@
 ---
+import { pageBanner } from '../../config';
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import BannerImg from '../../components/BannerImg.astro';
+import Banner from '../../components/Banner.astro';
 import BlogCard from '../../components/BlogCard.astro';
-import Icon from '../../components/Icon.astro';
+import LinkMore from '../../components/LinkMore.astro';
+import Section from '../../components/Section.astro';
 import TabBar from '../../components/TabBar.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
+import MatchedTours from '../../components/MatchedTours.astro';
 import { slug, topicName } from '../../utils';
 const guides = (await getCollection('guides')).sort((a, b) => a.data.order - b.data.order);
 const groups = [...new Set(guides.map((g) => g.data.group))];
-const hero = 'photo-1532918235359-7671f525386d';
+const { seo, ...b } = pageBanner('guides', { heading: 'Bhutan travel guide', line: 'Visas, costs, seasons and what to expect: everything to plan a trip to Bhutan.', image: 'photo-1532918235359-7671f525386d', alt: 'Prayer flags on a mountain pass' });
 // The FAQ guide's questions are its h3s, so the count below always matches the page.
 const faqs = guides.find((g) => g.id === 'travel-faqs');
 const asked = faqs ? (await render(faqs)).headings.filter((h) => h.depth === 3).length : 0;
 ---
-<Base title="Bhutan travel guide – visa, SDF, weather & packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={hero}>
-  <section class="banner">
-    <BannerImg src={hero} alt="Prayer flags on a mountain pass" />
-    <div><Breadcrumbs items={[['Travel guide']]} light /><h1>Bhutan travel guide</h1><p class="banner__line">Visas, costs, seasons and what to expect: everything to plan a trip to Bhutan.</p></div>
-  </section>
+<Base title="Bhutan travel guide – visa, SDF, weather & packing" description="Everything you need before visiting Bhutan: how to book, visa and immigration rules, the Sustainable Development Fee, money, weather, packing, mountains and etiquette." image={b.image} seo={seo}>
+  <Banner {...b} crumbs={[['Travel guide']]} />
 
   <TabBar label="Guide topics" links={groups.map((g) => [topicName(g), `#${slug(g)}`])} />
 
   {groups.map((g, i) => (
-    <section class:list={['section', { 'section--grey': i % 2 === 1 }]} id={slug(g)}>
-      <div class="container">
-        <div class="sh" data-reveal><h2>{topicName(g)}</h2></div>
-        <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" list />)}</div>
-      </div>
-    </section>
+    <Section heading={topicName(g)} grey={i % 2 === 1} id={slug(g)} link={g === 'Money & Costs' ? { href: '/bhutan-tours/', label: 'See tour prices' } : undefined}>
+      <div class="grid-3 guides" data-reveal="stagger">{guides.filter((x) => x.data.group === g).map((x) => <BlogCard post={x} base="/travel-guide/" list />)}</div>
+    </Section>
   ))}
 
   {faqs && (
-    <section class="section">
-      <div class="container">
-        <div class="sh" data-reveal>
-          <h2>Still have a question?</h2>
-          <p>{asked > 0 ? `The ${asked} questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest.` : 'The questions guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest.'}</p>
-        </div>
-        <a class="link-more" href={`/travel-guide/${faqs.id}/`} data-reveal><span>Read the Bhutan travel FAQs</span><Icon name="arrow-up-right" /></a>
-      </div>
-    </section>
+    <Section heading="Still have a question?" text={`${asked > 0 ? `The ${asked} questions` : 'The questions'} guests ask us most are answered in one place: visas, money, altitude, food, wifi and the rest.`}>
+      <LinkMore href={`/travel-guide/${faqs.id}/`} label="Read the Bhutan travel FAQs" data-reveal="" />
+    </Section>
   )}
+  <MatchedTours heading="Where to start" />
   <WhatsAppCta title="Ask us" text="If your question isn't answered here, message us on WhatsApp. We reply within 24 hours." about="travelling in Bhutan" />
 </Base>
 <style>
-  .guides { row-gap: var(--space-10); }
-  /* Phones: every guide in the topic as a list row (thumbnail, title, two lines), so all of them can be scanned at once */
-  @media (max-width: 767px) {
-    .guides { row-gap: 0; border-top: 1px solid var(--border-dark); }
-    .guides > :global(.bc) { display: grid; grid-template-columns: 88px minmax(0, 1fr); column-gap: var(--space-4); align-items: start; height: auto; padding-block: var(--space-4); border-bottom: 1px solid var(--border-dark); }
-    .guides :global(.bc__img) { grid-row: 1 / span 2; width: 88px; height: 88px; margin: 0; --radius: var(--r-sm); corner-shape: round; }  /* a thumbnail: the 12px corner, also in Safari's clip-path fallback */
-    .guides :global(.bc__meta) { display: none; }  /* the topic is already the section title */
-    .guides :global(.bc h3) { margin: 0; }
-    .guides :global(.bc__ex) { margin-top: var(--space-1); -webkit-line-clamp: 2; }
-  }
+  /* Phones: every guide in the topic as a list row (the cards' list mode: thumbnail, title, two lines), between hairlines,
+     so all of them can be scanned at once */
+  @media (max-width: 767px) { .guides { row-gap: 0; border-top: 1px solid var(--border-dark); } }
 </style>
 

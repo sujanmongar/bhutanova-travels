@@ -4,9 +4,11 @@ import Base from '../layouts/Base.astro';
 import Blocks from '../components/Blocks.astro';
 import { coverImage } from '../config';
 
-// Every page built in the Studio (About, landing pages…) except the homepage, at /<slug>/.
+// Every page built in the Studio (About, landing pages, the booking terms…) at /<slug>/, except the homepage and the
+// privacy policy and cancellation policy: their own .astro files own those addresses and render the Studio page
+// themselves once it's published.
 export async function getStaticPaths() {
-  return (await getCollection('pages', (p) => p.id !== 'home')).map((page) => ({ params: { slug: page.id }, props: { page } }));
+  return (await getCollection('pages', (p) => !['home', 'privacy', 'cancellation-policy'].includes(p.id))).map((page) => ({ params: { slug: page.id }, props: { page } }));
 }
 const { title, sections, seo } = Astro.props.page.data;
 // Share image falls back to the hero or banner photo when the SEO tab has none.

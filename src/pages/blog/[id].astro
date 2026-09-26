@@ -1,48 +1,29 @@
 ---
-// Blog post: one clean reading column: breadcrumbs, title, dek, meta (topic · date · author) → a wide cover → the text → share
-// buttons. Recent posts float in the empty space beside the text on wide screens (after the share buttons on smaller
-// ones). Then tours matched to the post, then the contact card.
-import { getCollection, getEntry, render } from 'astro:content';
-import Base from '../../layouts/Base.astro';
-import Breadcrumbs from '../../components/Breadcrumbs.astro';
-import TourCard from '../../components/TourCard.astro';
-import Arrows from '../../components/Arrows.astro';
-import Icon from '../../components/Icon.astro';
+// Blog post (the Article layout): one clean reading column: breadcrumbs, title, dek, meta (topic · date · author) → a wide
+// cover → the text → share buttons. Recent posts float in the empty space beside the text on wide screens (after the share
+// buttons on smaller ones). Then tours matched to the post, then the contact card.
+import { getCollection } from 'astro:content';
+import Article from '../../layouts/Article.astro';
+import MatchedTours from '../../components/MatchedTours.astro';
+import Share from '../../components/Share.astro';
+import LinkMore from '../../components/LinkMore.astro';
 import WhatsAppCta from '../../components/WhatsAppCta.astro';
 import { SITE, img, srcset } from '../../config';
-import { TOURS, catPath, slug } from '../../utils';
+import { slug, withAsk } from '../../utils';
 
 export async function getStaticPaths() {
   const posts = (await getCollection('blog', (p) => !p.data.draft)).sort((a, b) => +b.data.date - +a.data.date);
   return posts.map((post) => ({ params: { id: post.id }, props: { post, posts } }));
 }
 const { post, posts } = Astro.props;
-const { Content } = await render(post);
 const d = post.data;
 const recent = posts.filter((p) => p.id !== post.id).slice(0, 4);
 
-// Tours matched to the post: a tour category it links to in its text, then its topics
-// (Festivals → festival tours, Culture/Food → cultural tours), then featured tours
-const CAT: Record<string, string> = { Festivals: 'festival-tours', Culture: 'cultural-tours', Food: 'cultural-tours' };
-const linked = [...(post.rendered?.html ?? '').matchAll(/\/bhutan-tours\/([a-z-]+)\//g)].map((m) => m[1]);
-const cats = [...new Set([...linked, ...d.tags.map((t) => CAT[t]).filter(Boolean)])];
-const rank = (t: { data: { category: { id: string }; featured?: boolean } }) => {
-  const i = cats.indexOf(t.data.category.id);
-  return i >= 0 ? i : t.data.featured ? 90 : 99;
-};
-const tours = (await getCollection('tours')).toSorted((a, b) => rank(a) - rank(b)).slice(0, 3);
-const cat = cats[0] ? await getEntry('categories', cats[0]) : undefined;
-const [allHref, allText] = cat ? [catPath(cat.id), `All ${cat.data.menuTitle.toLowerCase()}`] : [TOURS, 'All tours'];
+// Tours matched to the post: themes it links to in its text, then its topics, then featured tours
+const CAT: Record<string, string> = { Festivals: 'festival-tours', Culture: 'cultural-tours', Food: 'cultural-tours', Trekking: 'trekking-tours' };
 
 const url = new URL(`/blog/${post.id}/`, Astro.site).href;
-const u = encodeURIComponent(url), t = encodeURIComponent(d.title);
-// Each network's own logo in its own colour (brand logos are the one exception to the one-colour icon rule)
-const share = [
-  ['social_whatsapp', 'WhatsApp', '#25d366', `https://wa.me/?text=${t}%20${u}`],
-  ['social_facebook', 'Facebook', '#1877f2', `https://www.facebook.com/sharer/sharer.php?u=${u}`],
-  ['social_twitter', 'X', '#000', `https://x.com/intent/tweet?url=${u}&text=${t}`],
-  ['social_linkedin', 'LinkedIn', '#0a66c2', `https://www.linkedin.com/sharing/share-offsite/?url=${u}`],
-];
+
 const long = (x: Date) => x.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 const short = (x: Date) => x.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 const byline = d.author === SITE.name ? `${d.author}, Thimphu` : d.author;
@@ -54,114 +35,39 @@ const schema = {
   ...(d.tags.length ? { articleSection: d.tags[0], keywords: d.tags } : {}),
 };
 ---
-<Base title={d.title} description={d.excerpt} image={d.image} type="article" published={d.date} schema={schema} seo={d.seo}>
-  <div class="container post">
-    <article>
-      <header class="ah">
-        <Breadcrumbs items={[['Blog', '/blog/'], [d.title]]} />
-        <h1>{d.title}</h1>
-        <p class="lede t-body">{d.excerpt}</p>
-        <p class="meta t-label">
-          {d.tags[0] && <><a href={`/blog/?topic=${slug(d.tags[0])}`}>{d.tags[0]}</a><span aria-hidden="true"> · </span></>}
-          <time datetime={d.date.toISOString()}>{long(d.date)}</time><span aria-hidden="true"> · </span>{byline}
-        </p>
-      </header>
-
-      {/* Wider than the text: 16:10 on phones, 2:1 from 768px */}
-      {/* The cover opens the photo viewer too, as the article's first photo (full size, uncropped) */}
-      <button type="button" class="lb-open lb-open--cover" data-lb-item data-src={img(d.image, 1600)} data-srcset={srcset(d.image, [800, 1200, 1600, 2400])} data-alt={d.title} aria-label={`View photo: ${d.title}`}>
-        <picture>
-          <source media="(max-width: 767px)" sizes="calc(100vw - 32px)" srcset={srcset(d.image, [480, 800, 1200], 16 / 10)} />
-          <img class="cover" src={img(d.image, 1200, 600)} srcset={srcset(d.image, [800, 1200, 1600, 2000, 2400], 2)}
-            sizes="(min-width:1264px) 1200px, calc(100vw - 64px)" alt="" width="1200" height="600" fetchpriority="high" />
-        </picture>
-      </button>
-
-      <div class="post__body">
-        <div class="prose body t-body"><Content /></div>
-
-        <section class="share" aria-labelledby="share-h">
-          <p class="share__h t-label" id="share-h">Share this story</p>
-          <ul>{share.map(([icon, name, colour, href]) => (
-            <li><a class="btn btn--outline" style={`--brand: ${colour}`} href={href} target="_blank" rel="noopener"><Icon name={icon} /><span class="sr-only">Share on </span>{name}<span class="sr-only"> (opens in a new tab)</span></a></li>
-          ))}</ul>
-        </section>
-
-        {recent.length > 0 && (
-          <aside class="recent" aria-labelledby="recent-h">
-            <p class="widget__h" id="recent-h">Recent articles</p>
-            <ul>{recent.map((p) => (
-              <li><a href={`/blog/${p.id}/`}>
-                <img src={img(p.data.image, 144, 144)} srcset={srcset(p.data.image, [72, 144, 216], 1)} sizes="72px" alt="" width="72" height="72" loading="lazy" decoding="async" />
-                <span><span class="t-title">{p.data.title}</span><time class="t-label" datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
-              </a></li>
-            ))}</ul>
-            <a class="link-more" href="/blog/"><span>All articles</span><Icon name="arrow-up-right" /></a>
-          </aside>
-        )}
-      </div>
-    </article>
-  </div>
-
-  <section class="section section--grey">
-    <div class="container">
-      <div class="sh sh--row" data-reveal>
-        <h2>Tours to consider</h2>
-        <div class="sh__act"><a class="link-more" href={allHref}><span>{allText}</span><Icon name="arrow-up-right" /></a><Arrows target="rail-tours" label="tours" /></div>
-      </div>
-      <div class="rail" id="rail-tours" data-reveal="stagger">{tours.map((r) => <TourCard tour={r} rail />)}</div>
-      <a class="link-more m-only" href={allHref}><span>{allText}</span><Icon name="arrow-up-right" /></a>
-    </div>
-  </section>
-
-  <WhatsAppCta />
-</Base>
+<Article title={d.title} description={d.excerpt} image={d.image} alt={d.alt} date={d.date} back={['/blog/', 'Blog']} seo={d.seo} schema={schema} aside="gutter" progress={false}>
+  <Fragment slot="meta">
+    {d.tags[0] && <><a href={`/blog/?topic=${slug(d.tags[0])}`}>{d.tags[0]}</a><span aria-hidden="true"> · </span></>}
+    <time datetime={d.date.toISOString()}>{long(d.date)}</time><span aria-hidden="true"> · </span>{byline}
+  </Fragment>
+  <Fragment set:html={withAsk(post.rendered?.html)} />
+  <Share slot="share" title={d.title} label="Share this article" variant="buttons" />
+  {recent.length > 0 && (
+    <aside slot="aside" class="recent" aria-labelledby="recent-h">
+      <p class="widget__h" id="recent-h">Recent articles</p>
+      <ul>{recent.map((p) => (
+        <li><a href={`/blog/${p.id}/`}>
+          <img src={img(p.data.image, 144, 144)} srcset={srcset(p.data.image, [72, 144, 216], 1)} sizes="72px" alt="" width="72" height="72" loading="lazy" decoding="async" />
+          <span><span class="t-title">{p.data.title}</span><time class="t-label" datetime={p.data.date.toISOString()}>{short(p.data.date)}</time></span>
+        </a></li>
+      ))}</ul>
+      <LinkMore href="/blog/" label="All articles" />
+    </aside>
+  )}
+  <MatchedTours slot="after" html={post.rendered?.html} themes={d.tags.map((t) => CAT[t]).filter(Boolean)} />
+  <WhatsAppCta slot="after" about={d.title} />
+</Article>
 
 <style>
-  .post { padding-block: var(--stack) var(--section); }
-  /* The text runs at a reading measure, centred; the cover is wider than it */
-  .ah, .body, .share, .recent { max-width: var(--measure); margin-inline: auto; }
-  .ah :global(.crumbs) { margin-bottom: var(--space-4); }
-  .lede { margin-top: var(--space-4); color: var(--text-2); }
-  .meta { margin: var(--space-4) 0 var(--space-8); color: var(--text-2); }
-  .meta a { display: inline-block; padding-block: var(--space-3); margin-block: calc(var(--space-3) * -1); color: var(--text-2); text-decoration: underline 1px var(--border-dark); text-underline-offset: 4px; transition: color var(--dur-1), text-decoration-color var(--dur-1); }
-  .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); }
-  .body { margin-top: var(--space-10); }
-
-  /* Share: a hairline, a label, then one button per network (logo in its colour + name); two across on phones */
-  .share { margin-top: var(--space-12); padding-top: var(--space-6); border-top: 1px solid var(--border); }
-  .share__h { margin-bottom: var(--space-4); color: var(--text-2); }
-  .share ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); list-style: none; margin: 0; padding: 0; }
-  .share .btn { width: 100%; }
-  .share :global(.icon) { font-size: 18px; color: var(--brand); }
-
-  /* Recent posts: after the share buttons below 1200px */
-  .recent { display: grid; gap: var(--space-4); margin-top: var(--space-12); }
+  /* Recent articles: after the share buttons below 1200px, beside the text from 1200px (Article's gutter) */
+  .recent { display: grid; gap: var(--space-4); }
   .recent ul { display: grid; gap: var(--space-4); list-style: none; margin: 0; padding: 0; }
   .recent li a { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: var(--space-3); align-items: center; }
   .recent img { width: 72px; height: 72px; object-fit: cover; border-radius: var(--r-sm); background: var(--s-50); }
-  .recent .t-title { display: -webkit-box; color: var(--ink); -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-decoration: underline 1.5px transparent; text-underline-offset: 6px; transition: text-decoration-color var(--dur-1); }
+  .recent .t-title { display: -webkit-box; color: var(--ink); -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .recent time { display: block; margin-top: var(--space-1); color: var(--text-2); }
   .recent .link-more { justify-self: start; }
-
-  @media (hover: hover) {
-    .meta a:hover { color: var(--ink); text-decoration-color: var(--p-500); }
-    .recent li a:hover .t-title { text-decoration-color: var(--p-500); }
-  }
-  @media (min-width: 768px) {
-    .cover { aspect-ratio: 2 / 1; }
-    .share ul { display: flex; flex-wrap: wrap; }
-    .share .btn { width: auto; }
-  }
-  /* From 1200px the text keeps the centre and recent posts float in the free space to its right, staying in view */
   @media (min-width: 1200px) {
-    .post__body { display: grid; grid-template-columns: minmax(0, 1fr) var(--measure) minmax(0, 1fr); column-gap: var(--space-8); }
-    /* auto side margins would shrink a grid item to its content, so they go */
-    .post__body > :is(.body, .share) { grid-column: 2; max-width: none; margin-inline: 0; }
-    .recent {
-      grid-column: 3; grid-row: 1 / span 2; align-self: start; position: sticky; top: calc(var(--header-h) + var(--space-6));
-      max-width: none; margin: var(--space-10) 0 0;
-    }
     .recent li a { grid-template-columns: 56px minmax(0, 1fr); }
     .recent img { width: 56px; height: 56px; }
   }

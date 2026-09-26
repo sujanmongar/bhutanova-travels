@@ -1,0 +1,45 @@
+---
+// The site's one photo card (TourCard and BlogCard map their data onto it): the photo in its frame, an optional small
+// label, the title (its link covers the whole card), an optional three-line text and the meta slot, which sits at the
+// bottom so it lines up across a row of cards.
+// The frame is the same height on every card (--card-photo: 240px phones, 270px from 768px), whatever the card's width;
+// the CDN's 4:3 crop is drawn at the frame's width, or 360px (270 × 4/3) where the frame is narrower, so sizes is the
+// larger of the two and nothing gets upscaled. rail: 2 across from 768px, 3 from 1200px; otherwise the 1 → 2 → 3 grid
+// (768 / 1024px). list: on phones a row with an 88px thumbnail (the travel guide index), the label left out.
+import { img, srcset } from '../config';
+interface Props { href: string; image: string; title: string; eyebrow?: string; text?: string; rail?: boolean; list?: boolean; eager?: boolean; level?: 'h2' | 'h3' }
+const { href, image, title, eyebrow, text, rail = false, list = false, eager = false, level: Title = 'h3' } = Astro.props;
+const sizes = rail
+  ? '(min-width:1200px) 384px, (min-width:808px) calc(50vw - 44px), (min-width:412px) 360px, calc(100vw - 52px)'
+  : `(min-width:1200px) 384px, (min-width:1024px) 360px, (min-width:808px) calc(50vw - 44px), (min-width:768px) 360px, ${list ? '88px' : 'calc(100vw - 32px)'}`;
+---
+<article class:list={['card', { 'card--list': list }]}>
+  <div class="card__img">
+    <img src={img(image, 800, 600)} srcset={srcset(image, [400, 600, 800, 1000, 1200], 4 / 3)} sizes={sizes}
+      alt="" width="800" height="600" loading={eager ? 'eager' : 'lazy'} decoding="async" />
+  </div>
+  {eyebrow && <p class="card__eyebrow t-label">{eyebrow}</p>}
+  <Title class="t-card"><a href={href}>{title}</a></Title>
+  {text !== undefined && <p class="card__text t-body">{text}</p>}
+  {Astro.slots.has('meta') && <p class="card__meta t-body"><slot name="meta" /></p>}
+</article>
+<style>
+  .card { position: relative; display: flex; flex-direction: column; height: 100%; }
+  .card__img { position: relative; height: var(--card-photo); margin-bottom: var(--space-4); border-radius: var(--radius); corner-shape: squircle; background: var(--s-50); overflow: hidden; isolation: isolate; }
+  @supports not (corner-shape: squircle) { .card__img { clip-path: inset(0 round var(--radius)); } }  /* keeps the corners while the photo zooms (Safari) */
+  .card__img img { width: 100%; height: 100%; object-fit: cover; }
+  .card__eyebrow { margin-bottom: var(--space-2); color: var(--text-3); }
+  .card :is(h2, h3) a::after { content: ''; position: absolute; inset: 0; z-index: 2; }
+  .card :is(h2, h3) a:focus-visible { outline: none; }
+  .card:has(:is(h2, h3) a:focus-visible) { outline: 2px solid var(--s-500); outline-offset: 6px; border-radius: var(--radius); corner-shape: squircle; }
+  .card__text { margin-top: var(--space-3); color: var(--text-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  /* "8 days · from $1,690 per person" at body size, price bold */
+  .card__meta { margin-top: auto; padding-top: var(--space-2); color: var(--text-2); }
+  .card__meta :global(b) { font-weight: 600; color: var(--ink); }
+  @media (max-width: 767px) {
+    .card--list { display: grid; grid-template-columns: 88px minmax(0, 1fr); column-gap: var(--space-4); align-items: start; height: auto; padding-block: var(--space-4); border-bottom: 1px solid var(--border-dark); }
+    .card--list .card__img { grid-row: 1 / span 2; width: 88px; height: 88px; margin: 0; --radius: var(--r-sm); corner-shape: round; }  /* a thumbnail: the 12px corner */
+    .card--list .card__eyebrow { display: none; }  /* the topic is already the section title */
+    .card--list .card__text { margin-top: var(--space-1); -webkit-line-clamp: 2; }
+  }
+</style>

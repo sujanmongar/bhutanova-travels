@@ -21,8 +21,8 @@ export const link = {
   ],
 }
 
-// A photo inside an article: drag the focal point, describe it for screen readers, optional caption. The credit comes
-// from the image itself (Media → credit line), so it isn't typed again here.
+// A photo inside an article: drag the focal point, describe it for screen readers, optional caption, and a credit when
+// its licence asks for one (older photos carry theirs on the image file, which the site still reads).
 const photo = {
   name: 'photo',
   title: 'Photo',
@@ -31,6 +31,7 @@ const photo = {
   validation: (r: any) => r.required().assetRequired(),
   fields: [
     {name: 'alt', title: 'Describe the photo', type: 'string', description: 'For screen readers and search, e.g. "Prayer flags above Dochula Pass".', validation: (r: any) => r.required()},
+    {name: 'credit', title: 'Photo credit', type: 'string', description: 'Only when the photo\'s licence asks for one, e.g. "Wikimedia Commons, CC BY-SA 4.0". Shown after the caption.'},
     {name: 'caption', title: 'Caption', type: 'string'},
   ],
 }

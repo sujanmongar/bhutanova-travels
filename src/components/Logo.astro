@@ -5,7 +5,7 @@
 // (ink on the light header, white over photos and in the footer): orange is never small text.
 const { light = false } = Astro.props;
 ---
-<svg class="logo" viewBox="0 0 178 44" role="img" aria-label="Bhutanova Travels" style={light ? 'color:#fff' : undefined}>
+<svg class="logo" viewBox="0 0 178 44" role="img" aria-label="Bhutanova Travels" style={light ? 'color:var(--on-dark)' : undefined}>
   <path d="M2,34 L10,18 L17,27 L21,6 L26,23 L32,15 L40,34 Z" fill="#ffa500" />
   <path d="M21,6 L23.6,11.5 L18.4,11.5 Z" fill="#fff" stroke="#ffa500" stroke-width="1" />
   <path d="M32,15 L34.3,18.6 L29.7,18.6 Z" fill="#fff" opacity=".85" stroke="#ffa500" stroke-width="1" />

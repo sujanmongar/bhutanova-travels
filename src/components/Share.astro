@@ -1,0 +1,54 @@
+---
+// Share this page: each network's logo in its own colour (brand logos are the one exception to the one-colour icon
+// rule), plus Copy link. "icons" = a row of round buttons (sidebars); "buttons" = logo and name (under an article).
+import Icon from './Icon.astro';
+import IconButton from './IconButton.astro';
+interface Props { title: string; label?: string; variant?: 'icons' | 'buttons' }
+const { title, label = 'Share this page', variant = 'icons' } = Astro.props;
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const u = encodeURIComponent(url), t = encodeURIComponent(title);
+const nets = [
+  ['social_whatsapp', 'WhatsApp', 'var(--whatsapp-dark)', `https://wa.me/?text=${t}%20${u}`],
+  ['social_facebook', 'Facebook', '#1877f2', `https://www.facebook.com/sharer/sharer.php?u=${u}`],
+  ['social_twitter', 'X', '#000', `https://x.com/intent/tweet?url=${u}&text=${t}`],
+  ['social_linkedin', 'LinkedIn', '#0a66c2', `https://www.linkedin.com/sharing/share-offsite/?url=${u}`],
+];
+const id = `share-${Math.random().toString(36).slice(2, 8)}`;
+---
+<section class:list={['share', `share--${variant}`]} aria-labelledby={id}>
+  <p class="share__h t-label" id={id}>{label}</p>
+  <ul>
+    {nets.map(([icon, name, colour, href]) => (
+      <li>{variant === 'icons'
+        ? <IconButton tone="line" href={href} target="_blank" rel="noopener" style={`--brand: ${colour}`} title={`Share on ${name}`}><Icon name={icon} /><span class="sr-only">Share on {name} (opens in a new tab)</span></IconButton>
+        : <a class="btn btn--outline" style={`--brand: ${colour}`} href={href} target="_blank" rel="noopener"><Icon name={icon} /><span class="sr-only">Share on </span>{name}<span class="sr-only"> (opens in a new tab)</span></a>}
+      </li>
+    ))}
+    <li>{variant === 'icons'
+      ? <IconButton tone="line" data-copy-link={url} title="Copy link"><Icon name="link" /><span class="sr-only" data-copy-label>Copy link</span></IconButton>
+      : <button type="button" class="btn btn--outline" data-copy-link={url}><Icon name="link" /><span data-copy-label>Copy link</span></button>}
+    </li>
+  </ul>
+  <p class="sr-only" role="status" data-copy-status></p>
+</section>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy-link]').forEach((b) => b.addEventListener('click', async () => {
+    const label = b.querySelector('[data-copy-label]')!;
+    const status = b.closest('.share')!.querySelector('[data-copy-status]')!;  // a renamed button isn't read out; this is
+    try { await navigator.clipboard.writeText(b.dataset.copyLink!); label.textContent = status.textContent = 'Link copied'; b.classList.add('is-done'); }
+    catch { window.prompt('Copy this link', b.dataset.copyLink!); }
+    setTimeout(() => { label.textContent = 'Copy link'; status.textContent = ''; b.classList.remove('is-done'); }, 2000);
+  }));
+</script>
+<style>
+  .share__h { margin: 0 0 var(--space-3); color: var(--text-2); }
+  .share ul { list-style: none; margin: 0; padding: 0; }
+  .share :global(.icon) { color: var(--brand, var(--ink)); }
+  /* Round logo buttons in a row */
+  .share--icons ul { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .share :global(.is-done) { --ib-bg: var(--p-50); border-color: var(--p-500); }
+  /* Logo + name buttons: two across on phones, one row from 768px */
+  .share--buttons ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .share--buttons .btn { width: 100%; }
+  @media (min-width: 768px) { .share--buttons ul { display: flex; flex-wrap: wrap; } .share--buttons .btn { width: auto; } }
+</style>

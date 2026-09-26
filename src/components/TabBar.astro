@@ -1,26 +1,38 @@
 ---
-// One row of tabs directly under a page banner, pinned under the header while the page scrolls. Either jump links to the
-// page's sections (travel guide topics, destination regions), which mark the section you're reading, or filter buttons
-// passed in the slot (blog topics). Styles: .tabbar in global.css.
-interface Props { label: string; links?: [string, string][]; filter?: boolean }
+// One row of tabs directly under a page banner, pinned under the header while the page scrolls. Either links (jump links to
+// the page's sections, which mark the section you're reading: travel guide topics, destination regions; or links to other
+// pages, the third item marking the current one: tour themes) or filter buttons passed in the slot (blog topics). The
+// 'tools' slot sits beside the tabs (on its own line under 1024px): the tour finder's count, Duration and Sort.
+// Styles: .tabbar in global.css.
+interface Props { label: string; links?: Array<[string, string, boolean?]>; filter?: boolean }
 const { label, links, filter = false } = Astro.props;
+const Tabs = filter ? 'div' : 'nav';
+const tools = Astro.slots.has('tools') ? (await Astro.slots.render('tools')).trim() : '';
 ---
-<nav class="tabbar" aria-label={label}>
-  <div class="container tabbar__in" data-tabbar data-filter={filter ? '' : undefined} role={filter ? 'toolbar' : undefined} aria-label={filter ? label : undefined}>
-    {links ? links.map(([text, href]) => <a class="t-label" href={href}>{text}</a>) : <slot />}
+<div class:list={['tabbar', { 'tabbar--tools': tools }]}>
+  <div class="container tabbar__row">
+    <Tabs class="tabbar__in" aria-label={label} data-tabbar data-filter={filter ? '' : undefined} role={filter ? 'toolbar' : undefined}>
+      {links ? links.map(([text, href, current]) => <a class="t-label" href={href} aria-current={current ? 'page' : undefined}>{text}</a>) : <slot />}
+    </Tabs>
+    {tools && <div class="tabbar__tools" set:html={tools} />}
   </div>
-</nav>
+</div>
 
 <script>
-  // Jump links: underline the section in view and keep that tab visible when the bar scrolls sideways
+  // Jump links: underline the section in view and keep that tab visible when the bar scrolls sideways. A bar of page
+  // links starts scrolled to the current page's tab.
+  const smooth: ScrollBehavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
   document.querySelectorAll<HTMLElement>('[data-tabbar]').forEach((bar) => {
+    const show = (tab: HTMLElement, behavior: ScrollBehavior) => bar.scrollTo({ left: tab.offsetLeft - bar.offsetLeft - parseFloat(getComputedStyle(bar).scrollPaddingLeft), behavior });
+    const current = bar.querySelector<HTMLElement>('[aria-current="page"]');
+    if (current && current.offsetLeft - bar.offsetLeft + current.offsetWidth > bar.clientWidth) show(current, 'auto');
     const links = [...bar.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
     if (!links.length) return;
     const io = new IntersectionObserver((entries) => entries.forEach((e) => {
       if (!e.isIntersecting) return;
       links.forEach((a) => a.setAttribute('aria-current', String(a.hash === `#${e.target.id}`)));
       const on = links.find((a) => a.hash === `#${e.target.id}`);
-      if (on) bar.scrollTo({ left: on.offsetLeft - bar.offsetLeft - 16, behavior: 'smooth' });
+      if (on) show(on, smooth);
     }), { rootMargin: '-35% 0px -60% 0px' });
     links.forEach((a) => { const s = document.getElementById(decodeURIComponent(a.hash.slice(1))); if (s) io.observe(s); });
   });

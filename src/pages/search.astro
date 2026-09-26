@@ -1,11 +1,9 @@
 ---
 // A real results page for the header's search field — pressing Enter (or a phone's "search"/"go" key)
 // lands here instead of stopping at the short suggestion list. Rendered client-side against the same
-// build-time index the header already embeds (astro:content isn't available in the browser, so the
+// build-time index the header uses (/search-index.json; astro:content isn't available in the browser, so the
 // filtering has to happen there, not here) — this page is just the shell plus the script that fills it.
-import Base from '../layouts/Base.astro';
-import WhatsAppCta from '../components/WhatsAppCta.astro';
-import Breadcrumbs from '../components/Breadcrumbs.astro';
+import Page from '../layouts/Page.astro';
 import { TOURS } from '../utils';
 
 // Shown before a search and when nothing matches, so the page never ends in a blank.
@@ -15,39 +13,35 @@ const start = [
   ['/contact/', 'Ask us', 'Tell us what you are looking for. We reply within 24 hours.'],
 ];
 ---
-<Base title="Search" noindex>
-  <section class="section">
-    <div class="container narrow">
-      <Breadcrumbs items={[['Search']]} />
-      <h1>Search</h1>
-      <form role="search" action="/search/" method="get" data-form>
-        <label class="sr-only" for="page-search-q">Search tours, guides and articles</label>
-        <input id="page-search-q" class="input page-search__q" type="search" name="q" placeholder="Search tours, guides, articles…" autocomplete="off" enterkeyhint="search" />
-      </form>
-      <p class="page-search__status t-caption" data-status aria-live="polite"></p>
-      <ul class="page-search__results" data-results></ul>
-      <div class="results__group page-search__start" data-start>
-        <h2>Where to start</h2>
-        <ul>
-          {start.map(([href, title, text]) => <li><a href={href}><span class="page-search__t">{title}</span><span class="t-caption muted">{text}</span></a></li>)}
-        </ul>
-      </div>
-    </div>
-  </section>
-  <WhatsAppCta />
-</Base>
+<Page title="Search" noindex narrow>
+  <form role="search" action="/search/" method="get" data-form>
+    <label class="sr-only" for="page-search-q">Search tours, guides and articles</label>
+    <input id="page-search-q" class="input page-search__q" type="search" name="q" placeholder="Search tours, guides, articles…" autocomplete="off" enterkeyhint="search" />
+  </form>
+  <p class="page-search__status t-caption" data-status aria-live="polite"></p>
+  <ul class="page-search__results" data-results></ul>
+  <div class="results__group page-search__start" data-start>
+    <p>Where to start</p>
+    <ul>
+      {start.map(([href, title, text]) => <li><a href={href}><span class="page-search__t">{title}</span><span class="t-caption muted">{text}</span></a></li>)}
+    </ul>
+  </div>
+</Page>
 
 <script>
-  import { matches, groupByKind, resultsHTML } from '../scripts/search';
+  import { type SearchItem, matches, groupByKind, resultsHTML } from '../scripts/search';
 
   const form = document.querySelector<HTMLFormElement>('[data-form]')!;
   const input = document.getElementById('page-search-q') as HTMLInputElement;
   const status = document.querySelector<HTMLElement>('[data-status]')!;
   const list = document.querySelector<HTMLUListElement>('[data-results]')!;
   const start = document.querySelector<HTMLElement>('[data-start]')!;
-  const index: { t: string; k: string; u: string }[] = JSON.parse(document.getElementById('search-index')!.textContent!);
+  // Every search waits for the index (fetched once, from the HTTP cache if the header already had it); if it
+  // can't load, the page still answers, with "No results" and the places to start.
+  let index: SearchItem[] = [];
+  const ready = fetch('/search-index.json').then((r) => r.json()).then((d: SearchItem[]) => { index = d; }, () => {});
 
-  const run = (q: string, focus = false) => {
+  const run = (q: string) => ready.then(() => {
     const term = q.trim();
     const found = matches(index, q);
     list.innerHTML = resultsHTML(groupByKind(found));
@@ -56,12 +50,12 @@ const start = [
       : found.length ? `${found.length} result${found.length === 1 ? '' : 's'} for “${term}”`
       : `No results for “${term}”. Try a different word, or start from one of these.`;
     document.title = term ? `“${term}” — Search — Bhutanova Travels` : 'Search — Bhutanova Travels';
-    if (focus) input.focus();
-  };
+  });
 
   const q = new URL(location.href).searchParams.get('q') ?? '';
   input.value = q;
-  run(q, !q);
+  if (!q) input.focus();
+  run(q);
 
   let debounce: ReturnType<typeof setTimeout>;
   const update = () => {
@@ -83,8 +77,6 @@ const start = [
 </script>
 
 <style>
-  .narrow { max-width: 760px; }
-  h1 { margin-bottom: var(--stack); }
   .page-search__q { margin-bottom: var(--space-1); }
   .page-search__status { margin: var(--space-4) 0 var(--space-1); color: var(--text-2); }
   .page-search__results { list-style: none; margin: var(--space-6) 0 0; padding: 0; display: grid; gap: var(--space-8); }
@@ -92,7 +84,7 @@ const start = [
   .page-search__start { margin-top: var(--space-6); }
   /* :global — built with innerHTML at runtime; see the header's own search styles for why this needs it.
      Group names are labels (like the header's suggestion list); the result titles below them are the content. */
-  :global(.results__group h2) {
+  :global(.results__group > p) {
     display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);
     font-family: var(--ff); font-size: var(--fs-label); line-height: var(--lh-label); letter-spacing: var(--ls-label); font-weight: var(--fw-label); color: var(--ink);
   }
@@ -108,6 +100,6 @@ const start = [
   /* After the shared row rule so it wins at any scoping specificity: title over a one-line description */
   .page-search__start a { flex-direction: column; align-items: flex-start; justify-content: center; gap: var(--space-1); }
   @media (hover: hover) {
-    .page-search__results :global(a:hover), .page-search__start a:hover .page-search__t { text-decoration: underline 1.5px var(--p-500); text-underline-offset: 6px; }
+    .page-search__results :global(a:hover), .page-search__start a:hover .page-search__t { text-decoration: underline 1.5px var(--p-500); text-underline-offset: var(--space-2); }
   }
 </style>

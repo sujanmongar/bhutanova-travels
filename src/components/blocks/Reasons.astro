@@ -1,23 +1,27 @@
 ---
 import Icon from '../Icon.astro';
+import Section from '../Section.astro';
 interface Props { heading: string; items?: { _key: string; title: string; text?: string; icon?: string }[]; grey?: boolean }
 const { heading, items = [], grey = true } = Astro.props;
 ---
-<section id="why-us" class:list={['section', { 'section--grey': grey }]}>
-  <div class="container">
-    <div class="sh" data-reveal><h2>{heading}</h2></div>
-    <ul class="why" data-reveal="stagger" style={`--cols:${items.length % 4 === 0 ? 4 : 3}`}>
-      {items.map((r) => <li>{r.icon && <Icon name={r.icon} />}<h3 class="t-card">{r.title}</h3>{r.text && <p class="t-body">{r.text}</p>}</li>)}
-    </ul>
-  </div>
-</section>
+<Section heading={heading} grey={grey} id="why-us">
+  <ul class="why" data-reveal="stagger" style={`--cols:${items.length % 4 === 0 ? 4 : 3}`}>
+    {items.map((r) => <li>{r.icon && <Icon name={r.icon} />}<h3 class="t-card">{r.title}</h3>{r.text && <p class="t-body">{r.text}</p>}</li>)}
+  </ul>
+</Section>
 <style>
   /* Short, concrete points: 1 → 2 → 3 columns, each under a hairline */
   .why { display: grid; gap: var(--space-8) var(--grid-gap); list-style: none; margin: 0; padding: 0; }
   .why li { display: grid; align-content: start; gap: var(--space-3); padding-top: var(--space-6); border-top: 1px solid var(--border-dark); }
   /* Icon → title 24px, a step more than title → description 12px */
-  .why :global(.icon) { margin-bottom: var(--space-3); font-size: 40px; color: var(--s-500); }
+  .why :global(.icon) { margin-bottom: var(--space-3); font-size: var(--icon-xl); color: var(--s-500); }
   .why p { max-width: 32ch; color: var(--text-2); }
+  /* Phones: the icon sits beside its title, so four points take about one screen instead of one and a half */
+  @media (max-width: 767px) {
+    .why { gap: var(--space-6); }
+    .why li { grid-template-columns: 32px 1fr; column-gap: var(--space-4); row-gap: var(--space-2); padding-top: var(--space-4); }
+    .why :global(.icon) { grid-row: span 2; margin: calc((var(--lh-card) * var(--fs-card) - var(--icon-xl)) / 2) 0 0; }
+  }
   @media (min-width: 768px) { .why { grid-template-columns: repeat(2, 1fr); row-gap: var(--space-12); } }
   @media (min-width: 1024px) { .why { grid-template-columns: repeat(var(--cols), 1fr); } }  /* four across for four points */
 </style>
